@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">SketchCrew</string>
+    <string name="home">HOME</string>
+    <string name="profile">PROFILE</string>
+    <string name="welcome2">Welcome</string>
+    <string name="how_are_you_feeling_today">How are you feeling today?</string>
 </resources>
