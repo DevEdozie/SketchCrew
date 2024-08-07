@@ -41,6 +41,10 @@ android {
 
 dependencies {
 
+    // Lottie
+//    def lottieVersion = "3.4.0"
+    implementation(libs.lottie)
+    //
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
