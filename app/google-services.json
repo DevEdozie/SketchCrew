@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "909092511440",
+    "project_id": "sketchcrew-d76a6",
+    "storage_bucket": "sketchcrew-d76a6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:909092511440:android:152bfd31fb3968906a88d5",
+        "android_client_info": {
+          "package_name": "com.example.sketchcrew"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAwt8AZ2cn2ApY1Y_d8pbdHGo_dhz3PJM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
