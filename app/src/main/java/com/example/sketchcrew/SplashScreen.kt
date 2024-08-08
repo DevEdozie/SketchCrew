@@ -30,7 +30,7 @@ class SplashScreen : AppCompatActivity() {
         } else {
             // Delayed navigation to SignInActivity if no user is signed in
             Handler(Looper.getMainLooper()).postDelayed({
-                navigateToSignInActivity()
+                navigateToWelcomeActivity()
             }, 4000)  // 2 seconds delay
         }
     }
@@ -41,8 +41,8 @@ class SplashScreen : AppCompatActivity() {
         finish()  // Finish the SplashScreen activity so the user cannot go back to it
     }
 
-    private fun navigateToSignInActivity() {
-        val intent = Intent(this, SignInActivity::class.java)
+    private fun navigateToWelcomeActivity() {
+        val intent = Intent(this, WelcomeActivity::class.java)
         startActivity(intent)
         finish()  // Finish the SplashScreen activity so the user cannot go back to it
     }
