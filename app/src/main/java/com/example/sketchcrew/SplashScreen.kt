@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
+import com.example.sketchcrew.ui.screens.HomeActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -25,7 +26,7 @@ class SplashScreen : AppCompatActivity() {
         if (currentUser != null) {
 
             Handler(Looper.getMainLooper()).postDelayed({
-                navigateToMainActivity()
+                navigateToHomeActivity()
             }, 4000)
         } else {
             // Delayed navigation to SignInActivity if no user is signed in
@@ -35,8 +36,8 @@ class SplashScreen : AppCompatActivity() {
         }
     }
 
-    private fun navigateToMainActivity() {
-        val intent = Intent(this, MainActivity::class.java)
+    private fun navigateToHomeActivity() {
+        val intent = Intent(this, HomeActivity::class.java)
         startActivity(intent)
         finish()  // Finish the SplashScreen activity so the user cannot go back to it
     }

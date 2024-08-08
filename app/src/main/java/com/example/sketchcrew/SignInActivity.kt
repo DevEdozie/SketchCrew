@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.sketchcrew.databinding.ActivitySignInBinding
+import com.example.sketchcrew.ui.screens.HomeActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -42,7 +43,7 @@ class SignInActivity : AppCompatActivity() {
                         binding.animationView.visibility = View.INVISIBLE
                         Toast.makeText(this, "Sign in successful", Toast.LENGTH_SHORT)
                             .show()
-                        val intent = Intent(this, MainActivity::class.java)
+                        val intent = Intent(this, HomeActivity::class.java)
                         startActivity(intent)
                     } else {
                         binding.animationView.visibility = View.INVISIBLE
