@@ -1,5 +1,4 @@
 
-```markdown
 # SketchCrew
 
 SketchCrew is a digital sketchpad Android application designed to provide artists with various drawing tools, layers support, and intuitive user interface elements. Whether you're a beginner or a professional, SketchCrew helps bring your creativity to life.
