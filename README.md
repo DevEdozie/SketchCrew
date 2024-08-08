@@ -107,8 +107,8 @@ Contributions are welcome! To contribute:
 
 For any inquiries, feedback, or suggestions, feel free to reach out:
 
-- **Your Name**: [your.email@example.com](nicholausmichael51@gmail.com)
-- **GitHub**: [https://github.com/yourusername](https://github.com/DevEdozie)
-- **Twitter**: [@yourhandle](https://x.com/dev_edozie)
+- **Author Name**: [nicholausmichael51@gmail.com]
+- **GitHub**: [https://github.com/DevEdozie]
+- **Twitter**: [https://x.com/dev_edozie]
 ```
 
