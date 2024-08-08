@@ -1,5 +1,11 @@
 <resources>
     <string name="app_name">SketchCrew</string>
+
+    <string name="home">HOME</string>
+    <string name="profile">PROFILE</string>
+    <string name="welcome2">Welcome</string>
+    <string name="how_are_you_feeling_today">How are you feeling today?</string>
+
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>
@@ -47,4 +53,5 @@
     <string name="unleash">Unleash your creativity with intuitive tools and collaborative features for artists and designers</string>
     <string name="team_up">Team up in real-time with your crew to turn your ideas into reality</string>
     <string name="elevate">Elevate your design and collaborate seamlessly with your team in real-time</string>
+
 </resources>

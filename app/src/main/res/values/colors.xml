@@ -8,6 +8,12 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
+    <color name="wellness_text_grey1">#373545</color>
+    <color name="you_not_covered_color">#F6C3C3</color>
+    <color name="line_color">#ECEBEB</color>
+
+
 
     <color name="yellow">#FFC801</color>
+
 </resources>
