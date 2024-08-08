@@ -21,7 +21,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.screens.HomeActivity"
+        <activity
+            android:name=".ui.screens.HomeActivity"
+            android:exported="true">
+        </activity>
+
+        <activity
+            android:name=".ui.screens.SketchesActivity"
+            android:exported="true">
+        </activity>
+
+        <activity
+            android:name=".ui.screens.ProfileActivity"
             android:exported="true">
         </activity>
         <activity android:name=".ui.screens.SketchesActivity"
