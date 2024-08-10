@@ -60,8 +60,7 @@ SketchCrew is a digital sketchpad Android application designed to provide artist
 
 
 
-![Gallery](path/to/gallery.png)
-*Gallery*
+
 
 ## Setup Instructions
 
@@ -92,7 +91,7 @@ To set up SketchCrew locally, follow these steps:
 
 You can download the latest version of the SketchCrew app directly from the following link:
 
-[Download APK](https://example.com/sketchcrew-apk)
+[Download APK](https://github.com/DevEdozie/SketchCrew/blob/main/SketchCrew.jks)
 
 *Make sure to enable "Install from Unknown Sources" on your Android device if installing the APK directly.*
 
@@ -101,9 +100,8 @@ You can download the latest version of the SketchCrew app directly from the foll
 Once installed, you can:
 
 1. **Create a New Sketch**: Tap on the 'New Sketch' button to start a new drawing.
-2. **Explore Sketches**: Browse through your saved sketches in the gallery.
-3. **Customize Tools**: Use the toolbar to select different brushes, colors, and other drawing tools.
-4. **Save and Share**: Save your sketches or share them with others directly from the app.
+2. **Customize Tools**: Use the toolbar to select different brushes, colors, and other drawing tools.
+
 
 ## Technologies Used
 
