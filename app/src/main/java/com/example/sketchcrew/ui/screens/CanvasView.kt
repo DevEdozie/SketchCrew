@@ -260,15 +260,15 @@ class CanvasView @JvmOverloads constructor(
         }
     }
 
-    private fun setEraser() {
+    fun setEraser() {
         paint.apply {
-            color = Color.TRANSPARENT
+            color = Color.WHITE
             xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
             strokeWidth = 50f
         }
     }
 
-    private fun setBrush(color: Int) {
+    fun setBrush(color: Int) {
         paint.apply {
             this.color = color
             xfermode = null
@@ -278,6 +278,7 @@ class CanvasView @JvmOverloads constructor(
 
     fun setEraserMode(isEraser: Boolean) {
         eraserMode = isEraser
+        if (eraserMode) setEraser()
     }
 
     fun setColor(color: Int) {
@@ -382,7 +383,7 @@ class CanvasView @JvmOverloads constructor(
         var brushColor = Color.BLACK
         var path = Path()
         var paintColor = Paint()
-//        var drawPath = Path()
+        //        var drawPath = Path()
         var paths = mutableListOf<Pair<Path, Paint>>()
     }
 

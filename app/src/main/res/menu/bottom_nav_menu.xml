@@ -9,8 +9,8 @@
         android:icon="@drawable/nav_explore"
         android:title="@string/sketches" />
 
-    <item
-        android:id="@+id/profile"
-        android:icon="@drawable/nav_profile"
-        android:title="@string/profile" />
+<!--    <item-->
+<!--        android:id="@+id/profile"-->
+<!--        android:icon="@drawable/nav_profile"-->
+<!--        android:title="@string/profile" />-->
 </menu>
