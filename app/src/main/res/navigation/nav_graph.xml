@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/drawnCanvasFragment">
+
+    <fragment
+        android:id="@+id/canvasListFragment"
+        android:name="com.example.sketchcrew.ui.screens.CanvasListFragment"
+        android:label="fragment_canvas_list"
+        tools:layout="@layout/fragment_canvas_list" >
+        <action
+            android:id="@+id/action_canvasListFragment_to_drawnCanvasFragment"
+            app:destination="@id/drawnCanvasFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/drawnCanvasFragment"
+        android:name="com.example.sketchcrew.ui.screens.DrawnCanvasFragment"
+        android:label="fragment_drawn_canvas"
+        tools:layout="@layout/fragment_drawn_canvas" >
+        <action
+            android:id="@+id/action_drawnCanvasFragment_to_canvasListFragment"
+            app:destination="@id/canvasListFragment" />
+        <argument
+            android:name="pathData"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue='0,0' />
+    </fragment>
+</navigation>
