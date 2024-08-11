@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import com.example.sketchcrew.data.local.dao.CanvasDao
 import com.example.sketchcrew.data.local.models.CanvasModel
 
-@Database(entities = [CanvasModel::class], version = 1)
+@Database(entities = [CanvasModel::class], version = 1, exportSchema = false)
 abstract class RoomDB : RoomDatabase() {
     abstract fun canvasDao(): CanvasDao
 

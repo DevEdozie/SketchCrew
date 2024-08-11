@@ -1,11 +1,9 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
-
     alias(libs.plugins.navigationAndroid)
-
     alias(libs.plugins.google.gms.google.services)
-
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -15,7 +13,6 @@ android {
     buildFeatures{
         dataBinding = true
         viewBinding = true
-        dataBinding = true
     }
 
     defaultConfig {
