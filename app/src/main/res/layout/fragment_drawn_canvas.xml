@@ -10,15 +10,12 @@
         android:id="@+id/linear_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="32dp"
-        android:layout_marginEnd="12dp"
+        android:layout_marginEnd="8dp"
         android:background="@drawable/button_row_background"
         android:orientation="horizontal"
-        android:padding="4dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:padding="4dp">
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/pen"
@@ -32,7 +29,7 @@
             android:id="@+id/arrow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/default_padding"
+            android:layout_marginStart="4dp"
             android:padding="10dp"
             android:src="@drawable/arrow" />
 
@@ -48,7 +45,7 @@
             android:id="@+id/ellipse"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/default_padding"
+            android:layout_marginStart="4dp"
             android:padding="10dp"
             android:src="@drawable/ellipse" />
 
@@ -56,26 +53,29 @@
             android:id="@+id/palette"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/default_padding"
-            android:layout_marginEnd="8dp"
+            android:layout_marginStart="4dp"
             android:padding="10dp"
             android:src="@drawable/palette" />
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/eraser"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/default_padding"
-            android:layout_marginEnd="8dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:padding="10dp"
             android:src="@drawable/eraser" />
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/undo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/default_padding"
-            android:layout_marginEnd="8dp"
-            android:padding="10dp"
+            android:padding="8dp"
+            android:visibility="visible"
             android:src="@drawable/undo" />
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/redo"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:visibility="visible"
+            android:src="@drawable/baseline_arrow_forward_24" />
     </LinearLayout>
 
     <LinearLayout
@@ -106,7 +106,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="94dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="88dp"
         android:orientation="horizontal"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/canvas_layout"

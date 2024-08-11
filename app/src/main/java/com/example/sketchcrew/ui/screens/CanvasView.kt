@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.PathMeasure
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
@@ -260,15 +261,15 @@ class CanvasView @JvmOverloads constructor(
         }
     }
 
-    private fun setEraser() {
+    fun setEraser() {
         paint.apply {
-            color = Color.TRANSPARENT
+            color = Color.WHITE
             xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
             strokeWidth = 50f
         }
     }
 
-    private fun setBrush(color: Int) {
+    fun setBrush(color: Int) {
         paint.apply {
             this.color = color
             xfermode = null
@@ -278,6 +279,7 @@ class CanvasView @JvmOverloads constructor(
 
     fun setEraserMode(isEraser: Boolean) {
         eraserMode = isEraser
+        if (eraserMode) setEraser()
     }
 
     fun setColor(color: Int) {
@@ -406,13 +408,31 @@ class CanvasView @JvmOverloads constructor(
     fun getPathData(): String {
         // Convert Path object to string representation
         // Note: This is a simplified version and may need adjustments for complex paths
-        return buildString {
-            path.apply {
-                val pathPoints = FloatArray(2)
-                this.computeBounds(android.graphics.RectF(), true)
-                // Iterate through path points and append to the string
-                this.rLineTo(0f, 0f)
-            }
+//        return buildString {
+//            path.apply {
+//                val pathPoints = FloatArray(2)
+//                this.computeBounds(android.graphics.RectF(), true)
+//                // Iterate through path points and append to the string
+//                this.rLineTo(0f, 0f)
+//            }
+//        }
+        val pathDataBuilder = StringBuilder()
+
+        // Temporary array to store points from the path
+        val pathPoints = FloatArray(2)
+
+        // Measure and extract the segments of the path
+        val pathMeasure = PathMeasure(path, false)
+        var segmentLength = pathMeasure.length
+        var segmentPosition = 0f
+
+        // Iterate over the path segments and append to the string
+        while (segmentPosition < segmentLength) {
+            pathMeasure.getPosTan(segmentPosition, pathPoints, null)
+            pathDataBuilder.append("${pathPoints[0]},${pathPoints[1]};")
+            segmentPosition += 1f // Move in small increments to sample the path points
         }
+
+        return pathDataBuilder.toString()
     }
 }
