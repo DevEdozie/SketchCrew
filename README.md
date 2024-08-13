@@ -20,19 +20,47 @@ SketchCrew is a digital sketchpad Android application designed to provide artist
 - **Digital Drawing Tools**: Variety of brushes, pencils, and erasers for versatile sketching.
 - **Color Picker**: Wide range of colors available through an intuitive color picker.
 - **Undo/Redo**: Effortlessly undo or redo actions while sketching.
-- **Save and Share**: Save your artwork locally or share it with others directly from the app.
-- **Sketch Gallery**: View all your saved sketches in a dedicated gallery.
 
 ## Screenshots
 
-![Home Screen](path/to/home_screen.png)
-*Home Screen*
+![Splash Screen](https://github.com/DevEdozie/SketchCrew/blob/main/splash_screen.jpeg)
+*Splash Screen*
 
-![Drawing Interface](path/to/drawing_interface.png)
-*Drawing Interface*
+![First Onboarding screen](https://github.com/DevEdozie/SketchCrew/blob/main/first_ob_screen.jpeg)
+*First Onboarding screen*
 
-![Gallery](path/to/gallery.png)
-*Gallery*
+
+![Second Onboarding screen](https://github.com/DevEdozie/SketchCrew/blob/main/second_ob_screen.jpeg)
+*Second Onboarding screen*
+
+![Third Onboarding screen](https://github.com/DevEdozie/SketchCrew/blob/main/third_ob_screen.jpeg)
+*Third Onboarding screen*
+
+![SignUp screen](https://github.com/DevEdozie/SketchCrew/blob/main/sign_up_screen.jpeg)
+*SignUp screen*
+
+![SignIn screen](https://github.com/DevEdozie/SketchCrew/blob/main/sign_in_screen.jpeg)
+*SignIn screen*
+
+![Home screen](https://github.com/DevEdozie/SketchCrew/blob/main/home_screen.jpeg)
+*Home screen*
+
+![Canvas Screen with shapes](https://github.com/DevEdozie/SketchCrew/blob/main/shapes.jpeg)
+*Canvas Screen with shapes*
+
+![Canvas Screen with shapes and lines](https://github.com/DevEdozie/SketchCrew/blob/main/shapes_lines.jpeg)
+*Canvas Screen with shapes and lines*
+
+![Canvas Screen with lines](https://github.com/DevEdozie/SketchCrew/blob/main/lines.jpeg)
+*Canvas Screen with lines*
+
+![Canvas Screen with eraser](https://github.com/DevEdozie/SketchCrew/blob/main/eraser_screen.jpeg)
+*Canvas Screen with eraser*
+
+
+
+
+
 
 ## Setup Instructions
 
@@ -63,7 +91,7 @@ To set up SketchCrew locally, follow these steps:
 
 You can download the latest version of the SketchCrew app directly from the following link:
 
-[Download APK](https://example.com/sketchcrew-apk)
+[Download APK](https://github.com/DevEdozie/SketchCrew/blob/main/SketchCrew.jks)
 
 *Make sure to enable "Install from Unknown Sources" on your Android device if installing the APK directly.*
 
@@ -72,9 +100,8 @@ You can download the latest version of the SketchCrew app directly from the foll
 Once installed, you can:
 
 1. **Create a New Sketch**: Tap on the 'New Sketch' button to start a new drawing.
-2. **Explore Sketches**: Browse through your saved sketches in the gallery.
-3. **Customize Tools**: Use the toolbar to select different brushes, colors, and other drawing tools.
-4. **Save and Share**: Save your sketches or share them with others directly from the app.
+2. **Customize Tools**: Use the toolbar to select different brushes, colors, and other drawing tools.
+
 
 ## Technologies Used
 
