@@ -139,9 +139,9 @@ class CanvasView @JvmOverloads constructor(
             save()
             canvas.scale(scaleFactor, scaleFactor)
 //            performScaling(canvas, scaleFactor, scaleFactor)
-            for (layer in layerManager.getAllLayers()) {
-                canvas.drawBitmap(layer, 0f, 0f, paint)
-            }
+//            for (layer in layerManager.getAllLayers()) {
+//                canvas.drawBitmap(layer, 0f, 0f, paint)
+//            }
             for (i in pathList.indices) {
                 paint.color = colorList[i]
                 canvas.drawPath(pathList[i], paint)
