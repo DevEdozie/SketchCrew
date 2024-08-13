@@ -1,6 +1,5 @@
 package com.example.sketchcrew.ui.screens
 
-import android.app.Application
 import android.app.Dialog
 import android.content.Context
 import android.graphics.Color
@@ -32,9 +31,9 @@ import com.example.sketchcrew.ui.screens.CanvasView.Companion.shapeType
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModel
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModelFactory
 import com.example.sketchcrew.utils.FileNameGen
-import java.util.ArrayList
 
 private const val TAG = "DrawnCanvasFragment"
+
 class DrawnCanvasFragment : Fragment() {
 
     private lateinit var _binding: FragmentDrawnCanvasBinding
@@ -45,7 +44,8 @@ class DrawnCanvasFragment : Fragment() {
     private val listOfButtons: ArrayList<View> = ArrayList<View>()
     var mutableListButtons = mutableListOf<View>()
     private lateinit var paint: Paint
-//    private lateinit var path: Path
+
+    //    private lateinit var path: Path
     private lateinit var repository: CanvasRepository
     private var pathList: ArrayList<Pair<Path, Paint>> = arrayListOf()
     var width = 1
@@ -107,6 +107,7 @@ class DrawnCanvasFragment : Fragment() {
                         )
                         binding.paletteButtons.visibility = View.GONE
                     }
+
                     arrow -> {
                         it.background = ResourcesCompat.getDrawable(
                             resources,
@@ -123,6 +124,7 @@ class DrawnCanvasFragment : Fragment() {
                         changeShapeType("arrow")
                         binding.paletteButtons.visibility = View.GONE
                     }
+
                     rect -> {
                         it.background = ResourcesCompat.getDrawable(
                             resources,
@@ -139,6 +141,7 @@ class DrawnCanvasFragment : Fragment() {
                         changeShapeType("rectangle")
                         binding.paletteButtons.visibility = View.GONE
                     }
+
                     ellipse -> {
                         it.background = ResourcesCompat.getDrawable(
                             resources,
@@ -155,6 +158,7 @@ class DrawnCanvasFragment : Fragment() {
                         changeShapeType("oval")
                         binding.paletteButtons.visibility = View.GONE
                     }
+
                     palette -> {
                         it.background = ResourcesCompat.getDrawable(
                             resources,
@@ -174,6 +178,7 @@ class DrawnCanvasFragment : Fragment() {
                             binding.paletteButtons.visibility = View.VISIBLE
                         }
                     }
+
                     eraser -> {
                         it.background = ResourcesCompat.getDrawable(
                             resources,
@@ -250,7 +255,7 @@ class DrawnCanvasFragment : Fragment() {
         val args = DrawnCanvasFragmentArgs.fromBundle(requireArguments())
         val pathData = args.pathData
         binding.canvasLayout.findViewById<CanvasView>(R.id.my_canvas).setPath(pathData!!)
-        binding.myCanvas.createNewLayer(width= 1, height = 1)
+        binding.myCanvas.createNewLayer(width = 1, height = 1)
 
 //        addNewLayer()
 //        switchLayer(0)
@@ -304,6 +309,9 @@ class DrawnCanvasFragment : Fragment() {
             if (binding.linearLayout2.visibility == View.VISIBLE) {
                 binding.linearLayout2.visibility = View.GONE
             } else {
+                if (binding.linearLayout4.visibility == View.VISIBLE){
+                    binding.linearLayout4.visibility = View.GONE
+                }
                 binding.linearLayout2.visibility = View.VISIBLE
             }
         }
@@ -318,9 +326,16 @@ class DrawnCanvasFragment : Fragment() {
         binding.brush3.setOnClickListener {
             binding.myCanvas.setBrushWidth(64f)
         }
-//        binding.zoomOut.setOnClickListener {
-//            binding.myCanvas.scaleFunction()
-//        }
+        binding.layer.setOnClickListener {
+            if (binding.linearLayout4.visibility == View.VISIBLE) {
+                binding.linearLayout4.visibility = View.GONE
+            } else {
+                if (binding.linearLayout2.visibility == View.VISIBLE) {
+                    binding.linearLayout2.visibility = View.GONE
+                }
+                binding.linearLayout4.visibility = View.VISIBLE
+            }
+        }
         binding.text.setOnClickListener {
             showTextDialog()
         }
@@ -370,7 +385,7 @@ class DrawnCanvasFragment : Fragment() {
                 binding.myCanvas.setTextToDraw(text, x, y)
             }
             .setNegativeButton("Cancel", null).create()
-            dialog.show()
+        dialog.show()
     }
 
     private fun showSaveCanvasDialog() {
@@ -385,7 +400,8 @@ class DrawnCanvasFragment : Fragment() {
 
         // Set up the spinner with file format options
         val fileFormats = listOf("PNG", "JPEG", "SVG")
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, fileFormats)
+        val adapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, fileFormats)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerFileFormat.adapter = adapter
 
@@ -412,8 +428,8 @@ class DrawnCanvasFragment : Fragment() {
     private fun handleSave(fileName: String, description: String, selectedFormat: String) {
         Log.d(TAG, "onCreateView: save button clicked! ${canvasView.id}")
         var filename = ""
-        filename =  if (fileName.isNullOrEmpty()) {
-          FileNameGen().generateFileNamePNG()
+        filename = if (fileName.isNullOrEmpty()) {
+            FileNameGen().generateFileNamePNG()
         } else ({
             if (selectedFormat == "PNG") {
                 "${fileName}.png"
@@ -427,8 +443,10 @@ class DrawnCanvasFragment : Fragment() {
         }).toString()
 
         val bitmap = canvasView.captureBitmap()
-        val drawnBitmap = canvasView.saveBitmapToFile(requireContext(), bitmap,
-            filename)
+        val drawnBitmap = canvasView.saveBitmapToFile(
+            requireContext(), bitmap,
+            filename
+        )
         val paths = canvasView.getPathData(path)
         Log.d(TAG, "saveCanvas: $paths")
         val newCanvas =

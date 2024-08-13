@@ -1,12 +1,10 @@
 package com.example.sketchcrew.utils
 
-import android.app.Application
 import android.graphics.Bitmap
 import android.util.Log
-import android.widget.Toast
 
 private const val TAG = "LayerManager"
-open class LayerManager {
+class LayerManager {
     private val layers = mutableListOf<Bitmap>()
 
     fun addLayer(bitmap: Bitmap) {
