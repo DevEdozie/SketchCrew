@@ -10,7 +10,7 @@
 
 
 
-    <solid android:color="@color/you_not_covered_color" />
+    <solid android:color="@color/deep_grey_300" />
 
 
 </shape>
