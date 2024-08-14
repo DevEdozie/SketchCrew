@@ -20,6 +20,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:layout_marginTop="40dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             app:layout_constraintBottom_toTopOf="@+id/bottomTab"
@@ -75,7 +76,7 @@
                 android:id="@+id/coveredLayout"
                 android:layout_width="match_parent"
                 android:layout_height="170dp"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="25dp"
                 android:background="@drawable/you_not_covered_card"
                 android:elevation="2dp"
                 android:orientation="horizontal"
@@ -159,18 +160,19 @@
                 android:id="@+id/sharedLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="28dp"
+                android:layout_marginTop="30dp"
                 android:background="@drawable/homepage_card"
                 android:elevation="2dp"
-                app:layout_constraintTop_toBottomOf="@+id/createSketchLayout">
+                app:layout_constraintTop_toBottomOf="@id/coveredLayout"
+               >
 
                 <ImageView
                     android:id="@+id/sharedIcon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
                     android:layout_marginStart="17dp"
                     android:layout_marginTop="16dp"
-                    android:src="@drawable/talk_image"
+                    android:src="@drawable/sketch"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -215,122 +217,123 @@
                     app:layout_constraintTop_toBottomOf="@id/sharedTextView" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/createSketchLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="28dp"
-                android:background="@drawable/homepage_card"
-                android:elevation="2dp"
-                app:layout_constraintTop_toBottomOf="@+id/coveredLayout">
+<!--            <androidx.constraintlayout.widget.ConstraintLayout-->
+<!--                android:id="@+id/createSketchLayout"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginTop="28dp"-->
+<!--                android:background="@drawable/homepage_card"-->
+<!--                android:elevation="2dp"-->
+<!--                app:layout_constraintTop_toBottomOf="@+id/coveredLayout">-->
 
-                <ImageView
-                    android:id="@+id/createIcon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="17dp"
-                    android:layout_marginTop="16dp"
-                    android:src="@drawable/plan_image"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+<!--                <ImageView-->
+<!--                    android:id="@+id/createIcon"-->
+<!--                    android:layout_width="25dp"-->
+<!--                    android:layout_height="25dp"-->
+<!--                    android:layout_marginStart="17dp"-->
+<!--                    android:layout_marginTop="17dp"-->
+<!--                    android:src="@drawable/pencil_ic"-->
+<!--                    app:layout_constraintStart_toStartOf="parent"-->
+<!--                    app:layout_constraintTop_toTopOf="parent" />-->
 
 
-                <ImageView
-                    android:id="@+id/CreateEnterIcon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="21dp"
-                    android:layout_marginEnd="21dp"
-                    android:src="@drawable/vector_one"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+<!--                <ImageView-->
+<!--                    android:id="@+id/CreateEnterIcon"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_marginTop="21dp"-->
+<!--                    android:layout_marginEnd="21dp"-->
+<!--                    android:src="@drawable/vector_one"-->
+<!--                    app:layout_constraintEnd_toEndOf="parent"-->
+<!--                    app:layout_constraintTop_toTopOf="parent" />-->
 
-                <TextView
-                    android:id="@+id/createSketchTextView"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="15dp"
-                    android:layout_marginTop="11dp"
-                    android:layout_marginEnd="30dp"
-                    android:text="Create a new sketch"
-                    android:textColor="@color/black"
-                    android:textSize="16sp"
-                    app:layout_constraintEnd_toStartOf="@+id/CreateEnterIcon"
-                    app:layout_constraintHorizontal_bias="0"
-                    app:layout_constraintStart_toEndOf="@+id/createIcon"
-                    app:layout_constraintTop_toTopOf="parent" />
+<!--                <TextView-->
+<!--                    android:id="@+id/createSketchTextView"-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_marginStart="15dp"-->
+<!--                    android:layout_marginTop="11dp"-->
+<!--                    android:layout_marginEnd="30dp"-->
+<!--                    android:text="Create a new sketch"-->
+<!--                    android:textColor="@color/black"-->
+<!--                    android:textSize="16sp"-->
+<!--                    app:layout_constraintEnd_toStartOf="@+id/CreateEnterIcon"-->
+<!--                    app:layout_constraintHorizontal_bias="0"-->
+<!--                    app:layout_constraintStart_toEndOf="@+id/createIcon"-->
+<!--                    app:layout_constraintTop_toTopOf="parent" />-->
 
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="30dp"
-                    android:layout_marginBottom="21dp"
-                    android:text="begin working on a new design or drawing"
-                    android:textColor="@color/wellness_text_grey1"
-                    android:textSize="13sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/CreateEnterIcon"
-                    app:layout_constraintHorizontal_bias="0"
-                    app:layout_constraintStart_toStartOf="@id/createSketchTextView"
-                    app:layout_constraintTop_toBottomOf="@id/createSketchTextView" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
+<!--                <TextView-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_marginEnd="30dp"-->
+<!--                    android:layout_marginBottom="21dp"-->
+<!--                    android:text="begin working on a new design or drawing"-->
+<!--                    android:textColor="@color/wellness_text_grey1"-->
+<!--                    android:textSize="13sp"-->
+<!--                    app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                    app:layout_constraintEnd_toStartOf="@id/CreateEnterIcon"-->
+<!--                    app:layout_constraintHorizontal_bias="0"-->
+<!--                    app:layout_constraintStart_toStartOf="@id/createSketchTextView"-->
+<!--                    app:layout_constraintTop_toBottomOf="@id/createSketchTextView" />-->
+<!--            </androidx.constraintlayout.widget.ConstraintLayout>-->
 
-            <TextView
-                android:id="@+id/recents"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="Recent Sketches"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@+id/coveredLayout"
-                app:layout_constraintTop_toBottomOf="@+id/sharedLayout" />
+<!--            <TextView-->
+<!--                android:id="@+id/recents"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginTop="20dp"-->
+<!--                android:text="Recent Sketches"-->
+<!--                android:textColor="@color/black"-->
+<!--                android:textSize="18sp"-->
+<!--                android:textStyle="bold"-->
+<!--                app:layout_constraintStart_toStartOf="@+id/coveredLayout"-->
+<!--                app:layout_constraintTop_toBottomOf="@+id/sharedLayout" />-->
 
-            <LinearLayout
-                android:id="@+id/placeholderLayout"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="25dp"
-                android:layout_marginBottom="10dp"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:visibility="visible"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/recents">
+<!--            <LinearLayout-->
+<!--                android:id="@+id/placeholderLayout"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:layout_marginTop="25dp"-->
+<!--                android:layout_marginBottom="10dp"-->
+<!--                android:gravity="center"-->
+<!--                android:orientation="vertical"-->
+<!--                android:visibility="visible"-->
+<!--                app:layout_constraintBottom_toBottomOf="parent"-->
+<!--                app:layout_constraintEnd_toEndOf="parent"-->
+<!--                app:layout_constraintStart_toStartOf="parent"-->
+<!--                app:layout_constraintTop_toBottomOf="@id/recents">-->
 
-                <ImageView
-                    android:id="@+id/placeholderImage"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:layout_marginTop="10dp"
-                    android:src="@drawable/placeholder_list" />
+<!--                <ImageView-->
+<!--                    android:id="@+id/placeholderImage"-->
+<!--                    android:layout_width="70dp"-->
+<!--                    android:layout_height="70dp"-->
+<!--                    android:layout_marginTop="10dp"-->
+<!--                    android:src="@drawable/empty_box" />-->
 
-                <TextView
-                    android:id="@+id/placeholderText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="No sketches available"
-                    android:textColor="@color/black"
-                    android:textSize="16sp" />
-            </LinearLayout>
+<!--                <TextView-->
+<!--                    android:id="@+id/placeholderText"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_marginTop="16dp"-->
+<!--                    android:text="No sketches available"-->
+<!--                    android:textColor="@color/black"-->
+<!--                    android:textSize="16sp" />-->
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/selfServiceRecyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="16dp"
-                android:visibility="gone"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="@+id/recents"
-                app:layout_constraintTop_toBottomOf="@+id/recents"
-                tools:itemCount="4"
-                tools:listitem="@layout/item_sketches" />
+<!--            </LinearLayout>-->
+
+<!--            <androidx.recyclerview.widget.RecyclerView-->
+<!--                android:id="@+id/selfServiceRecyclerView"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginTop="8dp"-->
+<!--                android:layout_marginBottom="16dp"-->
+<!--                android:visibility="gone"-->
+<!--                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"-->
+<!--                app:layout_constraintEnd_toEndOf="parent"-->
+<!--                app:layout_constraintStart_toStartOf="@+id/recents"-->
+<!--                app:layout_constraintTop_toBottomOf="@+id/recents"-->
+<!--                tools:itemCount="4"-->
+<!--                tools:listitem="@layout/item_sketches" />-->
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -340,9 +343,9 @@
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:backgroundTint="@color/white"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="62dp"
         android:src="@drawable/plus_ic"
         app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
         app:layout_constraintEnd_toEndOf="parent" />
