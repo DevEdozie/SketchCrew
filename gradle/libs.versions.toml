@@ -23,12 +23,10 @@ kotlinxCoroutinesAndroid = "1.9.0-RC"
 kotlinStdlibJdk8 = "2.0.20-RC"
 gson = "2.11.0"
 navigationFragmentKtx = "2.7.7"
-#navigationUiKtx = "2.7.7"
 navigationDynamicFeaturesFragment = "2.7.7"
 navigationTesting = "2.7.7"
 googleGmsGoogleServices = "4.4.2"
 firebaseAuth = "23.0.0"
-#navigationFragmentKtx = "2.7.7"
 navigationUiKtx = "2.7.7"
 viewpager2 = "1.1.0"
 
@@ -59,8 +57,6 @@ androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation
 androidx-navigation-dynamic-features-fragment = { group = "androidx.navigation", name = "navigation-dynamic-features-fragment", version.ref = "navigationDynamicFeaturesFragment" }
 androidx-navigation-testing = { group = "androidx.navigation", name = "navigation-testing", version.ref = "navigationTesting" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
-#androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
-#androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigationUiKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

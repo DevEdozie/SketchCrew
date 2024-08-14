@@ -4,7 +4,6 @@ plugins {
     alias(libs.plugins.navigationAndroid)
     id("com.google.devtools.ksp")
     alias(libs.plugins.google.gms.google.services)
-
 }
 
 android {

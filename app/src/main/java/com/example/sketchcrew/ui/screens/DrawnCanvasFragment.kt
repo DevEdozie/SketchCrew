@@ -11,10 +11,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
@@ -24,13 +27,13 @@ import com.example.sketchcrew.data.local.models.CanvasModel
 import com.example.sketchcrew.databinding.FragmentDrawnCanvasBinding
 import com.example.sketchcrew.repository.CanvasRepository
 import com.example.sketchcrew.ui.screens.CanvasView.Companion.brushColor
-import com.example.sketchcrew.ui.screens.CanvasView.Companion.paths
 import com.example.sketchcrew.ui.screens.CanvasView.Companion.shapeType
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModel
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModelFactory
-import java.util.ArrayList
+import com.example.sketchcrew.utils.FileNameGen
 
 private const val TAG = "DrawnCanvasFragment"
+
 class DrawnCanvasFragment : Fragment() {
 
     private lateinit var _binding: FragmentDrawnCanvasBinding
@@ -41,9 +44,12 @@ class DrawnCanvasFragment : Fragment() {
     private val listOfButtons: ArrayList<View> = ArrayList<View>()
     var mutableListButtons = mutableListOf<View>()
     private lateinit var paint: Paint
-    private lateinit var path: Path
+
+    //    private lateinit var path: Path
     private lateinit var repository: CanvasRepository
     private var pathList: ArrayList<Pair<Path, Paint>> = arrayListOf()
+    var width = 1
+    var height = 1
 
 
     override fun onCreateView(
@@ -67,6 +73,7 @@ class DrawnCanvasFragment : Fragment() {
         val eraser: View = binding.eraser
         val undo: View = binding.undo
         val redo: View = binding.redo
+        val brush: View = binding.brush
 
         mutableListButtons.add(pen)
         mutableListButtons.add(arrow)
@@ -76,6 +83,7 @@ class DrawnCanvasFragment : Fragment() {
         mutableListButtons.add(eraser)
         mutableListButtons.add(undo)
         mutableListButtons.add(redo)
+        mutableListButtons.add(brush)
 
         shapeType.add("rectangle")
         shapeType.add("oval")
@@ -84,7 +92,6 @@ class DrawnCanvasFragment : Fragment() {
         listOfButtons.addAll(mutableListButtons)
         for (i in listOfButtons.indices) {
             listOfButtons[i].setOnClickListener {
-//                binding.paletteButtons.visibility = View.GONE
                 when (it) {
                     pen -> {
                         it.background = ResourcesCompat.getDrawable(
@@ -93,13 +100,14 @@ class DrawnCanvasFragment : Fragment() {
                             null
                         )
                         binding.pen.setColorFilter(
-                            getResources().getColor(
+                            resources.getColor(
                                 R.color.black,
                                 resources.newTheme()
                             )
                         )
                         binding.paletteButtons.visibility = View.GONE
                     }
+
                     arrow -> {
                         it.background = ResourcesCompat.getDrawable(
                             resources,
@@ -107,7 +115,7 @@ class DrawnCanvasFragment : Fragment() {
                             null
                         )
                         binding.arrow.setColorFilter(
-                            getResources().getColor(
+                            resources.getColor(
                                 R.color.black,
                                 resources.newTheme()
                             )
@@ -116,6 +124,7 @@ class DrawnCanvasFragment : Fragment() {
                         changeShapeType("arrow")
                         binding.paletteButtons.visibility = View.GONE
                     }
+
                     rect -> {
                         it.background = ResourcesCompat.getDrawable(
                             resources,
@@ -123,7 +132,7 @@ class DrawnCanvasFragment : Fragment() {
                             null
                         )
                         binding.rectangle.setColorFilter(
-                            getResources().getColor(
+                            resources.getColor(
                                 R.color.black,
                                 resources.newTheme()
                             )
@@ -132,6 +141,7 @@ class DrawnCanvasFragment : Fragment() {
                         changeShapeType("rectangle")
                         binding.paletteButtons.visibility = View.GONE
                     }
+
                     ellipse -> {
                         it.background = ResourcesCompat.getDrawable(
                             resources,
@@ -139,7 +149,7 @@ class DrawnCanvasFragment : Fragment() {
                             null
                         )
                         binding.ellipse.setColorFilter(
-                            getResources().getColor(
+                            resources.getColor(
                                 R.color.black,
                                 resources.newTheme()
                             )
@@ -148,6 +158,7 @@ class DrawnCanvasFragment : Fragment() {
                         changeShapeType("oval")
                         binding.paletteButtons.visibility = View.GONE
                     }
+
                     palette -> {
                         it.background = ResourcesCompat.getDrawable(
                             resources,
@@ -155,7 +166,7 @@ class DrawnCanvasFragment : Fragment() {
                             null
                         )
                         binding.palette.setColorFilter(
-                            getResources().getColor(
+                            resources.getColor(
                                 R.color.black,
                                 resources.newTheme()
                             )
@@ -167,6 +178,7 @@ class DrawnCanvasFragment : Fragment() {
                             binding.paletteButtons.visibility = View.VISIBLE
                         }
                     }
+
                     eraser -> {
                         it.background = ResourcesCompat.getDrawable(
                             resources,
@@ -174,7 +186,7 @@ class DrawnCanvasFragment : Fragment() {
                             null
                         )
                         binding.eraser.setColorFilter(
-                            getResources().getColor(
+                            resources.getColor(
                                 R.color.black,
                                 resources.newTheme()
                             )
@@ -189,13 +201,13 @@ class DrawnCanvasFragment : Fragment() {
                             R.drawable.background_selector,
                             null
                         )
-                        binding.eraser.setColorFilter(
-                            getResources().getColor(
-                                R.color.black,
-                                resources.newTheme()
-                            )
-                        )
-                        binding.ellipse.clearColorFilter()
+//                        binding.eraser.setColorFilter(
+//                            getResources().getColor(
+//                                R.color.black,
+//                                resources.newTheme()
+//                            )
+//                        )
+                        binding.eraser.clearColorFilter()
                         binding.undo.visibility = View.VISIBLE
                         binding.paletteButtons.visibility = View.GONE
                     }
@@ -206,37 +218,31 @@ class DrawnCanvasFragment : Fragment() {
                             R.drawable.background_selector,
                             null
                         )
-                        binding.eraser.setColorFilter(
-                            getResources().getColor(
-                                R.color.black,
-                                resources.newTheme()
-                            )
-                        )
-                        binding.redo.clearColorFilter()
+//                        binding.eraser.setColorFilter(
+//                            getResources().getColor(
+//                                R.color.black,
+//                                resources.newTheme()
+//                            )
+//                        )
+                        binding.eraser.clearColorFilter()
                     }
-
                 }
-
             }
         }
         binding.red.setOnClickListener {
             paintColor.color = Color.RED
-//            changeColor(paintColor.color)
             binding.myCanvas.setColor(paintColor.color)
         }
         binding.green.setOnClickListener {
             paintColor.color = Color.GREEN
-//            changeColor(paintColor.color)
             binding.myCanvas.setColor(paintColor.color)
         }
         binding.blue.setOnClickListener {
             paintColor.color = Color.BLUE
-//            changeColor(paintColor.color)
             binding.myCanvas.setColor(paintColor.color)
         }
         binding.black.setOnClickListener {
             paintColor.color = Color.BLACK
-//            changeColor(paintColor.color)
             binding.myCanvas.setColor(paintColor.color)
         }
 
@@ -249,34 +255,26 @@ class DrawnCanvasFragment : Fragment() {
         val args = DrawnCanvasFragmentArgs.fromBundle(requireArguments())
         val pathData = args.pathData
         binding.canvasLayout.findViewById<CanvasView>(R.id.my_canvas).setPath(pathData!!)
+        binding.myCanvas.createNewLayer(width = 1, height = 1)
 
-        binding.saveButton.setOnClickListener {
-            Log.d(TAG, "onCreateView: save button clicked! ${canvasView.id}")
-//            if (canvasView.getPathData().isNullOrEmpty()){
-////                paths = deserializePaths(canvasView.getPathData())
-//                Toast.makeText(context, "No Data added $paths", Toast.LENGTH_LONG).show()
-//                return@setOnClickListener
+//        addNewLayer()
+//        switchLayer(0)
+//        removeLayer(0)
+
+//        binding.saveButton.setOnClickListener {
+//            Log.d(TAG, "onCreateView: save button clicked! ${canvasView.id}")
+//            try {
+//                SaveCanvasDialog(requireContext()) { canvasSave ->
+//                }
+//            } catch (e: Exception) {
+//                Log.e(TAG, "Error in saveCanvas: ${e.message}", e)
 //            }
-
-            try {
-                SaveCanvasDialog(requireContext()) { canvasSave ->
-                    Log.d(TAG, "saveCanvas: $canvasSave")
-                    val paths = canvasView.getPathData()
-//                    Log.d(TAG, "saveCanvas: $paths")
-                    val newCanvas =
-                        CanvasModel(id = 0, name = "name1", desc = "", paths).toCanvasData()
-                    viewModel.saveCanvas(newCanvas)
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error in saveCanvas: ${e.message}", e)
-            }
-
-        }
+//        }
 
         binding.eraser.setOnClickListener {
             binding.eraser.tooltipText = "Eraser"
             binding.myCanvas.setEraserMode(true)
-            binding.myCanvas.setBrush(Color.WHITE)
+            binding.myCanvas.setColor(Color.WHITE)
         }
 
         binding.undo.setOnClickListener {
@@ -306,25 +304,157 @@ class DrawnCanvasFragment : Fragment() {
             binding.myCanvas.setTool(DrawingTool.FREEHAND)
 
         }
+
+        binding.brush.setOnClickListener {
+            if (binding.linearLayout2.visibility == View.VISIBLE) {
+                binding.linearLayout2.visibility = View.GONE
+            } else {
+                if (binding.linearLayout4.visibility == View.VISIBLE){
+                    binding.linearLayout4.visibility = View.GONE
+                }
+                binding.linearLayout2.visibility = View.VISIBLE
+            }
+        }
+
+        binding.brush1.setOnClickListener {
+            binding.myCanvas.setBrushWidth(12f)
+        }
+
+        binding.brush2.setOnClickListener {
+            binding.myCanvas.setBrushWidth(36f)
+        }
+        binding.brush3.setOnClickListener {
+            binding.myCanvas.setBrushWidth(64f)
+        }
+        binding.layer.setOnClickListener {
+            if (binding.linearLayout4.visibility == View.VISIBLE) {
+                binding.linearLayout4.visibility = View.GONE
+            } else {
+                if (binding.linearLayout2.visibility == View.VISIBLE) {
+                    binding.linearLayout2.visibility = View.GONE
+                }
+                binding.linearLayout4.visibility = View.VISIBLE
+            }
+        }
+        binding.text.setOnClickListener {
+            showTextDialog()
+        }
+
+        binding.addLayer.setOnClickListener {
+            addNewLayer()
+        }
+
+        binding.removeLayer.setOnClickListener {
+            removeLayer(0)
+        }
+
+        binding.switchLayer.setOnClickListener {
+            switchLayer(0)
+        }
+
+        binding.saveButton.setOnClickListener {
+            showSaveCanvasDialog()
+        }
     }
-//    fun saveCanvas(canv: CanvasView) {
-//
-////            val paths = canvasView.getPathData()
-//    }
 
-//    private fun deserializePaths(serializedPaths: String): MutableList<Pair<Path, Paint>> {
-//        // Deserialize paths from JSON
-//        // This is a simplified example; you need a proper deserialization strategy
-//        return Gson().fromJson(serializedPaths, object : TypeToken<List<Pair<Path, Paint>>>() {}.type)
-//    }
+    private fun addNewLayer() {
+        canvasView.createNewLayer(width, height)
+        Toast.makeText(requireContext(), "addLayer: New Layer Added", Toast.LENGTH_LONG).show()
+    }
 
+    fun switchLayer(index: Int) {
+        canvasView.switchToLayer(index)
+        Toast.makeText(requireContext(), "getLayer: Layer Switched", Toast.LENGTH_LONG).show()
+    }
 
-//    private fun performClick(view: View, color: Int) {
-//        view.setOnClickListener {
-//            paintColor.color = color
-//            changeColor(paintColor.color)
-//        }
-//    }
+    fun removeLayer(index: Int) {
+        canvasView.removeLayer(index)
+        Toast.makeText(requireContext(), "removeLayer: Layer Removed", Toast.LENGTH_LONG).show()
+    }
+
+    private fun showTextDialog() {
+
+        val editText = EditText(requireContext())
+        val dialog = AlertDialog.Builder(requireContext())
+            .setTitle("Enter Text")
+            .setView(editText)
+            .setPositiveButton("OK") { _, _ ->
+                val text = editText.text.toString()
+                val x = 150f //binding.myCanvas.x
+                val y = 150f //binding.myCanvas.y
+                binding.myCanvas.setTextToDraw(text, x, y)
+            }
+            .setNegativeButton("Cancel", null).create()
+        dialog.show()
+    }
+
+    private fun showSaveCanvasDialog() {
+        // Inflate the dialog layout
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.save_dialogue, null)
+
+        val editTextFileName = dialogView.findViewById<EditText>(R.id.editTextFileName)
+        val editTextDescription = dialogView.findViewById<EditText>(R.id.editTextDescription)
+        val spinnerFileFormat = dialogView.findViewById<Spinner>(R.id.spinnerFileFormat)
+        val buttonSave = dialogView.findViewById<Button>(R.id.buttonSave)
+
+        // Set up the spinner with file format options
+        val fileFormats = listOf("PNG", "JPEG", "SVG")
+        val adapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, fileFormats)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerFileFormat.adapter = adapter
+
+        // Create the AlertDialog
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .create()
+
+        // Set up the save button
+        buttonSave.setOnClickListener {
+            var fileName = editTextFileName.text.toString()
+            var description = editTextDescription.text.toString()
+            var selectedFormat = spinnerFileFormat.selectedItem.toString()
+
+            // Handle the save action here
+            handleSave(fileName, description, selectedFormat)
+
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun handleSave(fileName: String, description: String, selectedFormat: String) {
+        Log.d(TAG, "onCreateView: save button clicked! ${canvasView.id}")
+        var filename = ""
+        filename = if (fileName.isNullOrEmpty()) {
+            FileNameGen().generateFileNamePNG()
+        } else ({
+            if (selectedFormat == "PNG") {
+                "${fileName}.png"
+            }
+            if (selectedFormat == "JPG") {
+                "${fileName}.jpg"
+            }
+            if (selectedFormat == "SVG") {
+                "${fileName}.svg"
+            }
+        }).toString()
+
+        val bitmap = canvasView.captureBitmap()
+        val drawnBitmap = canvasView.saveBitmapToFile(
+            requireContext(), bitmap,
+            filename
+        )
+        val paths = canvasView.getPathData(path)
+        Log.d(TAG, "saveCanvas: $paths")
+        val newCanvas =
+            CanvasModel(id = 0, name = filename, desc = description, paths).toCanvasData()
+        viewModel.saveCanvas(newCanvas)
+        Log.d(TAG, "DrawnBitmap: $drawnBitmap")
+        Toast.makeText(requireContext(), "Drawing saved!", Toast.LENGTH_LONG).show()
+    }
 
     private fun changeColor(color: Int) {
         brushColor = color
