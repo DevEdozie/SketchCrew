@@ -13,6 +13,7 @@ import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.net.Uri
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
@@ -20,8 +21,16 @@ import android.view.ViewConfiguration
 import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import com.example.sketchcrew.R
+import com.example.sketchcrew.data.local.database.RoomDB
+import com.example.sketchcrew.data.local.models.PairConverter
+import com.example.sketchcrew.data.local.models.PathData
+import com.example.sketchcrew.utils.FileNameGen
 import com.example.sketchcrew.utils.LayerManager
 import com.example.sketchcrew.utils.PathIterator
+import com.example.sketchcrew.utils.Truncator
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import kotlin.math.atan2
@@ -48,8 +57,8 @@ class CanvasView @JvmOverloads constructor(
         init()
     }
 
-    private var currentPath = Path()
-    private val paths = mutableListOf<Pair<Path, Paint>>()
+    var currentPath = Path()
+    val paths = mutableListOf<Pair<Path, Paint>>()
     private var currentTool = DrawingTool.FREEHAND
 
     private var startX = 0f
@@ -77,14 +86,14 @@ class CanvasView @JvmOverloads constructor(
 
     private val undonePaths = mutableListOf<Pair<Path, Paint>>()
 
-    private val backgroundColor = ResourcesCompat.getColor(resources, R.color.white, null)
+    private val backgroundColor = ResourcesCompat.getColor(resources, R.color.black, null)
     private var textToDraw: String? = null
     private var textX: Float = 0f
     private var textY: Float = 0f
 
     private fun init() {
         paintColor.apply {
-            color = brushColor
+            color = Color.BLACK
             // Smooths out edges of what is drawn without affecting shape.
             isAntiAlias = true
             // Dithering affects how colors with higher-precision than the device are down-sampled.
@@ -138,10 +147,7 @@ class CanvasView @JvmOverloads constructor(
         canvas.apply {
             save()
             canvas.scale(scaleFactor, scaleFactor)
-//            performScaling(canvas, scaleFactor, scaleFactor)
-//            for (layer in layerManager.getAllLayers()) {
-//                canvas.drawBitmap(layer, 0f, 0f, paint)
-//            }
+//
             for (i in pathList.indices) {
                 paint.color = colorList[i]
                 canvas.drawPath(pathList[i], paint)
@@ -227,6 +233,7 @@ class CanvasView @JvmOverloads constructor(
         val radius =
             sqrt(((endX - startX) * (endX - startX) + (endY - startY) * (endY - startY)).toDouble()).toFloat()
         circlePath.addCircle(startX, startY, radius, Path.Direction.CW)
+        paths.add(Pair(circlePath, paint))
         return circlePath
     }
 
@@ -237,6 +244,7 @@ class CanvasView @JvmOverloads constructor(
         squarePath.lineTo(endX, endY)
         squarePath.lineTo(endX, startY)
         squarePath.close()
+        paths.add(Pair(squarePath, paint))
         return squarePath
     }
 
@@ -259,7 +267,7 @@ class CanvasView @JvmOverloads constructor(
             (endX - arrowHeadLength * cos(angle + arrowHeadAngle)).toFloat(),
             (endY - arrowHeadLength * sin(angle + arrowHeadAngle)).toFloat()
         )
-
+        paths.add(Pair(arrowPath, paint))
         return arrowPath
     }
 
@@ -331,15 +339,6 @@ class CanvasView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-//        motionTouchEventX = event.x
-//        motionTouchEventY = event.y
-//
-//        when (event.action) {
-//            MotionEvent.ACTION_DOWN -> touchStart()
-//            MotionEvent.ACTION_MOVE -> touchMove()
-//            MotionEvent.ACTION_UP -> touchUp()
-//        }
-//        return true
         val x = event.x
         val y = event.y
         scaleGestureDetector.onTouchEvent(event)
@@ -380,50 +379,6 @@ class CanvasView @JvmOverloads constructor(
         return true
     }
 
-
-
-    private fun touchStart() {
-//        path.reset()
-        path.moveTo(motionTouchEventX, motionTouchEventY)
-        currentX = motionTouchEventX
-        currentY = motionTouchEventY
-    }
-
-    private fun touchMove() {
-        val dx = Math.abs(motionTouchEventX - currentX)
-        val dy = Math.abs(motionTouchEventY - currentY)
-        if (dx >= touchTolerance || dy >= touchTolerance) {
-            // QuadTo() adds a quadratic bezier from the last point,
-            // approaching control point (x1,y1), and ending at (x2,y2).
-            path.quadTo(
-                currentX,
-                currentY,
-                (motionTouchEventX + currentX) / 2,
-                (motionTouchEventY + currentY) / 2
-            )
-            currentX = motionTouchEventX
-            currentY = motionTouchEventY
-            // Draw the path in the extra bitmap to cache it.
-            extraCanvas.drawPath(path, paint)
-            colorList.add(brushColor)
-            pathList.add(path)
-        }
-        invalidate()
-    }
-
-    private fun touchUp() {
-        drawing.addPath(curPath)
-        paths.add(Pair(curPath, paint))
-        when (currentTool) {
-            DrawingTool.FREEHAND -> paths.add(Pair(Path(currentPath), Paint(paint)))
-            DrawingTool.CIRCLE -> paths.add(Pair(drawCirclePath(), Paint(paint)))
-            DrawingTool.SQUARE -> paths.add(Pair(drawSquarePath(), Paint(paint)))
-            DrawingTool.ARROW -> paths.add(Pair(drawArrowPath(), Paint(paint)))
-            else -> {}
-        }
-        currentPath.reset()
-    }
-
     companion object {
         var shapeType = ArrayList<String>()
         var pathList = ArrayList<Path>()
@@ -431,40 +386,39 @@ class CanvasView @JvmOverloads constructor(
         var brushColor = Color.BLACK
         var path = Path()
         var paintColor = Paint()
-
-        //        var drawPath = Path()
-        var paths = mutableListOf<Pair<Path, Paint>>()
     }
 
-    fun setPath(pathData: String) {
+    fun setPath(pathData: String): Path {
+
         path = Path().apply {
             // Convert path data string back to Path object
             // Assume pathData is a series of coordinates in the format "x1,y1;x2,y2;..."
             val coordinates = pathData.split(";")
-            coordinates.forEach { coordinate ->
-                val (x, y) = coordinate.split(",").map { it.toFloat() }
-                if (path.isEmpty) {
-                    moveTo(x, y)
+            coordinates.forEachIndexed { index, coordinate ->
+                val points = coordinate.split(",")
+                if (points.size == 2) {
+                    try {
+                        val x = points[0].toFloat()
+                        val y = points[1].toFloat()
+                        if (index == 0) {
+                            moveTo(x, y)
+                        } else {
+                            lineTo(x, y)
+                        }
+                    } catch (e: NumberFormatException) {
+                        // Log or handle the error gracefully
+                        Log.e("CanvasView", "Invalid coordinate format: $coordinate")
+                    }
                 } else {
-                    lineTo(x, y)
+                    // Log or handle the error gracefully
+                    Log.e("CanvasView", "Invalid coordinate pair: $coordinate")
                 }
             }
         }
         invalidate()
+        return path
     }
 
-//    fun getPathData(): String {
-//        // Convert Path object to string representation
-//        // Note: This is a simplified version and may need adjustments for complex paths
-//        return buildString {
-//            path.apply {
-//                val pathPoints = FloatArray(2)
-//                this.computeBounds(android.graphics.RectF(), true)
-//                // Iterate through path points and append to the string
-//                this.rLineTo(0f, 0f)
-//            }
-//        }
-//    }
 
     fun getPathData(path: Path): String {
         val pathData = StringBuilder()
@@ -503,13 +457,10 @@ class CanvasView @JvmOverloads constructor(
 
 
     fun captureBitmap(): Bitmap {
-        // Create a bitmap with the same dimensions as the view
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        // Create a canvas to draw the bitmap
-        val canvas = Canvas(bitmap)
-        // Draw the view onto the canvas
+        val canvas = Canvas(currentLayer!!)
         draw(canvas)
-        return bitmap
+        return currentLayer!!
     }
 
     fun saveBitmapToFile(context: Context, bitmap: Bitmap, filename: String): Uri? {
@@ -535,6 +486,34 @@ class CanvasView @JvmOverloads constructor(
         } catch (e: Exception) {
             e.printStackTrace()
             null
+        }
+    }
+
+    fun loadPathData(pathData: PathData) {
+        currentPath.reset()
+        val canvas = Canvas(currentLayer!!)
+        setPath(pathData.path) // Set the path using the serialized string
+
+        // Set paint properties
+        setColor(pathData.color)
+        setBrushWidth(pathData.strokeWidth)
+        canvas.drawPath(setPath(pathData.path), paint)
+        invalidate() // Redraw the canvas with the new path data
+    }
+
+
+    fun saveCurrentPathToDatabase() {
+        val pathString = getPathData(currentPath)
+        val pathData = PathData(
+            name = FileNameGen().generateFileNamePNG(),
+            desc = Truncator(FileNameGen().generateFileNamePNG(), 10, true).textTruncate(),
+            path = pathString,
+            color = paintColor.color,
+            strokeWidth = paintColor.strokeWidth
+        )
+        val db = RoomDB.getDatabase(context)
+        GlobalScope.launch(Dispatchers.IO) {
+            db.pathDao().insert(pathData)
         }
     }
 }
