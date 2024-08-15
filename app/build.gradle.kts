@@ -2,8 +2,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.navigationAndroid)
-    id("com.google.devtools.ksp")
     alias(libs.plugins.google.gms.google.services)
+    id("com.google.devtools.ksp")
+
 }
 
 android {
@@ -11,9 +12,8 @@ android {
     compileSdk = 34
 
     buildFeatures{
-//        dataBinding = true
-        viewBinding = true
         dataBinding = true
+        viewBinding = true
     }
 
     defaultConfig {
@@ -84,4 +84,8 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     annotationProcessor(libs.androidx.room.compiler)
+
+    implementation ("de.hdodenhof:circleimageview:3.1.0")
+    implementation ("com.google.firebase:firebase-storage:21.0.0")
+
 }
