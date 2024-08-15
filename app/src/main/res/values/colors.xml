@@ -16,9 +16,11 @@
     <color name="colorPrimaryDark">#046558</color>
     <color name="colorAccent">#D81B60</color>
     <color name="red">#D82929</color>
+
     <color name="wellness_text_grey1">#373545</color>
     <color name="you_not_covered_color">#F6C3C3</color>
     <color name="line_color">#ECEBEB</color>
+
     <color name="yellow">#FFC801</color>
 
 

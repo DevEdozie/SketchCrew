@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.navigationAndroid)
     alias(libs.plugins.google.gms.google.services)
     id("com.google.devtools.ksp")
+
 }
 
 android {
@@ -11,7 +12,7 @@ android {
     compileSdk = 34
 
     buildFeatures{
-        dataBinding = true
+//        dataBinding = true
         viewBinding = true
     }
 
