@@ -61,53 +61,53 @@ class CanvasListFragment : Fragment() {
         }
 
 
-//    lifecycleScope.launch {
-//        viewModel.loadCanvases()
-//        viewModel.canvases.observe(viewLifecycleOwner, Observer { canvases ->
-//            Log.d(TAG, "onCreateView: $canvases")
-//            adapter = CanvasListAdapter(canvases, object : CanvasListAdapter.OnItemClickListener {
-//                override fun onCanvasClick(canvasData: CanvasData) {
-//                    lifecycleScope.launch {
-//                        val pathData = viewModel.getCanvas(canvasData.id)?.paths.toString().trimIndent()
-////                        val gson = Gson()
-////                        val type = object : TypeToken<List<PathData>>() {}.type
-////                        val pathDataList: List<PathData> = gson.fromJson(pathData, type)
-////                        val pathDataString = convertToPathDataString(pathDataList)
-//                        if (pathData == null) {
-//                            findNavController().navigate(R.id.action_canvasListFragment_to_drawnCanvasFragment)
-//                        } else {
-//                            val action =
-//                                CanvasListFragmentDirections.actionCanvasListFragmentToDrawnCanvasFragment(
-//                                    pathData
-//                                )
-//                            findNavController().navigate(action)
-//                        }
-//                    }
-//                }
+    lifecycleScope.launch {
+        viewModel.loadCanvases()
+        viewModel.canvases.observe(viewLifecycleOwner, Observer { canvases ->
+            Log.d(TAG, "onCreateView: $canvases")
+            adapter = CanvasListAdapter(canvases, object : CanvasListAdapter.OnItemClickListener {
+                override fun onCanvasClick(canvasData: CanvasData) {
+                    lifecycleScope.launch {
+                        val pathData = viewModel.getCanvas(canvasData.id)?.paths.toString().trimIndent()
+//                        val gson = Gson()
+//                        val type = object : TypeToken<List<PathData>>() {}.type
+//                        val pathDataList: List<PathData> = gson.fromJson(pathData, type)
+//                        val pathDataString = convertToPathDataString(pathDataList)
+                        if (pathData == null) {
+                            findNavController().navigate(R.id.action_canvasListFragment_to_drawnCanvasFragment)
+                        } else {
+                            val action =
+                                CanvasListFragmentDirections.actionCanvasListFragmentToDrawnCanvasFragment(
+                                    pathData.toInt()
+                                )
+                            findNavController().navigate(action)
+                        }
+                    }
+                }
+
+                override fun onSaveCanvas(canvasData: CanvasData) {
+                    lifecycleScope.launch {
+                        viewModel.saveCanvas(canvasData)
+                    }
+                }
+
+                override fun onDeleteCanvas(canvasData: CanvasData) {
+                    lifecycleScope.launch {
+                        viewModel.deleteCanvas(canvasData)
+                    }
+                }
+            })
+            recycle.adapter = adapter
+        })
+
+
+//            { canvas ->
+//                // Handle canvas selection (e.g., navigate to drawing screen)
 //
-//                override fun onSaveCanvas(canvasData: CanvasData) {
-//                    lifecycleScope.launch {
-//                        viewModel.saveCanvas(canvasData)
-//                    }
-//                }
-//
-//                override fun onDeleteCanvas(canvasData: CanvasData) {
-//                    lifecycleScope.launch {
-//                        viewModel.deleteCanvas(canvasData)
-//                    }
-//                }
-//            })
-//            recycle.adapter = adapter
+//            }
 //        })
-//
-//
-////            { canvas ->
-////                // Handle canvas selection (e.g., navigate to drawing screen)
-////
-////            }
-////        })
-//
-//    }
+
+    }
 
 
 

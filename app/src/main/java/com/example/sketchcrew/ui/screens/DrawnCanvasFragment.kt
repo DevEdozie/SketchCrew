@@ -282,7 +282,6 @@ class DrawnCanvasFragment : Fragment() {
         return _binding.root
     }
 
-
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -375,13 +374,14 @@ class DrawnCanvasFragment : Fragment() {
         }
         binding.download.setOnClickListener {
             val bitmap = binding.myCanvas.captureBitmap()
-            val fileName: String = Truncator(FileNameGen().generateFileNameJPEG(), 24, false).textTruncate()
+            val fileName: String =
+                Truncator(FileNameGen().generateFileNameJPEG(), 24, false).textTruncate()
             binding.myCanvas.saveBitmapToFile(
                 requireContext(), bitmap,
                 "${fileName}.jpg"
             )
 
-                Toast.makeText(requireContext(), "Image downloaded $fileName", Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(), "Image downloaded $fileName", Toast.LENGTH_LONG).show()
 
         }
 
@@ -390,7 +390,6 @@ class DrawnCanvasFragment : Fragment() {
         }
     }
 
-
     private fun loadPath() {
         val db = RoomDB.getDatabase(requireContext())
         lifecycleScope.launch {
@@ -398,10 +397,10 @@ class DrawnCanvasFragment : Fragment() {
                 db.pathDao().getPathById(pathId.toInt())
             }
             pathData?.let {
-                binding.myCanvas.loadPathData(pathData)
-//                binding.myCanvas.setPath(it.path)
-//                binding.myCanvas.setColor(it.color)
-//                binding.myCanvas.setBrushWidth(it.strokeWidth)
+//                binding.myCanvas.loadPathData(pathData)
+                binding.myCanvas.setPath(it.path)
+                binding.myCanvas.setColor(it.color)
+                binding.myCanvas.setBrushWidth(it.strokeWidth)
             }
         }
     }
@@ -454,7 +453,6 @@ class DrawnCanvasFragment : Fragment() {
         dialog.show()
     }
 
-
     private fun showSaveCanvasDialog() {
         // Inflate the dialog layout
         val dialogView = LayoutInflater.from(requireContext())
@@ -494,24 +492,23 @@ class DrawnCanvasFragment : Fragment() {
         dialog.show()
     }
 
-
     private fun handleSave(fileName: String, description: String, selectedFormat: String) {
 
-            Log.d(TAG, "onCreateView: save button clicked! ${canvasView.id}")
-            var filename = ""
-            if (fileName.isNullOrEmpty()) {
-                filename = FileNameGen().generateFileNamePNG()
-            } else {
-                if (selectedFormat == "PNG") {
-                    filename = "${fileName}.png"
-                }
-                if (selectedFormat == "JPG") {
-                    filename = "${fileName}.jpg"
-                }
-                if (selectedFormat == "SVG") {
-                    filename = "${fileName}.svg"
-                }
+        Log.d(TAG, "onCreateView: save button clicked! ${canvasView.id}")
+        var filename = ""
+        if (fileName.isNullOrEmpty()) {
+            filename = FileNameGen().generateFileNamePNG()
+        } else {
+            if (selectedFormat == "PNG") {
+                filename = "${fileName}.png"
             }
+            if (selectedFormat == "JPG") {
+                filename = "${fileName}.jpg"
+            }
+            if (selectedFormat == "SVG") {
+                filename = "${fileName}.svg"
+            }
+        }
         lifecycleScope.launch(Dispatchers.IO) {
             val bitmap = binding.myCanvas.captureBitmap()
             val drawnBitmap = binding.myCanvas.saveBitmapToFile(
@@ -542,5 +539,107 @@ class DrawnCanvasFragment : Fragment() {
     companion object {
         var paintColor = Paint()
     }
+
+    private fun setupSendCollaboration() {
+        binding.sendCollab.setOnClickListener {
+            canvasView.saveToFirebase()
+//            val dialog = AlertDialog.Builder(this.requireContext())
+//            val input = EditText(this.requireContext())
+//            input.inputType = InputType.TYPE_CLASS_TEXT
+            // Create a Unique Id for this drawing
+//            val drawingId = database.push().key!!
+//            drawingId = database.push().key!!
+//            dialog.setTitle("Project ID")
+//            dialog.setView(input)
+//            dialog.setMessage(canvasView.getUniqueId())
+            // Set the id in the Edittext
+//            input.setText(drawingId)
+//            input.setText(canvasView.getUniqueId())
+//            dialog.setPositiveButton("Ok") { _, _ ->
+//                database = FirebaseDatabase.getInstance().getReference("drawings/$drawingId")
+//              TEST
+//                canvasView.saveToFirebase()
+
+//                // Save current canvas data to Firebase
+//                val jsonArray = canvasView.saveToJson()
+//                database.child(drawingId).child("canvasData").setValue(jsonArray.toString())
+//
+//                // Save user id as a collaborator
+//                val userId = FirebaseAuth.getInstance().currentUser?.uid
+//                database.child(drawingId).child("collaborators").child(userId!!).setValue(true)
+//
+//                // Notify user
+//                Toast.makeText(requireContext(), "Collaboration set up", Toast.LENGTH_SHORT).show()
+//            }
+//
+//            dialog.setNegativeButton("Cancel", null)
+//            dialog.show()
+        }
+    }
+
+    private fun setupReceiveCollaboration() {
+        binding.receiveCollab.setOnClickListener {
+            canvasView.loadFromFirebase()
+//            val dialog = AlertDialog.Builder(requireContext())
+//            val input = EditText(requireContext())
+//            input.inputType = InputType.TYPE_CLASS_TEXT
+//            dialog.setTitle("Enter Drawing ID")
+//            dialog.setView(input)
+//            dialog.setPositiveButton("Ok") { _, _ ->
+//                val drawingId = input.text.toString()
+////                database = FirebaseDatabase.getInstance().getReference("drawings/$drawingId")
+//
+//                // Get Canvas data from Firebase
+//                database.child(drawingId).child("canvasData")
+//                    .addValueEventListener(object : ValueEventListener {
+//                        override fun onDataChange(snapshot: DataSnapshot) {
+//                            val jsonArray = JSONArray(snapshot.value.toString())
+//                            if (jsonArray != null) {
+//                                canvasView.loadFromJson(jsonArray)
+//                                // Optionally, notify the user or refresh the UI
+//                                Toast.makeText(
+//                                    requireContext(),
+//                                    "Canvas data loaded",
+//                                    Toast.LENGTH_SHORT
+//                                ).show()
+//                            }
+//                        }
+//
+//                        override fun onCancelled(error: DatabaseError) {
+//                            // Handle error
+//                            Toast.makeText(
+//                                requireContext(),
+//                                "Error loading data",
+//                                Toast.LENGTH_SHORT
+//                            )
+//                                .show()
+//                        }
+//                    })
+//            }
+//
+//            dialog.setNegativeButton("Cancel", null)
+//            dialog.show()
+        }
+    }
 }
+
+
+
+//
+//     fun saveToFirebase() {
+//         canvasView = binding.canvasLayout.findViewById(R.id.my_canvas)
+//        // Save current canvas data to Firebase
+//        val jsonArray = canvasView.saveToJson()
+//        database.child(drawingId).child("canvasData").setValue(jsonArray.toString())
+//
+//        // Save user id as a collaborator
+//        val userId = FirebaseAuth.getInstance().currentUser?.uid
+//        database.child(drawingId).child("collaborators").child(userId!!).setValue(true)
+//
+//        // Notify user
+//        Toast.makeText(requireContext(), "Collaboration set up", Toast.LENGTH_SHORT).show()
+//    }
+
+
+
 
