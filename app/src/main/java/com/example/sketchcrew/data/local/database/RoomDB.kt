@@ -4,16 +4,25 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.sketchcrew.data.local.dao.CanvasDao
+import com.example.sketchcrew.data.local.dao.PathDao
 import com.example.sketchcrew.data.local.models.CanvasModel
+import com.example.sketchcrew.data.local.models.PairConverter
+import com.example.sketchcrew.data.local.models.PathData
 
-@Database(entities = [CanvasModel::class], version = 1, exportSchema = false)
+@Database(entities = [CanvasModel::class, PathData::class], version = 4)
+@TypeConverters(PairConverter::class)
 abstract class RoomDB : RoomDatabase() {
     abstract fun canvasDao(): CanvasDao
+    abstract fun pathDao(): PathDao
 
     companion object {
         @Volatile
         private var INSTANCE: RoomDB? = null
+
 
         fun getDatabase(context: Context): RoomDB {
             return INSTANCE ?: synchronized(this) {
@@ -21,7 +30,8 @@ abstract class RoomDB : RoomDatabase() {
                     context.applicationContext,
                     RoomDB::class.java,
                     "canvas_database"
-                ).build()
+                ).fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }
