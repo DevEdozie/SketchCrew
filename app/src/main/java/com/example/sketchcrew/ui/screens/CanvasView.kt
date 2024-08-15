@@ -22,6 +22,7 @@ import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import com.example.sketchcrew.R
 import com.example.sketchcrew.data.local.database.RoomDB
+import com.example.sketchcrew.data.local.models.PairConverter
 import com.example.sketchcrew.data.local.models.PathData
 import com.example.sketchcrew.utils.FileNameGen
 import com.example.sketchcrew.utils.LayerManager
@@ -146,10 +147,7 @@ class CanvasView @JvmOverloads constructor(
         canvas.apply {
             save()
             canvas.scale(scaleFactor, scaleFactor)
-//            performScaling(canvas, scaleFactor, scaleFactor)
-//            for (layer in layerManager.getAllLayers()) {
-//                canvas.drawBitmap(layer, 0f, 0f, paint)
-//            }
+//
             for (i in pathList.indices) {
                 paint.color = colorList[i]
                 canvas.drawPath(pathList[i], paint)
@@ -381,50 +379,6 @@ class CanvasView @JvmOverloads constructor(
         return true
     }
 
-
-
-    private fun touchStart() {
-//        path.reset()
-        path.moveTo(motionTouchEventX, motionTouchEventY)
-        currentX = motionTouchEventX
-        currentY = motionTouchEventY
-    }
-
-    private fun touchMove() {
-        val dx = Math.abs(motionTouchEventX - currentX)
-        val dy = Math.abs(motionTouchEventY - currentY)
-        if (dx >= touchTolerance || dy >= touchTolerance) {
-            // QuadTo() adds a quadratic bezier from the last point,
-            // approaching control point (x1,y1), and ending at (x2,y2).
-            path.quadTo(
-                currentX,
-                currentY,
-                (motionTouchEventX + currentX) / 2,
-                (motionTouchEventY + currentY) / 2
-            )
-            currentX = motionTouchEventX
-            currentY = motionTouchEventY
-            // Draw the path in the extra bitmap to cache it.
-            extraCanvas.drawPath(path, paint)
-            colorList.add(brushColor)
-            pathList.add(path)
-        }
-        invalidate()
-    }
-
-    private fun touchUp() {
-        drawing.addPath(curPath)
-        paths.add(Pair(curPath, paint))
-        when (currentTool) {
-            DrawingTool.FREEHAND -> paths.add(Pair(Path(currentPath), Paint(paint)))
-            DrawingTool.CIRCLE -> paths.add(Pair(drawCirclePath(), Paint(paint)))
-            DrawingTool.SQUARE -> paths.add(Pair(drawSquarePath(), Paint(paint)))
-            DrawingTool.ARROW -> paths.add(Pair(drawArrowPath(), Paint(paint)))
-            else -> {}
-        }
-        currentPath.reset()
-    }
-
     companion object {
         var shapeType = ArrayList<String>()
         var pathList = ArrayList<Path>()
@@ -432,11 +386,9 @@ class CanvasView @JvmOverloads constructor(
         var brushColor = Color.BLACK
         var path = Path()
         var paintColor = Paint()
-
-        //        var drawPath = Path()
     }
 
-    fun setPath(pathData: String) {
+    fun setPath(pathData: String): Path {
 
         path = Path().apply {
             // Convert path data string back to Path object
@@ -464,35 +416,9 @@ class CanvasView @JvmOverloads constructor(
             }
         }
         invalidate()
-
-//        path = Path().apply {
-//            // Convert path data string back to Path object
-//            // Assume pathData is a series of coordinates in the format "x1,y1;x2,y2;..."
-//            val coordinates = pathData.split(";")
-//            coordinates.forEach { coordinate ->
-//                val (x, y) = coordinate.split(",").map { it.toFloat() }
-//                if (path.isEmpty) {
-//                    moveTo(x, y)
-//                } else {
-//                    lineTo(x, y)
-//                }
-//            }
-//        }
-//        invalidate()
+        return path
     }
 
-//    fun getPathData(): String {
-//        // Convert Path object to string representation
-//        // Note: This is a simplified version and may need adjustments for complex paths
-//        return buildString {
-//            path.apply {
-//                val pathPoints = FloatArray(2)
-//                this.computeBounds(android.graphics.RectF(), true)
-//                // Iterate through path points and append to the string
-//                this.rLineTo(0f, 0f)
-//            }
-//        }
-//    }
 
     fun getPathData(path: Path): String {
         val pathData = StringBuilder()
@@ -531,12 +457,9 @@ class CanvasView @JvmOverloads constructor(
 
 
     fun captureBitmap(): Bitmap {
-        // Create a bitmap with the same dimensions as the view
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        // Create a canvas to draw the bitmap
         val canvas = Canvas(currentLayer!!)
-        // Draw the view onto the canvas
-        //draw(canvas)
+        draw(canvas)
         return currentLayer!!
     }
 
@@ -568,12 +491,13 @@ class CanvasView @JvmOverloads constructor(
 
     fun loadPathData(pathData: PathData) {
         currentPath.reset()
+        val canvas = Canvas(currentLayer!!)
         setPath(pathData.path) // Set the path using the serialized string
 
         // Set paint properties
         setColor(pathData.color)
         setBrushWidth(pathData.strokeWidth)
-
+        canvas.drawPath(setPath(pathData.path), paint)
         invalidate() // Redraw the canvas with the new path data
     }
 
