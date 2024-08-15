@@ -35,6 +35,7 @@ import com.example.sketchcrew.ui.screens.CanvasView.Companion.shapeType
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModel
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModelFactory
 import com.example.sketchcrew.utils.FileNameGen
+import com.example.sketchcrew.utils.Truncator
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -259,6 +260,7 @@ class DrawnCanvasFragment : Fragment() {
         return _binding.root
     }
 
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -349,11 +351,23 @@ class DrawnCanvasFragment : Fragment() {
         binding.switchLayer.setOnClickListener {
             switchLayer(0)
         }
+        binding.download.setOnClickListener {
+            val bitmap = binding.myCanvas.captureBitmap()
+            val fileName: String = Truncator(FileNameGen().generateFileNameJPEG(), 24, false).textTruncate()
+            binding.myCanvas.saveBitmapToFile(
+                requireContext(), bitmap,
+                "${fileName}.jpg"
+            )
+
+                Toast.makeText(requireContext(), "Image downloaded $fileName", Toast.LENGTH_LONG).show()
+
+        }
 
         binding.saveButton.setOnClickListener {
             showSaveCanvasDialog()
         }
     }
+
 
     private fun loadPath() {
         val db = RoomDB.getDatabase(requireContext())
@@ -418,6 +432,7 @@ class DrawnCanvasFragment : Fragment() {
         dialog.show()
     }
 
+
     private fun showSaveCanvasDialog() {
         // Inflate the dialog layout
         val dialogView = LayoutInflater.from(requireContext())
@@ -449,12 +464,14 @@ class DrawnCanvasFragment : Fragment() {
             // Handle the save action here
             handleSave(fileName, description, selectedFormat)
             binding.myCanvas.saveCurrentPathToDatabase()
+            loadPath()
 
             dialog.dismiss()
         }
 
         dialog.show()
     }
+
 
     private fun handleSave(fileName: String, description: String, selectedFormat: String) {
 

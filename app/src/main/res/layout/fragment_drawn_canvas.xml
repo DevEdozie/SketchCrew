@@ -135,20 +135,7 @@
                 android:padding="8dp"
                 android:visibility="visible"
                 android:src="@drawable/baseline_layer_24" />
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/zoom_out"
-                android:layout_width="40dp"
-                android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:visibility="visible"
-                android:src="@drawable/baseline_zoom_24" />
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/zoom_in"
-                android:layout_width="40dp"
-                android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:visibility="visible"
-                android:src="@drawable/baseline_zoom_in_map_24" />
+
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/text"
                 android:layout_width="40dp"
