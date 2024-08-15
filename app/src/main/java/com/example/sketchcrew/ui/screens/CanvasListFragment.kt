@@ -21,6 +21,10 @@ import com.example.sketchcrew.ui.adapters.CanvasListAdapter
 import com.example.sketchcrew.ui.screens.CanvasListFragmentDirections
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModel
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModelFactory
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 
 private const val TAG = "CanvasListFragment"
@@ -50,33 +54,44 @@ class CanvasListFragment : Fragment() {
 
 
     lifecycleScope.launch {
+        viewModel.loadCanvases()
         viewModel.canvases.observe(viewLifecycleOwner, Observer { canvases ->
             Log.d(TAG, "onCreateView: $canvases")
-            adapter = CanvasListAdapter(canvases!!, object : CanvasListAdapter.OnItemClickListener {
+            adapter = CanvasListAdapter(canvases, object : CanvasListAdapter.OnItemClickListener {
                 override fun onCanvasClick(canvasData: CanvasData) {
-                    val pathData: String = viewModel.getCanvas(canvasData.id)?.paths.toString()
-                    if (pathData == null) {
-                        findNavController().navigate(R.id.action_canvasListFragment_to_drawnCanvasFragment)
-                    } else {
-                        val action =
-                            CanvasListFragmentDirections.actionCanvasListFragmentToDrawnCanvasFragment(
-                                pathData!!
-                            )
-                        findNavController().navigate(action)
+                    lifecycleScope.launch {
+                        val pathData = viewModel.getCanvas(canvasData.id)?.paths.toString().trimIndent()
+//                        val gson = Gson()
+//                        val type = object : TypeToken<List<PathData>>() {}.type
+//                        val pathDataList: List<PathData> = gson.fromJson(pathData, type)
+//                        val pathDataString = convertToPathDataString(pathDataList)
+                        if (pathData == null) {
+                            findNavController().navigate(R.id.action_canvasListFragment_to_drawnCanvasFragment)
+                        } else {
+                            val action =
+                                CanvasListFragmentDirections.actionCanvasListFragmentToDrawnCanvasFragment(
+                                    pathData
+                                )
+                            findNavController().navigate(action)
+                        }
                     }
                 }
 
                 override fun onSaveCanvas(canvasData: CanvasData) {
-                    viewModel.saveCanvas(canvasData)
+                    lifecycleScope.launch {
+                        viewModel.saveCanvas(canvasData)
+                    }
                 }
 
                 override fun onDeleteCanvas(canvasData: CanvasData) {
-                    viewModel.deleteCanvas(canvasData)
+                    lifecycleScope.launch {
+                        viewModel.deleteCanvas(canvasData)
+                    }
                 }
-
             })
             recycle.adapter = adapter
         })
+
 
 //            { canvas ->
 //                // Handle canvas selection (e.g., navigate to drawing screen)
@@ -96,7 +111,30 @@ class CanvasListFragment : Fragment() {
         return _binding.root
     }
 
+    fun convertToPathDataString(pathDataList: List<PathData>): String {
+        return buildString {
+            pathDataList.forEachIndexed { index, pathData ->
+                // Extract x and y coordinates from mNativePaint
+                // Assuming mNativePaint encodes coordinates in a specific format, e.g., as integers or floats
+                // Here, you must replace this example with your actual logic to extract coordinates
+                val x = pathData.second.mNativePaint.toFloat() // this is a placeholder logic
+                val y = pathData.second.mNativePaint.toFloat() // this is a placeholder logic
+
+                if (index != 0) {
+                    append(";")
+                }
+                append("$x,$y")
+            }
+        }
+    }
+
     companion object {
 
     }
 }
+
+data class PathData(val first: First, val second: Second)
+
+data class First(val isSimplePath: Boolean)
+
+data class Second(val mNativePaint: Long)

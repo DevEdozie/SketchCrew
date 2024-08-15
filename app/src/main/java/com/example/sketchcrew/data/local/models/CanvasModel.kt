@@ -11,7 +11,7 @@ data class CanvasModel(
     val serializedPaths: String
 ) {
     fun toCanvasData(): CanvasData {
-        val paths = PairConverter().fromPaths(this.serializedPaths)
+        val paths = PairConverter().fromPaths(serializedPaths)
         return CanvasData(
             id = this.id,
             name = this.name,

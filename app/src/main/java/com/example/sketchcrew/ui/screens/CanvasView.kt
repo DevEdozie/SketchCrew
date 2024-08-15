@@ -13,6 +13,7 @@ import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.net.Uri
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
@@ -48,8 +49,8 @@ class CanvasView @JvmOverloads constructor(
         init()
     }
 
-    private var currentPath = Path()
-    private val paths = mutableListOf<Pair<Path, Paint>>()
+    var currentPath = Path()
+    val paths = mutableListOf<Pair<Path, Paint>>()
     private var currentTool = DrawingTool.FREEHAND
 
     private var startX = 0f
@@ -227,6 +228,7 @@ class CanvasView @JvmOverloads constructor(
         val radius =
             sqrt(((endX - startX) * (endX - startX) + (endY - startY) * (endY - startY)).toDouble()).toFloat()
         circlePath.addCircle(startX, startY, radius, Path.Direction.CW)
+        paths.add(Pair(circlePath, paint))
         return circlePath
     }
 
@@ -237,6 +239,7 @@ class CanvasView @JvmOverloads constructor(
         squarePath.lineTo(endX, endY)
         squarePath.lineTo(endX, startY)
         squarePath.close()
+        paths.add(Pair(squarePath, paint))
         return squarePath
     }
 
@@ -259,7 +262,7 @@ class CanvasView @JvmOverloads constructor(
             (endX - arrowHeadLength * cos(angle + arrowHeadAngle)).toFloat(),
             (endY - arrowHeadLength * sin(angle + arrowHeadAngle)).toFloat()
         )
-
+        paths.add(Pair(arrowPath, paint))
         return arrowPath
     }
 
@@ -437,20 +440,48 @@ class CanvasView @JvmOverloads constructor(
     }
 
     fun setPath(pathData: String) {
+
         path = Path().apply {
             // Convert path data string back to Path object
             // Assume pathData is a series of coordinates in the format "x1,y1;x2,y2;..."
             val coordinates = pathData.split(";")
-            coordinates.forEach { coordinate ->
-                val (x, y) = coordinate.split(",").map { it.toFloat() }
-                if (path.isEmpty) {
-                    moveTo(x, y)
+            coordinates.forEachIndexed { index, coordinate ->
+                val points = coordinate.split(",")
+                if (points.size == 2) {
+                    try {
+                        val x = points[0].toFloat()
+                        val y = points[1].toFloat()
+                        if (index == 0) {
+                            moveTo(x, y)
+                        } else {
+                            lineTo(x, y)
+                        }
+                    } catch (e: NumberFormatException) {
+                        // Log or handle the error gracefully
+                        Log.e("CanvasView", "Invalid coordinate format: $coordinate")
+                    }
                 } else {
-                    lineTo(x, y)
+                    // Log or handle the error gracefully
+                    Log.e("CanvasView", "Invalid coordinate pair: $coordinate")
                 }
             }
         }
         invalidate()
+
+//        path = Path().apply {
+//            // Convert path data string back to Path object
+//            // Assume pathData is a series of coordinates in the format "x1,y1;x2,y2;..."
+//            val coordinates = pathData.split(";")
+//            coordinates.forEach { coordinate ->
+//                val (x, y) = coordinate.split(",").map { it.toFloat() }
+//                if (path.isEmpty) {
+//                    moveTo(x, y)
+//                } else {
+//                    lineTo(x, y)
+//                }
+//            }
+//        }
+//        invalidate()
     }
 
 //    fun getPathData(): String {
@@ -506,10 +537,10 @@ class CanvasView @JvmOverloads constructor(
         // Create a bitmap with the same dimensions as the view
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         // Create a canvas to draw the bitmap
-        val canvas = Canvas(bitmap)
+        val canvas = Canvas(currentLayer!!)
         // Draw the view onto the canvas
-        draw(canvas)
-        return bitmap
+        //draw(canvas)
+        return currentLayer!!
     }
 
     fun saveBitmapToFile(context: Context, bitmap: Bitmap, filename: String): Uri? {
@@ -537,4 +568,5 @@ class CanvasView @JvmOverloads constructor(
             null
         }
     }
+
 }
