@@ -275,10 +275,10 @@ class DrawnCanvasFragment : Fragment() {
 
 
         binding.saveButton.setOnClickListener {
-            val paths = canvasView.getPathData()
-            val newCanvas1 =
-                CanvasModel(id = 0, name = "name2", desc = "", paths).toCanvasData()
-            viewModel.saveCanvas(newCanvas1)
+//            val paths = canvasView.getPathData(pathData)
+//            val newCanvas1 =
+//                CanvasModel(id = 0, name = "name2", desc = "", paths).toCanvasData()
+//            viewModel.saveCanvas(newCanvas1)
             Log.d(TAG, "onCreateView: save button clicked! ${canvasView.id}")
 //            if (canvasView.getPathData().isNullOrEmpty()){
 ////                paths = deserializePaths(canvasView.getPathData())
@@ -341,8 +341,6 @@ class DrawnCanvasFragment : Fragment() {
                 if (binding.linearLayout4.visibility == View.VISIBLE){
                     binding.linearLayout4.visibility = View.GONE
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error in saveCanvas: ${e.message}", e)
             }
 
         }

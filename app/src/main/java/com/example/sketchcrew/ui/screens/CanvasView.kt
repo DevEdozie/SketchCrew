@@ -454,107 +454,109 @@ class CanvasView @JvmOverloads constructor(
         invalidate()
     }
 
-    fun getPathData(): String {
-        // Convert Path object to string representation
-        // Note: This is a simplified version and may need adjustments for complex paths
-
-//        return buildString {
-//            path.apply {
-//                val pathPoints = FloatArray(2)
-//                this.computeBounds(android.graphics.RectF(), true)
-//                // Iterate through path points and append to the string
-//                this.rLineTo(0f, 0f)
-//            }
-//        }
-
-//         val pathDataBuilder = StringBuilder()
-
-        // Temporary array to store points from the path
-//         val pathPoints = FloatArray(2)
-
-        // Measure and extract the segments of the path
-//         val pathMeasure = PathMeasure(path, false)
-//         var segmentLength = pathMeasure.length
-//         var segmentPosition = 0f
-
-        // Iterate over the path segments and append to the string
-//         while (segmentPosition < segmentLength) {
-//             pathMeasure.getPosTan(segmentPosition, pathPoints, null)
-//             pathDataBuilder.append("${pathPoints[0]},${pathPoints[1]};")
-//             segmentPosition += 1f // Move in small increments to sample the path points
+//    fun getPathData(): String {
+//        // Convert Path object to string representation
+//        // Note: This is a simplified version and may need adjustments for complex paths
+//
+////        return buildString {
+////            path.apply {
+////                val pathPoints = FloatArray(2)
+////                this.computeBounds(android.graphics.RectF(), true)
+////                // Iterate through path points and append to the string
+////                this.rLineTo(0f, 0f)
+////            }
+////        }
+//
+//        val pathDataBuilder = StringBuilder()
+//
+//        // Temporary array to store points from the path
+////         val pathPoints = FloatArray(2)
+//
+//        // Measure and extract the segments of the path
+////         val pathMeasure = PathMeasure(path, false)
+////         var segmentLength = pathMeasure.length
+////         var segmentPosition = 0f
+//
+//        // Iterate over the path segments and append to the string
+////         while (segmentPosition < segmentLength) {
+////             pathMeasure.getPosTan(segmentPosition, pathPoints, null)
+////             pathDataBuilder.append("${pathPoints[0]},${pathPoints[1]};")
+////             segmentPosition += 1f // Move in small increments to sample the path points
 //    }
 
-    fun getPathData(path: Path): String {
-        val pathData = StringBuilder()
 
-        val pathPoints = FloatArray(6) // Array to store the coordinates from the path
-        val pathIterator = PathIterator(path)
+        fun getPathData(path: Path): String {
+            val pathData = StringBuilder()
 
-        while (!pathIterator.isDone()) {
-            val type = pathIterator.currentSegment(pathPoints)
-            when (type) {
-                PathIterator.SEG_MOVETO -> {
-                    pathData.append("M${pathPoints[0]},${pathPoints[1]} ")
+            val pathPoints = FloatArray(6) // Array to store the coordinates from the path
+            val pathIterator = PathIterator(path)
+
+            while (!pathIterator.isDone()) {
+                val type = pathIterator.currentSegment(pathPoints)
+                when (type) {
+                    PathIterator.SEG_MOVETO -> {
+                        pathData.append("M${pathPoints[0]},${pathPoints[1]} ")
+                    }
+
+                    PathIterator.SEG_LINETO -> {
+                        pathData.append("L${pathPoints[0]},${pathPoints[1]} ")
+                    }
+
+                    PathIterator.SEG_QUADTO -> {
+                        pathData.append("Q${pathPoints[0]},${pathPoints[1]} ${pathPoints[2]},${pathPoints[3]} ")
+                    }
+
+                    PathIterator.SEG_CUBICTO -> {
+                        pathData.append("C${pathPoints[0]},${pathPoints[1]} ${pathPoints[2]},${pathPoints[3]} ${pathPoints[4]},${pathPoints[5]} ")
+                    }
+
+                    PathIterator.SEG_CLOSE -> {
+                        pathData.append("Z ")
+                    }
                 }
-
-                PathIterator.SEG_LINETO -> {
-                    pathData.append("L${pathPoints[0]},${pathPoints[1]} ")
-                }
-
-                PathIterator.SEG_QUADTO -> {
-                    pathData.append("Q${pathPoints[0]},${pathPoints[1]} ${pathPoints[2]},${pathPoints[3]} ")
-                }
-
-                PathIterator.SEG_CUBICTO -> {
-                    pathData.append("C${pathPoints[0]},${pathPoints[1]} ${pathPoints[2]},${pathPoints[3]} ${pathPoints[4]},${pathPoints[5]} ")
-                }
-
-                PathIterator.SEG_CLOSE -> {
-                    pathData.append("Z ")
-                }
+                pathIterator.next()
             }
-            pathIterator.next()
+
+            return pathData.toString().trim()
         }
 
-        return pathData.toString().trim()
-    }
 
-
-    fun captureBitmap(): Bitmap {
-        // Create a bitmap with the same dimensions as the view
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        // Create a canvas to draw the bitmap
-        val canvas = Canvas(bitmap)
-        // Draw the view onto the canvas
-        draw(canvas)
-        return bitmap
-    }
-
-    fun saveBitmapToFile(context: Context, bitmap: Bitmap, filename: String): Uri? {
-        var uri: Uri? = null
-        try {
-            val file = File(context.getExternalFilesDir(null), filename)
-            val outputStream = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
-            outputStream.flush()
-            outputStream.close()
-            uri = Uri.fromFile(file)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        return uri
-    }
-
-    fun loadBitmapFromFile(context: Context, fileUri: Uri): Bitmap? {
-        return try {
-            val fileDescriptor =
-                context.contentResolver.openFileDescriptor(fileUri, "r")?.fileDescriptor
-            BitmapFactory.decodeFileDescriptor(fileDescriptor)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
+        fun captureBitmap(): Bitmap {
+            // Create a bitmap with the same dimensions as the view
+            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            // Create a canvas to draw the bitmap
+            val canvas = Canvas(bitmap)
+            // Draw the view onto the canvas
+            draw(canvas)
+            return bitmap
         }
 
-        return pathDataBuilder.toString()
+        fun saveBitmapToFile(context: Context, bitmap: Bitmap, filename: String): Uri? {
+            var uri: Uri? = null
+            try {
+                val file = File(context.getExternalFilesDir(null), filename)
+                val outputStream = FileOutputStream(file)
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+                outputStream.flush()
+                outputStream.close()
+                uri = Uri.fromFile(file)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            return uri
+        }
     }
-}
+
+//    fun loadBitmapFromFile(context: Context, fileUri: Uri): Bitmap? {
+//        return try {
+//            val fileDescriptor =
+//                context.contentResolver.openFileDescriptor(fileUri, "r")?.fileDescriptor
+//            BitmapFactory.decodeFileDescriptor(fileDescriptor)
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            null
+//        }
+//
+//        return pathDataBuilder.toString()
+//    }
+//}
