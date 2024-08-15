@@ -2,7 +2,6 @@ package com.example.sketchcrew.data.local.models
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.example.sketchcrew.ui.screens.CanvasView.Companion.paths
 
 @Entity(tableName = "canvas_table")
 data class CanvasModel(
