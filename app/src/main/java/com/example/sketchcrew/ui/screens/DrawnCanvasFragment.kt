@@ -24,6 +24,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.sketchcrew.R
+import com.example.sketchcrew.data.local.database.RoomDB
 import com.example.sketchcrew.data.local.models.CanvasModel
 import com.example.sketchcrew.data.local.models.PairConverter
 import com.example.sketchcrew.databinding.FragmentDrawnCanvasBinding
@@ -38,6 +39,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private const val TAG = "DrawnCanvasFragment"
 
@@ -48,6 +50,7 @@ class DrawnCanvasFragment : Fragment() {
     private lateinit var viewModel: CanvasViewModel
     val binding get() = _binding
     private lateinit var canvasView: CanvasView
+    private var pathId: Int = 0
     private val listOfButtons: ArrayList<View> = ArrayList<View>()
     var mutableListButtons = mutableListOf<View>()
     private lateinit var paint: Paint
@@ -260,11 +263,12 @@ class DrawnCanvasFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val args = DrawnCanvasFragmentArgs.fromBundle(requireArguments())
-        val pathData = args.pathData!!.trimIndent()
+//        val pathData = args.pathData!!.trimIndent()
+        pathId = args.pathData
 
-        binding.canvasLayout.findViewById<CanvasView>(R.id.my_canvas).setPath(pathData)
+//        binding.canvasLayout.findViewById<CanvasView>(R.id.my_canvas).setPath(pathData)
         binding.myCanvas.createNewLayer(width = 1, height = 1)
-
+        loadPath()
         binding.eraser.setOnClickListener {
             binding.eraser.tooltipText = "Eraser"
             binding.myCanvas.setEraserMode(true)
@@ -351,22 +355,37 @@ class DrawnCanvasFragment : Fragment() {
         }
     }
 
-    fun convertToPathDataString(pathDataList: List<PathData>): String {
-        return buildString {
-            pathDataList.forEachIndexed { index, pathData ->
-                // Extract x and y coordinates from mNativePaint
-                // Assuming mNativePaint encodes coordinates in a specific format, e.g., as integers or floats
-                // Here, you must replace this example with your actual logic to extract coordinates
-                val x = pathData.second.mNativePaint.toFloat() // this is a placeholder logic
-                val y = pathData.second.mNativePaint.toFloat() // this is a placeholder logic
-
-                if (index != 0) {
-                    append(";")
-                }
-                append("$x,$y")
+    private fun loadPath() {
+        val db = RoomDB.getDatabase(requireContext())
+        lifecycleScope.launch {
+            val pathData = withContext(Dispatchers.IO) {
+                db.pathDao().getPathById(pathId.toInt())
+            }
+            pathData?.let {
+                binding.myCanvas.loadPathData(pathData)
+//                binding.myCanvas.setPath(it.path)
+//                binding.myCanvas.setColor(it.color)
+//                binding.myCanvas.setBrushWidth(it.strokeWidth)
             }
         }
     }
+
+//    fun convertToPathDataString(pathDataList: List<PathData>): String {
+//        return buildString {
+//            pathDataList.forEachIndexed { index, pathData ->
+//                // Extract x and y coordinates from mNativePaint
+//                // Assuming mNativePaint encodes coordinates in a specific format, e.g., as integers or floats
+//                // Here, you must replace this example with your actual logic to extract coordinates
+//                val x = pathData.second.mNativePaint.toFloat() // this is a placeholder logic
+//                val y = pathData.second.mNativePaint.toFloat() // this is a placeholder logic
+//
+//                if (index != 0) {
+//                    append(";")
+//                }
+//                append("$x,$y")
+//            }
+//        }
+//    }
 
     private fun addNewLayer() {
         canvasView.createNewLayer(width, height)
@@ -429,6 +448,7 @@ class DrawnCanvasFragment : Fragment() {
 
             // Handle the save action here
             handleSave(fileName, description, selectedFormat)
+            binding.myCanvas.saveCurrentPathToDatabase()
 
             dialog.dismiss()
         }

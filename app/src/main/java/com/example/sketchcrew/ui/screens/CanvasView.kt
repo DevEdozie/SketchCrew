@@ -21,8 +21,15 @@ import android.view.ViewConfiguration
 import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import com.example.sketchcrew.R
+import com.example.sketchcrew.data.local.database.RoomDB
+import com.example.sketchcrew.data.local.models.PathData
+import com.example.sketchcrew.utils.FileNameGen
 import com.example.sketchcrew.utils.LayerManager
 import com.example.sketchcrew.utils.PathIterator
+import com.example.sketchcrew.utils.Truncator
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import kotlin.math.atan2
@@ -78,14 +85,14 @@ class CanvasView @JvmOverloads constructor(
 
     private val undonePaths = mutableListOf<Pair<Path, Paint>>()
 
-    private val backgroundColor = ResourcesCompat.getColor(resources, R.color.white, null)
+    private val backgroundColor = ResourcesCompat.getColor(resources, R.color.black, null)
     private var textToDraw: String? = null
     private var textX: Float = 0f
     private var textY: Float = 0f
 
     private fun init() {
         paintColor.apply {
-            color = brushColor
+            color = Color.BLACK
             // Smooths out edges of what is drawn without affecting shape.
             isAntiAlias = true
             // Dithering affects how colors with higher-precision than the device are down-sampled.
@@ -334,15 +341,6 @@ class CanvasView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-//        motionTouchEventX = event.x
-//        motionTouchEventY = event.y
-//
-//        when (event.action) {
-//            MotionEvent.ACTION_DOWN -> touchStart()
-//            MotionEvent.ACTION_MOVE -> touchMove()
-//            MotionEvent.ACTION_UP -> touchUp()
-//        }
-//        return true
         val x = event.x
         val y = event.y
         scaleGestureDetector.onTouchEvent(event)
@@ -436,7 +434,6 @@ class CanvasView @JvmOverloads constructor(
         var paintColor = Paint()
 
         //        var drawPath = Path()
-        var paths = mutableListOf<Pair<Path, Paint>>()
     }
 
     fun setPath(pathData: String) {
@@ -569,4 +566,30 @@ class CanvasView @JvmOverloads constructor(
         }
     }
 
+    fun loadPathData(pathData: PathData) {
+        currentPath.reset()
+        setPath(pathData.path) // Set the path using the serialized string
+
+        // Set paint properties
+        setColor(pathData.color)
+        setBrushWidth(pathData.strokeWidth)
+
+        invalidate() // Redraw the canvas with the new path data
+    }
+
+
+    fun saveCurrentPathToDatabase() {
+        val pathString = getPathData(currentPath)
+        val pathData = PathData(
+            name = FileNameGen().generateFileNamePNG(),
+            desc = Truncator(FileNameGen().generateFileNamePNG(), 10, true).textTruncate(),
+            path = pathString,
+            color = paintColor.color,
+            strokeWidth = paintColor.strokeWidth
+        )
+        val db = RoomDB.getDatabase(context)
+        GlobalScope.launch(Dispatchers.IO) {
+            db.pathDao().insert(pathData)
+        }
+    }
 }

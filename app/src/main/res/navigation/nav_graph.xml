@@ -24,8 +24,7 @@
             app:destination="@id/canvasListFragment" />
         <argument
             android:name="pathData"
-            app:argType="string"
-            app:nullable="true"
-            android:defaultValue='0,0' />
+            app:argType="integer"
+            android:defaultValue="0" />
     </fragment>
 </navigation>
