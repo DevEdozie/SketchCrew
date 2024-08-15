@@ -7,6 +7,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.Point
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
@@ -25,6 +26,15 @@ import com.example.sketchcrew.data.local.models.PathData
 import com.example.sketchcrew.utils.FileNameGen
 import com.example.sketchcrew.utils.LayerManager
 import com.example.sketchcrew.utils.PathIterator
+import com.example.sketchcrew.utils.PathIteratorFirebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import org.json.JSONArray
+import org.json.JSONObject
 import com.example.sketchcrew.utils.Truncator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -51,6 +61,11 @@ class CanvasView @JvmOverloads constructor(
     private lateinit var scaleGestureDetector: ScaleGestureDetector
     private var layerManager: LayerManager = LayerManager()
     private var currentLayer: Bitmap? = null
+
+    // Firebase Variables :-> DO NOT TOUCH
+    private lateinit var database: DatabaseReference
+//    var drawingId = "Empty"
+
 
     init {
         init()
@@ -129,7 +144,7 @@ class CanvasView @JvmOverloads constructor(
         extraBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         extraCanvas = Canvas(extraBitmap)
         extraCanvas.drawColor(backgroundColor)
-        if (width> 0 && height> 0) {
+        if (width > 0 && height > 0) {
             createNewLayer(width, height)
         }
     }
@@ -379,10 +394,56 @@ class CanvasView @JvmOverloads constructor(
                     else -> {}
                 }
                 currentPath.reset()
+                saveToFirebase() // Update the current state
             }
         }
         return true
     }
+
+
+
+    private fun touchStart() {
+//        path.reset()
+        path.moveTo(motionTouchEventX, motionTouchEventY)
+        currentX = motionTouchEventX
+        currentY = motionTouchEventY
+    }
+
+    private fun touchMove() {
+        val dx = Math.abs(motionTouchEventX - currentX)
+        val dy = Math.abs(motionTouchEventY - currentY)
+        if (dx >= touchTolerance || dy >= touchTolerance) {
+            // QuadTo() adds a quadratic bezier from the last point,
+            // approaching control point (x1,y1), and ending at (x2,y2).
+            path.quadTo(
+                currentX,
+                currentY,
+                (motionTouchEventX + currentX) / 2,
+                (motionTouchEventY + currentY) / 2
+            )
+            currentX = motionTouchEventX
+            currentY = motionTouchEventY
+            // Draw the path in the extra bitmap to cache it.
+            extraCanvas.drawPath(path, paint)
+            colorList.add(brushColor)
+            pathList.add(path)
+        }
+        invalidate()
+    }
+
+    private fun touchUp() {
+        drawing.addPath(curPath)
+        paths.add(Pair(curPath, paint))
+        when (currentTool) {
+            DrawingTool.FREEHAND -> paths.add(Pair(Path(currentPath), Paint(paint)))
+            DrawingTool.CIRCLE -> paths.add(Pair(drawCirclePath(), Paint(paint)))
+            DrawingTool.SQUARE -> paths.add(Pair(drawSquarePath(), Paint(paint)))
+            DrawingTool.ARROW -> paths.add(Pair(drawArrowPath(), Paint(paint)))
+            else -> {}
+        }
+        currentPath.reset()
+    }
+
 
     companion object {
         var shapeType = ArrayList<String>()
@@ -494,6 +555,158 @@ class CanvasView @JvmOverloads constructor(
         }
     }
 
+
+
+    // My Firebase functions: -> DO NOT TOUCH PLEASE
+    // Serialization of Paths and Paints
+    fun saveToJson(): JSONArray {
+        return serializePathsAndPaints(paths)
+    }
+
+    // Deserialization of Paths and Paints
+    fun loadFromJson(jsonArray: JSONArray) {
+        paths.clear()
+        paths.addAll(deserializePathsAndPaints(jsonArray))
+        invalidate()
+    }
+
+    private fun serializePathsAndPaints(paths: List<Pair<Path, Paint>>): JSONArray {
+        val jsonArray = JSONArray()
+        for ((path, paint) in paths) {
+            val pathPoints = serializePath(path)
+            val paintData = serializePaint(paint)
+
+            val pathObject = JSONObject()
+            pathObject.put("pathPoints", pathPoints)
+            pathObject.put("paint", paintData)
+
+            jsonArray.put(pathObject)
+        }
+        return jsonArray
+    }
+
+    private fun serializePath(path: Path): JSONArray {
+        val pathPoints = JSONArray()
+        val pathIterator = PathIteratorFirebase(path)
+
+        for (point in pathIterator) {
+            val pointObject = JSONObject()
+            pointObject.put("x", point.x)
+            pointObject.put("y", point.y)
+            pathPoints.put(pointObject)
+        }
+
+        return pathPoints
+    }
+
+    private fun serializePaint(paint: Paint): JSONObject {
+        val paintObject = JSONObject()
+        paintObject.put("color", paint.color)
+        paintObject.put("strokeWidth", paint.strokeWidth)
+        paintObject.put("style", paint.style.name)
+        return paintObject
+    }
+
+    private fun deserializePathsAndPaints(jsonArray: JSONArray): List<Pair<Path, Paint>> {
+        val paths = mutableListOf<Pair<Path, Paint>>()
+
+        for (i in 0 until jsonArray.length()) {
+            val pathObject = jsonArray.getJSONObject(i)
+
+            val path = deserializePath(pathObject.getJSONArray("pathPoints"))
+            val paint = deserializePaint(pathObject.getJSONObject("paint"))
+
+            paths.add(Pair(path, paint))
+        }
+
+        return paths
+    }
+
+    private fun deserializePath(jsonArray: JSONArray): Path {
+        val path = Path()
+
+        for (i in 0 until jsonArray.length()) {
+            val pointObject = jsonArray.getJSONObject(i)
+            val x = pointObject.getDouble("x").toFloat()
+            val y = pointObject.getDouble("y").toFloat()
+
+            if (i == 0) {
+                path.moveTo(x, y)
+            } else {
+                path.lineTo(x, y)
+            }
+        }
+
+        return path
+    }
+
+    private fun deserializePaint(jsonObject: JSONObject): Paint {
+        val paint = Paint()
+        paint.color = jsonObject.getInt("color")
+        paint.strokeWidth = jsonObject.getDouble("strokeWidth").toFloat()
+        paint.style = Paint.Style.valueOf(jsonObject.getString("style"))
+        return paint
+    }
+
+    // Firebase Integration
+//    fun saveToFirebase() {
+//        database = FirebaseDatabase.getInstance().getReference("drawings")
+//        val jsonArray = saveToJson()
+//        val id = getUniqueId()
+//        database.child(getUniqueId()).child("canvasData").setValue(jsonArray.toString())
+//
+//        // Save user id as a collaborator
+//        val userId = FirebaseAuth.getInstance().currentUser?.uid
+//        database.child(drawingId).child("collaborators").child(userId!!).setValue(true)
+//
+//        // Notify user
+//        Toast.makeText(context, "Collaboration set up", Toast.LENGTH_SHORT).show()
+//    }
+
+    fun saveToFirebase() {
+        database = FirebaseDatabase.getInstance().getReference("drawings")
+        val jsonArray = saveToJson()
+        database.child("canvasData").setValue(jsonArray.toString())
+    }
+
+    fun loadFromFirebase() {
+        database = FirebaseDatabase.getInstance().getReference("drawings")
+        database.child("canvasData").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val jsonArray = JSONArray(snapshot.value.toString())
+                if (jsonArray != null) {
+                    loadFromJson(jsonArray)
+                    // Optionally, notify the user or refresh the UI
+                    Toast.makeText(
+                        context,
+                        "Canvas data loaded",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle error
+                Toast.makeText(
+                    context,
+                    "Error loading data",
+                    Toast.LENGTH_SHORT
+                )
+                    .show()
+            }
+
+        })
+    }
+
+
+//    fun getUniqueId(): String {
+//        database = FirebaseDatabase.getInstance().getReference("drawings")
+//        drawingId = database.push().key!!
+//        return drawingId
+//    }
+
+
+
     fun loadPathData(pathData: PathData) {
         val filename = pathData.name
         val file = File("/storage/emulated/0/Android/data/com.example.sketchcrew/files/$filename")
@@ -526,4 +739,5 @@ class CanvasView @JvmOverloads constructor(
             db.pathDao().insert(pathData)
         }
     }
+
 }

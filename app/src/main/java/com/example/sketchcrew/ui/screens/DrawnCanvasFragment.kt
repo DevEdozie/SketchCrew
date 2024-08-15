@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.os.Build
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -36,11 +37,20 @@ import com.example.sketchcrew.ui.viewmodels.CanvasViewModel
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModelFactory
 import com.example.sketchcrew.utils.FileNameGen
 import com.example.sketchcrew.utils.Truncator
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.GenericTypeIndicator
+import com.google.firebase.database.ValueEventListener
+import org.json.JSONArray
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
 
 private const val TAG = "DrawnCanvasFragment"
 
@@ -62,6 +72,12 @@ class DrawnCanvasFragment : Fragment() {
     var width = 1
     var height = 1
 
+    // Firebase
+//    var drawingId = "Empty"
+
+    // Firebase
+    private lateinit var database: DatabaseReference
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -74,6 +90,8 @@ class DrawnCanvasFragment : Fragment() {
         _binding = FragmentDrawnCanvasBinding.inflate(inflater, container, false)
 
         canvasView = binding.canvasLayout.findViewById(R.id.my_canvas)
+        // database
+        database = FirebaseDatabase.getInstance().getReference("drawings")
 
 
         val pen: View = binding.pen
@@ -239,6 +257,10 @@ class DrawnCanvasFragment : Fragment() {
                     }
                 }
             }
+            //Set up send collaboration feature
+            setupSendCollaboration()
+            // Set up receive collaboration feature
+            setupReceiveCollaboration()
         }
         binding.red.setOnClickListener {
             paintColor.color = Color.RED
@@ -309,7 +331,7 @@ class DrawnCanvasFragment : Fragment() {
             if (binding.linearLayout2.visibility == View.VISIBLE) {
                 binding.linearLayout2.visibility = View.GONE
             } else {
-                if (binding.linearLayout4.visibility == View.VISIBLE){
+                if (binding.linearLayout4.visibility == View.VISIBLE) {
                     binding.linearLayout4.visibility = View.GONE
                 }
                 binding.linearLayout2.visibility = View.VISIBLE
