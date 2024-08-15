@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.screens.DrawnCanvasFragment">
+
+    <LinearLayout
+        android:id="@+id/linear_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/button_row_background"
+        android:orientation="horizontal"
+        android:padding="4dp">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/pen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:padding="10dp"
+            android:src="@drawable/pen" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/arrow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:padding="10dp"
+            android:src="@drawable/arrow" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/rectangle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/default_padding"
+            android:padding="10dp"
+            android:src="@drawable/rectangle" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/ellipse"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:padding="10dp"
+            android:src="@drawable/ellipse" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/palette"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:padding="10dp"
+            android:src="@drawable/palette" />
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/eraser"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="10dp"
+            android:src="@drawable/eraser" />
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/undo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:visibility="visible"
+            android:src="@drawable/baseline_undo_24" />
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/redo"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:visibility="visible"
+            android:src="@drawable/baseline_redo_24" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:layout_below="@+id/linear_layout">
+        <LinearLayout
+            android:id="@+id/canvas_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/linear_layout"
+            android:layout_margin="8dp"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/palette_buttons">
+
+            <com.example.sketchcrew.ui.screens.CanvasView
+                android:id="@+id/my_canvas"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="&lt;LinearLayout&#xA;        android:id=&quot;@+id/linear_layout&quot;&#xA;        android:layout_width=&quot;wrap_content&quot;&#xA;        android:layout_height=&quot;wrap_content&quot;&#xA;        android:layout_marginStart=&quot;8dp&quot;&#xA;        android:layout_marginTop=&quot;32dp&quot;&#xA;        android:layout_marginEnd=&quot;8dp&quot;&#xA;        android:background=&quot;@drawable/button_row_background&quot;&#xA;        android:orientation=&quot;horizontal&quot;&#xA;        android:padding=&quot;4dp&quot;>" />
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/linear_layout3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/button_row_background"
+            android:orientation="vertical"
+            android:padding="4dp">
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/brush"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:visibility="visible"
+                android:src="@drawable/baseline_brush_24" />
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/layer"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:visibility="visible"
+                android:src="@drawable/baseline_layer_24" />
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/zoom_out"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:visibility="visible"
+                android:src="@drawable/baseline_zoom_24" />
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/zoom_in"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:visibility="visible"
+                android:src="@drawable/baseline_zoom_in_map_24" />
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/text"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:visibility="visible"
+                android:src="@drawable/baseline_text_format_24" />
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/download"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:visibility="visible"
+                android:src="@drawable/baseline_cloud_download_24" />
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/linear_layout2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="60dp"
+            android:layout_marginEnd="8dp"
+            android:visibility="gone"
+            android:background="@drawable/button_row_background"
+            android:orientation="vertical"
+            android:padding="4dp">
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/brush_1"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:visibility="visible"
+                android:src="@drawable/baseline_brush_24_2" />
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/brush_2"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="8dp"
+                android:visibility="visible"
+                android:src="@drawable/baseline_brush_24_1" />
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/brush3"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="8dp"
+                android:visibility="visible"
+                android:src="@drawable/baseline_brush_24" />
+
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/linear_layout4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="60dp"
+            android:layout_marginTop="44dp"
+            android:layout_marginEnd="8dp"
+            android:visibility="gone"
+            android:background="@drawable/button_row_background"
+            android:orientation="vertical"
+            android:padding="4dp">
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/add_layer"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:visibility="visible"
+                android:src="@drawable/baseline_add_circle_outline_24" />
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/remove_layer"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="8dp"
+                android:visibility="visible"
+                android:src="@drawable/baseline_remove_circle_outline_24" />
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/switch_layer"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="8dp"
+                android:visibility="visible"
+                android:src="@drawable/baseline_swap_horiz_24" />
+
+        </LinearLayout>
+    </FrameLayout>
+
+
+    <LinearLayout
+        android:id="@+id/palette_buttons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="94dp"
+        android:layout_marginTop="88dp"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/red"
+            android:layout_width="52dp"
+            android:layout_height="48dp"
+            android:src="@drawable/red" />
+
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/green"
+            android:layout_width="52dp"
+            android:layout_height="48dp"
+            android:src="@drawable/green" />
+
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/blue"
+            android:layout_width="52dp"
+            android:layout_height="48dp"
+            android:src="@drawable/blue" />
+
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/black"
+            android:layout_width="52dp"
+            android:layout_height="48dp"
+            android:src="@drawable/black" />
+    </LinearLayout>
+    <!--            <com.example.sketchcrew.ui.screens.DrawingView-->
+    <!--                android:id="@+id/drawing_view"-->
+    <!--                android:layout_width="match_parent"-->
+    <!--                android:layout_height="match_parent"-->
+    <!--                android:background="@android:color/white" />-->
+
+    <Button
+        android:id="@+id/save_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="16dp"
+        android:text="Save" />
+</RelativeLayout>
