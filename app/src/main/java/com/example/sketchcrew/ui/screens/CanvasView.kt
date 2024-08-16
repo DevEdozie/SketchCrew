@@ -7,10 +7,8 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
-import android.graphics.Point
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
-import android.graphics.Rect
 import android.net.Uri
 import android.util.AttributeSet
 import android.util.Log
@@ -28,18 +26,17 @@ import com.example.sketchcrew.utils.FileNameGen
 import com.example.sketchcrew.utils.LayerManager
 import com.example.sketchcrew.utils.PathIterator
 import com.example.sketchcrew.utils.PathIteratorFirebase
-import com.google.firebase.auth.FirebaseAuth
+import com.example.sketchcrew.utils.Truncator
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import org.json.JSONArray
-import org.json.JSONObject
-import com.example.sketchcrew.utils.Truncator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import kotlin.math.atan2
@@ -48,10 +45,8 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 enum class DrawingTool {
-    FREEHAND, CIRCLE, SQUARE, ARROW, ERASER
+    FREEHAND, CIRCLE, SQUARE, ARROW
 }
-
-private const val TAG = "CanvasView"
 
 class CanvasView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null,
@@ -95,7 +90,6 @@ class CanvasView @JvmOverloads constructor(
     private var currentX = 0f
     private var currentY = 0f
     private val touchTolerance = ViewConfiguration.get(context).scaledTouchSlop
-    private lateinit var frame: Rect
     private var currentColor = Color.BLACK
     private var eraserMode = false
 
@@ -401,8 +395,6 @@ class CanvasView @JvmOverloads constructor(
         return true
     }
 
-
-
     private fun touchStart() {
 //        path.reset()
         path.moveTo(motionTouchEventX, motionTouchEventY)
@@ -524,7 +516,7 @@ class CanvasView @JvmOverloads constructor(
 
 
     fun captureBitmap(): Bitmap {
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+//        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(currentLayer!!)
         draw(canvas)
         return currentLayer!!
@@ -555,7 +547,6 @@ class CanvasView @JvmOverloads constructor(
             null
         }
     }
-
 
 
     // My Firebase functions: -> DO NOT TOUCH PLEASE
@@ -707,11 +698,11 @@ class CanvasView @JvmOverloads constructor(
 //    }
 
 
-
     fun loadPathData(pathData: PathData) {
         val filename = pathData.name
         val file = File("/storage/emulated/0/Android/data/com.example.sketchcrew/files/$filename")
-        val fileURI: Uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+        val fileURI: Uri =
+            FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
         currentPath.reset()
 //        val canvas = Canvas(currentLayer!!)
         setPath(pathData.path) // Set the path using the serialized string
