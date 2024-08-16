@@ -73,6 +73,7 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.navigation.dynamic.features.fragment)
     implementation(libs.firebase.database)
+    implementation(libs.firebase.database.ktx)
     androidTestImplementation(libs.androidx.navigation.testing)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)

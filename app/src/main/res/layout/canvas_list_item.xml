@@ -48,26 +48,13 @@
                         android:text="My Canvas one"
                         android:textColor="#A9A9A9"/>
 
-                    <TextView
-                        android:id="@+id/textViewSave"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@id/textViewDesc"
-                        android:layout_marginTop="8dp"
-                        android:fontFamily="@font/nunito_sans"
-                        android:text="Save"
-                        android:paddingStart="4dp"
-                        android:paddingEnd="4dp"
-                        android:textColor="#045E56"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
+
 
                     <TextView
                         android:id="@+id/textViewDelete"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_below="@id/textViewDesc"
-                        android:layout_toRightOf="@id/textViewSave"
                         android:layout_marginTop="8dp"
                         android:fontFamily="@font/nunito_sans"
                         android:text="Delete"

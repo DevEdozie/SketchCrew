@@ -1,6 +1,5 @@
 package com.example.sketchcrew.ui.screens
 
-import android.app.Application
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -8,10 +7,8 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
-import android.graphics.Point
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
-import android.graphics.Rect
 import android.net.Uri
 import android.util.AttributeSet
 import android.util.Log
@@ -20,27 +17,26 @@ import android.view.ScaleGestureDetector
 import android.view.View
 import android.view.ViewConfiguration
 import android.widget.Toast
+import androidx.core.content.FileProvider
 import androidx.core.content.res.ResourcesCompat
 import com.example.sketchcrew.R
 import com.example.sketchcrew.data.local.database.RoomDB
-import com.example.sketchcrew.data.local.models.PairConverter
 import com.example.sketchcrew.data.local.models.PathData
 import com.example.sketchcrew.utils.FileNameGen
 import com.example.sketchcrew.utils.LayerManager
 import com.example.sketchcrew.utils.PathIterator
 import com.example.sketchcrew.utils.PathIteratorFirebase
-import com.google.firebase.auth.FirebaseAuth
+import com.example.sketchcrew.utils.Truncator
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import org.json.JSONArray
-import org.json.JSONObject
-import com.example.sketchcrew.utils.Truncator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import kotlin.math.atan2
@@ -48,9 +44,8 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-
 enum class DrawingTool {
-    FREEHAND, CIRCLE, SQUARE, ARROW, ERASER
+    FREEHAND, CIRCLE, SQUARE, ARROW
 }
 
 class CanvasView @JvmOverloads constructor(
@@ -74,7 +69,7 @@ class CanvasView @JvmOverloads constructor(
         init()
     }
 
-    var currentPath = Path()
+    private var currentPath = Path()
     val paths = mutableListOf<Pair<Path, Paint>>()
     private var currentTool = DrawingTool.FREEHAND
 
@@ -87,7 +82,7 @@ class CanvasView @JvmOverloads constructor(
     private lateinit var extraCanvas: Canvas
     private lateinit var extraBitmap: Bitmap
 
-    private val drawing = Path()
+    private var drawing = Path()
 
     private val curPath = Path()
 
@@ -97,7 +92,6 @@ class CanvasView @JvmOverloads constructor(
     private var currentX = 0f
     private var currentY = 0f
     private val touchTolerance = ViewConfiguration.get(context).scaledTouchSlop
-    private lateinit var frame: Rect
     private var currentColor = Color.BLACK
     private var eraserMode = false
 
@@ -110,7 +104,7 @@ class CanvasView @JvmOverloads constructor(
 
     private fun init() {
         paintColor.apply {
-            color = Color.BLACK
+            color = brushColor
             // Smooths out edges of what is drawn without affecting shape.
             isAntiAlias = true
             // Dithering affects how colors with higher-precision than the device are down-sampled.
@@ -164,10 +158,11 @@ class CanvasView @JvmOverloads constructor(
         canvas.apply {
             save()
             canvas.scale(scaleFactor, scaleFactor)
-//
+
             for (i in pathList.indices) {
                 paint.color = colorList[i]
                 canvas.drawPath(pathList[i], paint)
+                invalidate()
             }
             for ((path, paint) in paths) {
                 canvas.drawPath(path, paint)
@@ -177,7 +172,6 @@ class CanvasView @JvmOverloads constructor(
                 when (currentTool) {
                     DrawingTool.ARROW -> {
                         drawArrow(myCanvas)
-
                     }
 
                     DrawingTool.SQUARE -> {
@@ -192,12 +186,13 @@ class CanvasView @JvmOverloads constructor(
                         myCanvas.drawPath(currentPath, paint)
                     }
                 }
+                invalidate()
             }
 
             textToDraw?.let {
-                paint.color = Color.WHITE;
-                paint.style = Paint.Style.FILL;
-                canvas.drawPaint(paint);
+                paint.color = Color.WHITE
+                paint.style = Paint.Style.FILL
+                canvas.drawPaint(paint)
 
                 paint.color = Color.BLACK
                 paint.textSize = 48F
@@ -205,6 +200,7 @@ class CanvasView @JvmOverloads constructor(
             }
             restore()
         }
+        invalidate()
     }
 
     private fun drawSquare(canvas: Canvas) {
@@ -215,12 +211,14 @@ class CanvasView @JvmOverloads constructor(
         squarePath.lineTo(endX, startY)
         squarePath.close()
         canvas.drawPath(squarePath, paint)
+        invalidate()
     }
 
     private fun drawCircle(canvas: Canvas) {
         val radius =
             sqrt(((endX - startX) * (endX - startX) + (endY - startY) * (endY - startY)).toDouble()).toFloat()
         canvas.drawCircle(startX, startY, radius, paint)
+        invalidate()
     }
 
     private fun drawArrow(canvas: Canvas) {
@@ -243,6 +241,7 @@ class CanvasView @JvmOverloads constructor(
             (endY - arrowHeadLength * sin(angle + arrowHeadAngle)).toFloat()
         )
         canvas.drawPath(arrowPath, linePaint)
+        invalidate()
     }
 
     private fun drawCirclePath(): Path {
@@ -365,6 +364,7 @@ class CanvasView @JvmOverloads constructor(
         }
 
         when (event.action) {
+
             MotionEvent.ACTION_DOWN -> {
                 startX = x
                 startY = y
@@ -524,7 +524,7 @@ class CanvasView @JvmOverloads constructor(
 
 
     fun captureBitmap(): Bitmap {
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+//        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(currentLayer!!)
         draw(canvas)
         return currentLayer!!
@@ -748,16 +748,21 @@ class CanvasView @JvmOverloads constructor(
 
     // FIREBASE -> END
 
-
     fun loadPathData(pathData: PathData) {
+        val filename = pathData.name
+        val file = File("/storage/emulated/0/Android/data/com.example.sketchcrew/files/$filename")
+        val fileURI: Uri =
+            FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
         currentPath.reset()
-        val canvas = Canvas(currentLayer!!)
+//        val canvas = Canvas(currentLayer!!)
         setPath(pathData.path) // Set the path using the serialized string
 
         // Set paint properties
         setColor(pathData.color)
         setBrushWidth(pathData.strokeWidth)
-        canvas.drawPath(setPath(pathData.path), paint)
+        loadBitmapFromFile(context, fileURI)
+
+//        canvas.drawPath(setPath(pathData.path), paint)
         invalidate() // Redraw the canvas with the new path data
     }
 

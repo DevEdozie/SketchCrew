@@ -23,7 +23,6 @@ class CanvasListAdapter(
     }
 
     class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
-        val save = itemView.findViewById<TextView>(R.id.textViewSave)
         val del = itemView.findViewById<TextView>(R.id.textViewDelete)
 
         fun bindItems(canvasData: CanvasData) {
@@ -31,7 +30,6 @@ class CanvasListAdapter(
             title.text = "${canvasData.name}"
             val desc = itemView.findViewById<TextView>(R.id.textViewDesc)
             desc.text = "${canvasData.desc}"
-            save.text = "Save"
             del.text = "Delete"
         }
     }
@@ -49,9 +47,7 @@ class CanvasListAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = canvasList[position]
         holder.bindItems(canvasList[position])
-        holder.save.setOnClickListener {
-            itemClickListener.onSaveCanvas(item)
-        }
+
         holder.itemView.setOnClickListener {
             itemClickListener.onCanvasClick(item)
         }

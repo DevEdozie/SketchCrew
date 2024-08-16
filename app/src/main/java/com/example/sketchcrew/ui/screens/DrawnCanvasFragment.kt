@@ -1,13 +1,10 @@
 package com.example.sketchcrew.ui.screens
 
-import android.app.Dialog
-import android.content.Context
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.os.Build
 import android.os.Bundle
-import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -20,7 +17,6 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -31,21 +27,13 @@ import com.example.sketchcrew.data.local.models.PairConverter
 import com.example.sketchcrew.databinding.FragmentDrawnCanvasBinding
 import com.example.sketchcrew.repository.CanvasRepository
 import com.example.sketchcrew.ui.screens.CanvasView.Companion.brushColor
-import com.example.sketchcrew.ui.screens.CanvasView.Companion.path
 import com.example.sketchcrew.ui.screens.CanvasView.Companion.shapeType
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModel
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModelFactory
 import com.example.sketchcrew.utils.FileNameGen
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
+import com.example.sketchcrew.utils.Truncator
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.GenericTypeIndicator
-import com.google.firebase.database.ValueEventListener
-import org.json.JSONArray
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -63,16 +51,9 @@ class DrawnCanvasFragment : Fragment() {
     private var pathId: Int = 0
     private val listOfButtons: ArrayList<View> = ArrayList<View>()
     var mutableListButtons = mutableListOf<View>()
-    private lateinit var paint: Paint
-
-    //    private lateinit var path: Path
     private lateinit var repository: CanvasRepository
-    private var pathList: ArrayList<Pair<Path, Paint>> = arrayListOf()
     var width = 1
     var height = 1
-
-    // Firebase
-//    var drawingId = "Empty"
 
     // Firebase
     private lateinit var database: DatabaseReference
@@ -373,6 +354,18 @@ class DrawnCanvasFragment : Fragment() {
         binding.switchLayer.setOnClickListener {
             switchLayer(0)
         }
+        binding.download.setOnClickListener {
+            val bitmap = binding.myCanvas.captureBitmap()
+            val fileName: String =
+                Truncator(FileNameGen().generateFileNameJPEG(), 24, false).textTruncate()
+            binding.myCanvas.saveBitmapToFile(
+                requireContext(), bitmap,
+                "${fileName}.jpg"
+            )
+
+            Toast.makeText(requireContext(), "Image downloaded $fileName", Toast.LENGTH_LONG).show()
+
+        }
 
         binding.saveButton.setOnClickListener {
             showSaveCanvasDialog()
@@ -383,13 +376,13 @@ class DrawnCanvasFragment : Fragment() {
         val db = RoomDB.getDatabase(requireContext())
         lifecycleScope.launch {
             val pathData = withContext(Dispatchers.IO) {
-                db.pathDao().getPathById(pathId.toInt())
+                db.pathDao().getPathById(pathId)
             }
             pathData?.let {
-                binding.myCanvas.loadPathData(pathData)
-//                binding.myCanvas.setPath(it.path)
-//                binding.myCanvas.setColor(it.color)
-//                binding.myCanvas.setBrushWidth(it.strokeWidth)
+//                binding.myCanvas.loadPathData(pathData)
+                binding.myCanvas.setPath(it.path)
+                binding.myCanvas.setColor(it.color)
+                binding.myCanvas.setBrushWidth(it.strokeWidth)
             }
         }
     }
@@ -466,13 +459,14 @@ class DrawnCanvasFragment : Fragment() {
 
         // Set up the save button
         buttonSave.setOnClickListener {
-            var fileName = editTextFileName.text.toString()
-            var description = editTextDescription.text.toString()
-            var selectedFormat = spinnerFileFormat.selectedItem.toString()
+            val fileName = editTextFileName.text.toString()
+            val description = editTextDescription.text.toString()
+            val selectedFormat = spinnerFileFormat.selectedItem.toString()
 
             // Handle the save action here
             handleSave(fileName, description, selectedFormat)
             binding.myCanvas.saveCurrentPathToDatabase()
+            loadPath()
 
             dialog.dismiss()
         }
@@ -529,6 +523,7 @@ class DrawnCanvasFragment : Fragment() {
     }
 
 
+
     inner class SaveCanvasDialog(
         context: Context,
         private val onSave: (String) -> Unit
@@ -559,6 +554,7 @@ class DrawnCanvasFragment : Fragment() {
             }
         }
     }
+
 
 
     private fun setupSendCollaboration() {
@@ -644,6 +640,7 @@ class DrawnCanvasFragment : Fragment() {
 //            dialog.show()
         }
     }
+}
 
     private fun setUpStopCollaboration(){
         binding.endCollab.setOnClickListener {
@@ -668,6 +665,7 @@ class DrawnCanvasFragment : Fragment() {
 //        // Notify user
 //        Toast.makeText(requireContext(), "Collaboration set up", Toast.LENGTH_SHORT).show()
 //    }
+
 
 
 
