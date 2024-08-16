@@ -12,17 +12,14 @@
     <color name="deep_grey_300">#FFB3B1B1</color>
     <color name="grey_50">#E4E4E4</color>
 
-
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#046558</color>
     <color name="colorAccent">#D81B60</color>
     <color name="red">#D82929</color>
 
-
     <color name="wellness_text_grey1">#373545</color>
     <color name="you_not_covered_color">#F6C3C3</color>
     <color name="line_color">#ECEBEB</color>
-
 
     <color name="yellow">#FFC801</color>
 

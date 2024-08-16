@@ -2,8 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.navigationAndroid)
-    id("com.google.devtools.ksp")
     alias(libs.plugins.google.gms.google.services)
+    id("com.google.devtools.ksp")
 
 }
 
@@ -12,9 +12,8 @@ android {
     compileSdk = 34
 
     buildFeatures{
-//        dataBinding = true
-        viewBinding = true
         dataBinding = true
+        viewBinding = true
     }
 
     defaultConfig {
@@ -73,6 +72,8 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.navigation.dynamic.features.fragment)
+    implementation(libs.firebase.database)
+    implementation(libs.firebase.database.ktx)
     androidTestImplementation(libs.androidx.navigation.testing)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
@@ -84,4 +85,8 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     annotationProcessor(libs.androidx.room.compiler)
+
+    implementation (libs.circleimageview)
+    implementation (libs.firebase.storage)
+
 }

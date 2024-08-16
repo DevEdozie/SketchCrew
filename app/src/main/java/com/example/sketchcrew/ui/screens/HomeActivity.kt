@@ -25,10 +25,10 @@ class HomeActivity : AppCompatActivity() {
                     navigateTo(SketchesActivity::class.java)
                     true
                 }
-//                R.id.profile -> {
-//                    navigateTo(ProfileActivity::class.java)
-//                    true
-//                }
+                R.id.profile -> {
+                    navigateTo(ProfileActivity::class.java)
+                    true
+                }
                 else -> false
             }
         }

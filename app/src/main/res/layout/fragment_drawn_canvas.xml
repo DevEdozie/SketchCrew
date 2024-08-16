@@ -56,50 +56,207 @@
             android:layout_marginStart="4dp"
             android:padding="10dp"
             android:src="@drawable/palette" />
+
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/eraser"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:padding="10dp"
             android:src="@drawable/eraser" />
+
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/undo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="8dp"
-            android:visibility="visible"
-            android:src="@drawable/undo" />
+            android:src="@drawable/baseline_undo_24"
+            android:visibility="visible" />
+
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/redo"
             android:layout_width="40dp"
             android:layout_height="wrap_content"
             android:padding="8dp"
-            android:visibility="visible"
-            android:src="@drawable/baseline_arrow_forward_24" />
+            android:src="@drawable/baseline_redo_24"
+            android:visibility="visible" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/canvas_layout"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/linear_layout"
-        android:layout_margin="8dp"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/palette_buttons">
+        android:layout_margin="8dp">
 
-        <com.example.sketchcrew.ui.screens.CanvasView
-            android:id="@+id/my_canvas"
+        <LinearLayout
+            android:id="@+id/canvas_layout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="16dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/linear_layout"
+            android:layout_margin="8dp"
+            android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-    </LinearLayout>
+            app:layout_constraintTop_toBottomOf="@id/palette_buttons">
+
+            <com.example.sketchcrew.ui.screens.CanvasView
+                android:id="@+id/my_canvas"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="&lt;LinearLayout&#xA;        android:id=&quot;@+id/linear_layout&quot;&#xA;        android:layout_width=&quot;wrap_content&quot;&#xA;        android:layout_height=&quot;wrap_content&quot;&#xA;        android:layout_marginStart=&quot;8dp&quot;&#xA;        android:layout_marginTop=&quot;32dp&quot;&#xA;        android:layout_marginEnd=&quot;8dp&quot;&#xA;        android:background=&quot;@drawable/button_row_background&quot;&#xA;        android:orientation=&quot;horizontal&quot;&#xA;        android:padding=&quot;4dp&quot;>" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linear_layout3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/button_row_background"
+            android:orientation="vertical"
+            android:padding="4dp">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/brush"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:src="@drawable/baseline_brush_24"
+                android:visibility="visible" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/layer"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:visibility="visible"
+                android:src="@drawable/baseline_layer_24" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/text"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:src="@drawable/baseline_text_format_24"
+                android:visibility="visible" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/download"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:src="@drawable/baseline_cloud_download_24"
+                android:visibility="visible" />
+
+            <ImageView
+                android:id="@+id/send_collab"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/send_collab_ic"
+                android:padding="8dp"/>
+
+            <ImageView
+                android:id="@+id/receive_collab"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/receive_collab_ic"
+                android:padding="8dp"/>
+
+            <ImageView
+                android:id="@+id/end_collab"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/stop_collab_ic"
+                android:padding="8dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linear_layout2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="60dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/button_row_background"
+            android:orientation="vertical"
+            android:padding="4dp"
+            android:visibility="gone">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/brush_1"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:src="@drawable/baseline_brush_24_2"
+                android:visibility="visible" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/brush_2"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="8dp"
+                android:src="@drawable/baseline_brush_24_1"
+                android:visibility="visible" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/brush3"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="8dp"
+                android:src="@drawable/baseline_brush_24"
+                android:visibility="visible" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linear_layout4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="60dp"
+            android:layout_marginTop="44dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/button_row_background"
+            android:orientation="vertical"
+            android:padding="4dp"
+            android:visibility="gone">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/add_layer"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:src="@drawable/baseline_add_circle_outline_24"
+                android:visibility="visible" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/remove_layer"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="8dp"
+                android:src="@drawable/baseline_remove_circle_outline_24"
+                android:visibility="visible" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/switch_layer"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="8dp"
+                android:src="@drawable/baseline_swap_horiz_24"
+                android:visibility="visible" />
+
+        </LinearLayout>
+    </FrameLayout>
+
 
     <LinearLayout
         android:id="@+id/palette_buttons"
@@ -108,11 +265,7 @@
         android:layout_marginStart="94dp"
         android:layout_marginTop="88dp"
         android:orientation="horizontal"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/canvas_layout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/linear_layout"
-        app:layout_constraintTop_toBottomOf="@+id/linear_layout">
+        android:visibility="gone">
 
         <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/red"
