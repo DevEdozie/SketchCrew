@@ -81,7 +81,7 @@ class DrawnCanvasFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
         repository = CanvasRepository(requireContext())
         viewModel = ViewModelProvider(this, CanvasViewModelFactory(repository))
@@ -260,6 +260,8 @@ class DrawnCanvasFragment : Fragment() {
             setupSendCollaboration()
             // Set up receive collaboration feature
             setupReceiveCollaboration()
+            // Set up stop collaboration feature
+            setUpStopCollaboration()
         }
         binding.red.setOnClickListener {
             paintColor.color = Color.RED
@@ -480,21 +482,21 @@ class DrawnCanvasFragment : Fragment() {
 
     private fun handleSave(fileName: String, description: String, selectedFormat: String) {
 
-            Log.d(TAG, "onCreateView: save button clicked! ${canvasView.id}")
-            var filename = ""
-            if (fileName.isNullOrEmpty()) {
-                filename = FileNameGen().generateFileNamePNG()
-            } else {
-                if (selectedFormat == "PNG") {
-                    filename = "${fileName}.png"
-                }
-                if (selectedFormat == "JPG") {
-                    filename = "${fileName}.jpg"
-                }
-                if (selectedFormat == "SVG") {
-                    filename = "${fileName}.svg"
-                }
+        Log.d(TAG, "onCreateView: save button clicked! ${canvasView.id}")
+        var filename = ""
+        if (fileName.isNullOrEmpty()) {
+            filename = FileNameGen().generateFileNamePNG()
+        } else {
+            if (selectedFormat == "PNG") {
+                filename = "${fileName}.png"
             }
+            if (selectedFormat == "JPG") {
+                filename = "${fileName}.jpg"
+            }
+            if (selectedFormat == "SVG") {
+                filename = "${fileName}.svg"
+            }
+        }
         lifecycleScope.launch(Dispatchers.IO) {
             val bitmap = binding.myCanvas.captureBitmap()
             val drawnBitmap = binding.myCanvas.saveBitmapToFile(
@@ -525,7 +527,6 @@ class DrawnCanvasFragment : Fragment() {
     companion object {
         var paintColor = Paint()
     }
-}
 
 
     inner class SaveCanvasDialog(
@@ -563,6 +564,8 @@ class DrawnCanvasFragment : Fragment() {
     private fun setupSendCollaboration() {
         binding.sendCollab.setOnClickListener {
             canvasView.saveToFirebase()
+            // TEST
+            canvasView.loadFromFirebase()
 //            val dialog = AlertDialog.Builder(this.requireContext())
 //            val input = EditText(this.requireContext())
 //            input.inputType = InputType.TYPE_CLASS_TEXT
@@ -642,6 +645,13 @@ class DrawnCanvasFragment : Fragment() {
         }
     }
 
+    private fun setUpStopCollaboration(){
+        binding.endCollab.setOnClickListener {
+            canvasView.stopCollaboration()
+        }
+    }
+
+}
 
 
 //
@@ -660,5 +670,4 @@ class DrawnCanvasFragment : Fragment() {
 //    }
 
 
-}
 

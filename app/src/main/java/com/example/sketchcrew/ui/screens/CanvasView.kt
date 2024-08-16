@@ -65,6 +65,8 @@ class CanvasView @JvmOverloads constructor(
 
     // Firebase Variables :-> DO NOT TOUCH
     private lateinit var database: DatabaseReference
+    private var valueEventListener: ValueEventListener? = null
+    private var isShared = false // Variable to check if code is being shared or not
 //    var drawingId = "Empty"
 
 
@@ -389,12 +391,16 @@ class CanvasView @JvmOverloads constructor(
                     else -> {}
                 }
                 currentPath.reset()
-                saveToFirebase() // Update the current state
+                if (isShared) {
+                    saveToFirebase() // Update the current state
+                    // TEST
+//                    loadFromFirebase()
+                }
+
             }
         }
         return true
     }
-
 
 
     private fun touchStart() {
@@ -551,7 +557,6 @@ class CanvasView @JvmOverloads constructor(
     }
 
 
-
     // My Firebase functions: -> DO NOT TOUCH PLEASE
     // Serialization of Paths and Paints
     fun saveToJson(): JSONArray {
@@ -662,19 +667,27 @@ class CanvasView @JvmOverloads constructor(
         database = FirebaseDatabase.getInstance().getReference("drawings")
         val jsonArray = saveToJson()
         database.child("canvasData").setValue(jsonArray.toString())
+        isShared = true
+        Toast.makeText(
+            context,
+            "Data Updated...",
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     fun loadFromFirebase() {
         database = FirebaseDatabase.getInstance().getReference("drawings")
-        database.child("canvasData").addValueEventListener(object : ValueEventListener {
+        valueEventListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val jsonArray = JSONArray(snapshot.value.toString())
                 if (jsonArray != null) {
                     loadFromJson(jsonArray)
+                    // Test
+//                    saveToFirebase()
                     // Optionally, notify the user or refresh the UI
                     Toast.makeText(
                         context,
-                        "Canvas data loaded",
+                        "Canvas data loaded...",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -689,8 +702,41 @@ class CanvasView @JvmOverloads constructor(
                 )
                     .show()
             }
+        }
+        database.child("canvasData").addValueEventListener(valueEventListener as ValueEventListener)
+        isShared = true
+    }
 
-        })
+    fun stopCollaboration() {
+        database = FirebaseDatabase.getInstance().getReference("drawings")
+        // Remove the data from the database
+//        database.child("canvasData").removeValue().addOnCompleteListener { task ->
+//            if (task.isSuccessful) {
+//                // Data deleted successfully, you can perform further actions here
+//                Toast.makeText(
+//                    context,
+//                    "...",
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//            } else {
+//                // Handle any errors
+//                Toast.makeText(
+//                    context,
+//                    "Error",
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//            }
+//        }
+        // Detach the listener to stop receiving updates
+        valueEventListener?.let {
+            database.child("canvasData").removeEventListener(it)
+        }
+        isShared = false
+        Toast.makeText(
+            context,
+            "Collaboration ended...",
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
 
@@ -700,6 +746,7 @@ class CanvasView @JvmOverloads constructor(
 //        return drawingId
 //    }
 
+    // FIREBASE -> END
 
 
     fun loadPathData(pathData: PathData) {

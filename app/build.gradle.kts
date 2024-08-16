@@ -85,7 +85,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     annotationProcessor(libs.androidx.room.compiler)
 
-    implementation ("de.hdodenhof:circleimageview:3.1.0")
-    implementation ("com.google.firebase:firebase-storage:21.0.0")
+    implementation (libs.circleimageview)
+    implementation (libs.firebase.storage)
 
 }
