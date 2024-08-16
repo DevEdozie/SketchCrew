@@ -36,13 +36,13 @@ SketchCrew is a digital sketchpad Android application designed to provide artist
 ![Third Onboarding screen](https://github.com/DevEdozie/SketchCrew/blob/main/third_ob_screen.jpeg)
 *Third Onboarding screen*
 
-![SignUp screen](https://github.com/DevEdozie/SketchCrew/blob/main/sign_up_screen.jpeg)
+![SignUp screen](https://github.com/DevEdozie/SketchCrew/blob/main/B-SignUpScreen.jpg)
 *SignUp screen*
 
-![SignIn screen](https://github.com/DevEdozie/SketchCrew/blob/main/sign_in_screen.jpeg)
+![SignIn screen](https://github.com/DevEdozie/SketchCrew/blob/main/B-SignInScreen.jpg)
 *SignIn screen*
 
-![Home screen](https://github.com/DevEdozie/SketchCrew/blob/main/home_screen.jpeg)
+![Home screen](https://github.com/DevEdozie/SketchCrew/blob/main/B-HomeScreen.jpg)
 *Home screen*
 
 ![Canvas Screen with shapes](https://github.com/DevEdozie/SketchCrew/blob/main/shapes.jpeg)
@@ -57,7 +57,8 @@ SketchCrew is a digital sketchpad Android application designed to provide artist
 ![Canvas Screen with eraser](https://github.com/DevEdozie/SketchCrew/blob/main/eraser_screen.jpeg)
 *Canvas Screen with eraser*
 
-
+![Canvas List](https://github.com/DevEdozie/SketchCrew/blob/main/B-CanvasViewScreenList.jpg)
+*Canvas List*
 
 
 
