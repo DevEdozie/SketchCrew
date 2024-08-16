@@ -1,5 +1,6 @@
 [versions]
 agp = "8.5.0"
+circleimageview = "3.1.0"
 nav = "2.7.7"
 dotsindicator = "4.3"
 kotlin = "1.9.0"
@@ -35,7 +36,9 @@ firebaseDatabaseKtx = "21.0.0"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-viewpager2 = { module = "androidx.viewpager2:viewpager2", version.ref = "viewpager2" }
+circleimageview = { module = "de.hdodenhof:circleimageview", version.ref = "circleimageview" }
 dotsindicator = { module = "com.tbuonomo:dotsindicator", version.ref = "dotsindicator" }
+firebase-storage = { module = "com.google.firebase:firebase-storage", version.ref = "firebaseDatabase" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
