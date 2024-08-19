@@ -297,9 +297,11 @@
     <!--                android:layout_height="match_parent"-->
     <!--                android:background="@android:color/white" />-->
 
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/save_button"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
+        android:textColor="@color/white"
+        android:background="@drawable/black_button_bkg"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"

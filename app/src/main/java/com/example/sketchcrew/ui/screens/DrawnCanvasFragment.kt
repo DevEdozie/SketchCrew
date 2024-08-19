@@ -1,5 +1,7 @@
 package com.example.sketchcrew.ui.screens
 
+import android.app.Dialog
+import android.content.Context
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
@@ -17,6 +19,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -523,7 +526,6 @@ class DrawnCanvasFragment : Fragment() {
     }
 
 
-
     inner class SaveCanvasDialog(
         context: Context,
         private val onSave: (String) -> Unit
@@ -554,7 +556,6 @@ class DrawnCanvasFragment : Fragment() {
             }
         }
     }
-
 
 
     private fun setupSendCollaboration() {
@@ -640,9 +641,8 @@ class DrawnCanvasFragment : Fragment() {
 //            dialog.show()
         }
     }
-}
 
-    private fun setUpStopCollaboration(){
+    private fun setUpStopCollaboration() {
         binding.endCollab.setOnClickListener {
             canvasView.stopCollaboration()
         }
