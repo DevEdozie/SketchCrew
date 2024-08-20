@@ -23,6 +23,7 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.example.sketchcrew.R
 import com.example.sketchcrew.data.local.database.RoomDB
 import com.example.sketchcrew.data.local.models.CanvasModel
@@ -60,7 +61,7 @@ class DrawnCanvasFragment : Fragment() {
 
     // Firebase
     private lateinit var database: DatabaseReference
-
+    // --> DO NOT TOUCH
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -75,7 +76,7 @@ class DrawnCanvasFragment : Fragment() {
         canvasView = binding.canvasLayout.findViewById(R.id.my_canvas)
         // database
         database = FirebaseDatabase.getInstance().getReference("drawings")
-
+        // --> DO NOT TOUCH
 
         val pen: View = binding.pen
         val arrow: View = binding.arrow
@@ -240,12 +241,16 @@ class DrawnCanvasFragment : Fragment() {
                     }
                 }
             }
+            // FIREBASE FUNCTIONS: DO NOT TOUCH -->
             //Set up send collaboration feature
             setupSendCollaboration()
             // Set up receive collaboration feature
             setupReceiveCollaboration()
             // Set up stop collaboration feature
             setUpStopCollaboration()
+            // Set up chat button to navigate to chat screen
+            setUpChatButton()
+            // <-- DO NOT TOUCH
         }
         binding.red.setOnClickListener {
             paintColor.color = Color.RED
@@ -407,6 +412,7 @@ class DrawnCanvasFragment : Fragment() {
 //        }
 //    }
 
+
     private fun addNewLayer() {
         canvasView.createNewLayer(width, height)
         Toast.makeText(requireContext(), "addLayer: New Layer Added", Toast.LENGTH_LONG).show()
@@ -557,6 +563,8 @@ class DrawnCanvasFragment : Fragment() {
         }
     }
 
+    // FIREBASE FUNCTIONS: DO NOT TOUCH -->
+
 
     private fun setupSendCollaboration() {
         binding.sendCollab.setOnClickListener {
@@ -647,6 +655,14 @@ class DrawnCanvasFragment : Fragment() {
             canvasView.stopCollaboration()
         }
     }
+
+    private fun setUpChatButton() {
+        binding.chatBtn.setOnClickListener {
+            findNavController().navigate(R.id.action_drawnCanvasFragment_to_chatFragment)
+        }
+    }
+
+    // <------: END
 
 }
 

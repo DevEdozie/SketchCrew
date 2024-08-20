@@ -63,6 +63,7 @@ class CanvasView @JvmOverloads constructor(
     private var valueEventListener: ValueEventListener? = null
     private var isShared = false // Variable to check if code is being shared or not
 //    var drawingId = "Empty"
+    // < --
 
 
     init {
@@ -558,6 +559,7 @@ class CanvasView @JvmOverloads constructor(
 
 
     // My Firebase functions: -> DO NOT TOUCH PLEASE
+
     // Serialization of Paths and Paints
     fun saveToJson(): JSONArray {
         return serializePathsAndPaints(paths)
