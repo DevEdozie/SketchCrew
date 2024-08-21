@@ -159,6 +159,22 @@
                 android:src="@drawable/baseline_cloud_download_24"
                 android:visibility="visible" />
 
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/save"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:src="@drawable/baseline_save_24"
+                android:visibility="visible" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/open"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:src="@drawable/baseline_add_circle_outline_24"
+                android:visibility="visible" />
+
             <ImageView
                 android:id="@+id/send_collab"
                 android:layout_width="40dp"
@@ -297,12 +313,12 @@
     <!--                android:layout_height="match_parent"-->
     <!--                android:background="@android:color/white" />-->
 
-    <Button
-        android:id="@+id/save_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="16dp"
-        android:text="Save" />
+<!--    <Button-->
+<!--        android:id="@+id/save_button"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_alignParentBottom="true"-->
+<!--        android:layout_centerHorizontal="true"-->
+<!--        android:layout_margin="16dp"-->
+<!--        android:text="Save" />-->
 </RelativeLayout>

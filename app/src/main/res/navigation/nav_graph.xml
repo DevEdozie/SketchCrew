@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/drawnCanvasFragment">
+    app:startDestination="@id/canvasListFragment">
 
     <fragment
         android:id="@+id/canvasListFragment"
@@ -23,8 +23,8 @@
             android:id="@+id/action_drawnCanvasFragment_to_canvasListFragment"
             app:destination="@id/canvasListFragment" />
         <argument
-            android:name="pathData"
-            app:argType="integer"
-            android:defaultValue="0" />
+            android:name="id"
+            android:defaultValue="0"
+            app:argType="integer" />
     </fragment>
 </navigation>

@@ -7,11 +7,11 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.PathMeasure
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.net.Uri
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
@@ -20,32 +20,33 @@ import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.core.content.res.ResourcesCompat
 import com.example.sketchcrew.R
-import com.example.sketchcrew.data.local.database.RoomDB
+import com.example.sketchcrew.data.local.models.Drawing
+import com.example.sketchcrew.data.local.models.PairConverter
+import com.example.sketchcrew.data.local.models.PathCommand
 import com.example.sketchcrew.data.local.models.PathData
-import com.example.sketchcrew.utils.FileNameGen
 import com.example.sketchcrew.utils.LayerManager
-import com.example.sketchcrew.utils.PathIterator
 import com.example.sketchcrew.utils.PathIteratorFirebase
-import com.example.sketchcrew.utils.Truncator
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import com.google.gson.Gson
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.IOException
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
 enum class DrawingTool {
-    FREEHAND, CIRCLE, SQUARE, ARROW
+    FREEHAND, CIRCLE, SQUARE, ARROW, ERASER
 }
 
 class CanvasView @JvmOverloads constructor(
@@ -57,6 +58,7 @@ class CanvasView @JvmOverloads constructor(
     private lateinit var scaleGestureDetector: ScaleGestureDetector
     private var layerManager: LayerManager = LayerManager()
     private var currentLayer: Bitmap? = null
+    private var layerArray = mutableListOf<Bitmap>()
 
     // Firebase Variables :-> DO NOT TOUCH
     private lateinit var database: DatabaseReference
@@ -69,7 +71,8 @@ class CanvasView @JvmOverloads constructor(
 
     private var currentPath = Path()
     val paths = mutableListOf<Pair<Path, Paint>>()
-    private var currentTool = DrawingTool.FREEHAND
+    var currentTool = DrawingTool.FREEHAND
+    val mpaths = mutableListOf<Path>()
 
     private var startX = 0f
     private var startY = 0f
@@ -99,6 +102,8 @@ class CanvasView @JvmOverloads constructor(
     private var textToDraw: String? = null
     private var textX: Float = 0f
     private var textY: Float = 0f
+    private var bitmap: Bitmap? = null
+
 
     private fun init() {
         paintColor.apply {
@@ -139,6 +144,7 @@ class CanvasView @JvmOverloads constructor(
         extraBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         extraCanvas = Canvas(extraBitmap)
         extraCanvas.drawColor(backgroundColor)
+        layerArray.add(extraBitmap)
         if (width > 0 && height > 0) {
             createNewLayer(width, height)
         }
@@ -180,11 +186,23 @@ class CanvasView @JvmOverloads constructor(
                         drawCircle(myCanvas)
                     }
 
+                    DrawingTool.ERASER -> {
+                        paint.apply {
+                            color = Color.WHITE
+                        }
+                        setEraserMode(true)
+                        currentColor = Color.WHITE
+                    }
+
                     else -> {
                         myCanvas.drawPath(currentPath, paint)
                     }
                 }
                 invalidate()
+            }
+
+            bitmap?.let {
+                canvas.drawBitmap(it, 0f, 0f, null)
             }
 
             textToDraw?.let {
@@ -301,7 +319,7 @@ class CanvasView @JvmOverloads constructor(
 
     private fun setEraser() {
         paint.apply {
-            this.color = Color.TRANSPARENT
+            this.color = Color.WHITE
             xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
             strokeWidth = 60f
         }
@@ -317,7 +335,7 @@ class CanvasView @JvmOverloads constructor(
 
     fun setBrushWidth(widthStroke: Float) {
         paint.apply {
-            this.color = color
+            color = color
             xfermode = null
             strokeWidth = widthStroke
         }
@@ -325,10 +343,17 @@ class CanvasView @JvmOverloads constructor(
 
     fun setEraserMode(isEraser: Boolean) {
         eraserMode = isEraser
-        if (eraserMode) setEraser()
+
+        if (eraserMode) {
+            setEraser()
+            paint.color = Color.WHITE
+        }
     }
 
     fun setColor(color: Int) {
+        paint.apply {
+            this.color = color
+        }
         currentColor = color
         setBrush(color)
     }
@@ -341,15 +366,19 @@ class CanvasView @JvmOverloads constructor(
     fun createNewLayer(width: Int, height: Int) {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         layerManager.addLayer(bitmap)
+        layerArray.add(bitmap)
         currentLayer = bitmap
+        Canvas(bitmap)
     }
 
     fun switchToLayer(index: Int) {
         currentLayer = layerManager.getLayer(index)
+        Canvas(currentLayer!!)
     }
 
     fun removeLayer(index: Int) {
         layerManager.removeLayer(index)
+        Canvas(layerArray[index])
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -367,6 +396,7 @@ class CanvasView @JvmOverloads constructor(
                 startX = x
                 startY = y
                 currentPath.moveTo(x, y)
+                mpaths.add(currentPath)
             }
 
             MotionEvent.ACTION_MOVE -> {
@@ -374,6 +404,7 @@ class CanvasView @JvmOverloads constructor(
                 endY = y
                 if (currentTool == DrawingTool.FREEHAND) {
                     currentPath.lineTo(x, y)
+                    mpaths.add(currentPath)
                 }
                 invalidate()
             }
@@ -386,8 +417,12 @@ class CanvasView @JvmOverloads constructor(
                     DrawingTool.CIRCLE -> paths.add(Pair(drawCirclePath(), Paint(paint)))
                     DrawingTool.SQUARE -> paths.add(Pair(drawSquarePath(), Paint(paint)))
                     DrawingTool.ARROW -> paths.add(Pair(drawArrowPath(), Paint(paint)))
-                    else -> {}
+                    else -> {
+                        currentPath.moveTo(x, y)
+                        mpaths.add(currentPath)
+                    }
                 }
+                mpaths.add(currentPath)
                 currentPath.reset()
                 saveToFirebase() // Update the current state
             }
@@ -437,6 +472,31 @@ class CanvasView @JvmOverloads constructor(
         currentPath.reset()
     }
 
+    fun savePaths(file: File) {
+        try {
+            ObjectOutputStream(FileOutputStream(file)).use { it.writeObject(mpaths) }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
+    fun loadPaths(file: File) {
+        try {
+            ObjectInputStream(FileInputStream(file)).use { input ->
+                @Suppress("UNCHECKED_CAST")
+                val loadedPaths = input.readObject() as? MutableList<Path>
+                if (loadedPaths != null) {
+                    mpaths.clear()
+                    mpaths.addAll(loadedPaths)
+                    invalidate()
+                }
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } catch (e: ClassNotFoundException) {
+            e.printStackTrace()
+        }
+    }
 
     companion object {
         var shapeType = ArrayList<String>()
@@ -447,71 +507,108 @@ class CanvasView @JvmOverloads constructor(
         var paintColor = Paint()
     }
 
-    fun setPath(pathData: String): Path {
+    fun setPath(path: Path): String{
+        val pathData = StringBuilder()
+        val coords = FloatArray(2)
+        val pathMeasure = PathMeasure(path, false)
 
-        path = Path().apply {
-            // Convert path data string back to Path object
-            // Assume pathData is a series of coordinates in the format "x1,y1;x2,y2;..."
-            val coordinates = pathData.split(";")
-            coordinates.forEachIndexed { index, coordinate ->
-                val points = coordinate.split(",")
-                if (points.size == 2) {
-                    try {
-                        val x = points[0].toFloat()
-                        val y = points[1].toFloat()
-                        if (index == 0) {
-                            moveTo(x, y)
-                        } else {
-                            lineTo(x, y)
-                        }
-                    } catch (e: NumberFormatException) {
-                        // Log or handle the error gracefully
-                        Log.e("CanvasView", "Invalid coordinate format: $coordinate")
-                    }
+        do {
+            var distance = 0f
+            while (distance < pathMeasure.length) {
+                pathMeasure.getPosTan(distance, coords, null)
+                if (distance == 0f) {
+                    pathData.append("M${coords[0]},${coords[1]}")
                 } else {
-                    // Log or handle the error gracefully
-                    Log.e("CanvasView", "Invalid coordinate pair: $coordinate")
+                    pathData.append("L${coords[0]},${coords[1]}")
                 }
+                distance += pathMeasure.length / 100 // Adjust for more precision
             }
-        }
-        invalidate()
-        return path
+        } while (pathMeasure.nextContour())
+
+        return pathData.toString()
+//        path = Path().apply {
+//            // Convert path data string back to Path object
+//            // Assume pathData is a series of coordinates in the format "x1,y1;x2,y2;..."
+//            val coordinates = pathData.split(";")
+//            coordinates.forEachIndexed { index, coordinate ->
+//                val points = coordinate.split(",")
+//                if (points.size == 2) {
+//                    try {
+//                        val x = points[0].toFloat()
+//                        val y = points[1].toFloat()
+//                        if (index == 0) {
+//                            moveTo(x, y)
+//                        } else {
+//                            lineTo(x, y)
+//                        }
+//                    } catch (e: NumberFormatException) {
+//                        // Log or handle the error gracefully
+//                        Log.e("CanvasView", "Invalid coordinate format: $coordinate")
+//                    }
+//                } else {
+//                    // Log or handle the error gracefully
+//                    Log.e("CanvasView", "Invalid coordinate pair: $coordinate")
+//                }
+//            }
+//        }
+//        invalidate()
+
+//        currentPath.addPath(path)
+//        mpaths.add(path)
+//        return path
     }
 
+    fun setBitmap(bitmap: Bitmap) {
+        this.bitmap = bitmap
+        invalidate()  // Redraw the view
+    }
 
     fun getPathData(path: Path): String {
-        val pathData = StringBuilder()
 
-        val pathPoints = FloatArray(6) // Array to store the coordinates from the path
-        val pathIterator = PathIterator(path)
+        val pathData = mutableListOf<PathCommand>()
+        val pathMeasure = PathMeasure(path, false)
+        val segment = FloatArray(2)
 
-        while (!pathIterator.isDone()) {
-            val type = pathIterator.currentSegment(pathPoints)
-            when (type) {
-                PathIterator.SEG_MOVETO -> {
-                    pathData.append("M${pathPoints[0]},${pathPoints[1]} ")
-                }
-
-                PathIterator.SEG_LINETO -> {
-                    pathData.append("L${pathPoints[0]},${pathPoints[1]} ")
-                }
-
-                PathIterator.SEG_QUADTO -> {
-                    pathData.append("Q${pathPoints[0]},${pathPoints[1]} ${pathPoints[2]},${pathPoints[3]} ")
-                }
-
-                PathIterator.SEG_CUBICTO -> {
-                    pathData.append("C${pathPoints[0]},${pathPoints[1]} ${pathPoints[2]},${pathPoints[3]} ${pathPoints[4]},${pathPoints[5]} ")
-                }
-
-                PathIterator.SEG_CLOSE -> {
-                    pathData.append("Z ")
-                }
-            }
-            pathIterator.next()
+        var distance = 0f
+        while (distance < pathMeasure.length) {
+            pathMeasure.getPosTan(distance, segment, null)
+            pathData.add(PathCommand(segment[0], segment[1]))
+            distance += pathMeasure.length / 100 // Sample 100 points or more if needed
         }
 
-        return pathData.toString().trim()
+        return Gson().toJson(pathData)
+//        val pathData = StringBuilder()
+//
+//        val pathPoints = FloatArray(6) // Array to store the coordinates from the path
+//        val pathIterator = PathIterator(path)
+//
+//        while (!pathIterator.isDone()) {
+//            val type = pathIterator.currentSegment(pathPoints)
+//            when (type) {
+//                PathIterator.SEG_MOVETO -> {
+//                    pathData.append("M${pathPoints[0]},${pathPoints[1]} ")
+//                }
+//
+//                PathIterator.SEG_LINETO -> {
+//                    pathData.append("L${pathPoints[0]},${pathPoints[1]} ")
+//                }
+//
+//                PathIterator.SEG_QUADTO -> {
+//                    pathData.append("Q${pathPoints[0]},${pathPoints[1]} ${pathPoints[2]},${pathPoints[3]} ")
+//                }
+//
+//                PathIterator.SEG_CUBICTO -> {
+//                    pathData.append("C${pathPoints[0]},${pathPoints[1]} ${pathPoints[2]},${pathPoints[3]} ${pathPoints[4]},${pathPoints[5]} ")
+//                }
+//
+//                PathIterator.SEG_CLOSE -> {
+//                    pathData.append("Z ")
+//                }
+//            }
+//            pathIterator.next()
+//        }
+//
+//        return pathData.toString().trim()
     }
 
 
@@ -562,7 +659,7 @@ class CanvasView @JvmOverloads constructor(
         invalidate()
     }
 
-    private fun serializePathsAndPaints(paths: List<Pair<Path, Paint>>): JSONArray {
+    fun serializePathsAndPaints(paths: List<Pair<Path, Paint>>): JSONArray {
         val jsonArray = JSONArray()
         for ((path, paint) in paths) {
             val pathPoints = serializePath(path)
@@ -577,7 +674,7 @@ class CanvasView @JvmOverloads constructor(
         return jsonArray
     }
 
-    private fun serializePath(path: Path): JSONArray {
+     fun serializePath(path: Path): JSONArray {
         val pathPoints = JSONArray()
         val pathIterator = PathIteratorFirebase(path)
 
@@ -698,38 +795,73 @@ class CanvasView @JvmOverloads constructor(
 //    }
 
 
-    fun loadPathData(pathData: PathData) {
-        val filename = pathData.name
-        val file = File("/storage/emulated/0/Android/data/com.example.sketchcrew/files/$filename")
-        val fileURI: Uri =
-            FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-        currentPath.reset()
+    fun loadPathData(path: Path, paint: Paint) {
+//        val filename = path.
+//        val file = File("/storage/emulated/0/Android/data/com.example.sketchcrew/files/$filename")
+//        val fileURI: Uri =
+//            FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+////        currentPath.reset()
+//        mpaths.clear()
+//        mpaths.add(currentPath)
 //        val canvas = Canvas(currentLayer!!)
-        setPath(pathData.path) // Set the path using the serialized string
-
+//        setPath(pathData.path) // Set the path using the serialized string
+        paths.clear()
+        paths.add(Pair(path, paint))
         // Set paint properties
-        setColor(pathData.color)
-        setBrushWidth(pathData.strokeWidth)
-        loadBitmapFromFile(context, fileURI)
+        setColor(paint.color)
+        setBrushWidth(paint.strokeWidth)
+//        loadBitmapFromFile(context, fileURI)
 
 //        canvas.drawPath(setPath(pathData.path), paint)
         invalidate() // Redraw the canvas with the new path data
     }
 
+    fun pathToString(path: Path): String {
+        // Convert the Path to a String representation
+        val pathMeasure = PathMeasure(path, false)
+        val pathData = StringBuilder()
+        val coords = FloatArray(2)
 
-    fun saveCurrentPathToDatabase() {
-        val pathString = getPathData(currentPath)
-        val pathData = PathData(
-            name = FileNameGen().generateFileNamePNG(),
-            desc = Truncator(FileNameGen().generateFileNamePNG(), 10, true).textTruncate(),
-            path = pathString,
-            color = paintColor.color,
-            strokeWidth = paintColor.strokeWidth
-        )
-        val db = RoomDB.getDatabase(context)
-        GlobalScope.launch(Dispatchers.IO) {
-            db.pathDao().insert(pathData)
+        while (pathMeasure.nextContour()) {
+            pathMeasure.getPosTan(0f, coords, null)
+            pathData.append("M${coords[0]},${coords[1]}")
+            // Add additional path commands (L, Q, C) based on the path contents
         }
+
+        return pathData.toString()
+    }
+
+    fun saveCurrentPathToDatabase(filename: String, desc: String) {
+//        var pathString = getPathData(currentPath)
+        val pathDataList = paths.map {
+            (path, paint) -> {
+            PathData(
+                name = filename,
+                desc = desc,
+                path = setPath(path), // Convert Path to String
+                color = paint.color,
+                strokeWidth = paint.strokeWidth
+            )
+        }
+        }
+        val serializedPaths = Gson().toJson(pathDataList)
+        val serializedPaint = Gson().toJson(paint)
+
+        val drawing = Drawing(filename = filename, pathData = serializedPaths, paintData = serializedPaint)
+
+            // Save to database using coroutine or other threading strategy
+
+//        val pathData = PathData(
+//            name = filename,
+//            desc = desc,
+//            path = pathString,
+//            color = paintColor.color,
+//            strokeWidth = paintColor.strokeWidth
+//        )
+//        val db = RoomDB.getDatabase(context)
+//        GlobalScope.launch(Dispatchers.IO) {
+//            db.drawingDao().insertDrawing(drawing)
+//        }
     }
 
 }
