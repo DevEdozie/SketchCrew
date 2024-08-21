@@ -79,7 +79,7 @@ class DrawnCanvasFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
         repository = CanvasRepository(requireContext())
         viewModel = ViewModelProvider(this, CanvasViewModelFactory(repository))
@@ -258,6 +258,8 @@ class DrawnCanvasFragment : Fragment() {
             setupSendCollaboration()
             // Set up receive collaboration feature
             setupReceiveCollaboration()
+            // Set up stop collaboration feature
+            setUpStopCollaboration()
         }
         binding.red.setOnClickListener {
             paintColor.color = Color.RED
@@ -654,9 +656,46 @@ class DrawnCanvasFragment : Fragment() {
         private val REQUEST_CODE_PICK_IMAGE = 102
     }
 
+
+
+    inner class SaveCanvasDialog(
+        context: Context,
+        private val onSave: (String) -> Unit
+    ) : Dialog(context) {
+
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            setContentView(R.layout.save_canvas_dialog)
+
+            val canvasNameEditText: EditText = findViewById(R.id.canvasNameEditText)
+            val saveButton: Button = findViewById(R.id.saveButton)
+            val cancelButton: Button = findViewById(R.id.cancelButton)
+
+            canvasNameEditText.doAfterTextChanged {
+                saveButton.isEnabled = it.toString().trim().isNotEmpty()
+            }
+
+            saveButton.setOnClickListener {
+                val canvasName = canvasNameEditText.text.toString().trim()
+                if (canvasName.isNotEmpty()) {
+                    onSave(canvasName)
+                    dismiss()
+                }
+            }
+
+            cancelButton.setOnClickListener {
+                dismiss()
+            }
+        }
+    }
+
+
+
     private fun setupSendCollaboration() {
         binding.sendCollab.setOnClickListener {
             canvasView.saveToFirebase()
+            // TEST
+            canvasView.loadFromFirebase()
 //            val dialog = AlertDialog.Builder(this.requireContext())
 //            val input = EditText(this.requireContext())
 //            input.inputType = InputType.TYPE_CLASS_TEXT
@@ -737,6 +776,13 @@ class DrawnCanvasFragment : Fragment() {
     }
 }
 
+    private fun setUpStopCollaboration(){
+        binding.endCollab.setOnClickListener {
+            canvasView.stopCollaboration()
+        }
+    }
+
+}
 
 
 //
