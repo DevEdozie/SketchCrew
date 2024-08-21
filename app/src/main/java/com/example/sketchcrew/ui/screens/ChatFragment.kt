@@ -2,6 +2,8 @@ package com.example.sketchcrew.ui.screens
 
 import android.os.Build
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -33,10 +35,12 @@ class ChatFragment : Fragment() {
     private lateinit var messageAdapter: MessageAdapter
     private lateinit var messageList: ArrayList<ChatMessage>
     private lateinit var database: DatabaseReference
+    private lateinit var typingStatusRef: DatabaseReference
     private var currentUser: String = ""
     private lateinit var auth: FirebaseAuth
 
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -48,19 +52,20 @@ class ChatFragment : Fragment() {
         // Get a reference to the database
         database =
             FirebaseDatabase.getInstance().getReference().child("messages")
-
+        typingStatusRef = FirebaseDatabase.getInstance().getReference("typingStatus")
         // Get a reference to the Firebase auth
         auth = Firebase.auth
-
         // Get a reference to the current user
         currentUser = auth.currentUser?.email.toString()
 
-        // Initialize message
+        // Initialize message list and set up UI components
         messageList = ArrayList()
-
-
         setUpSendButton()
         setUpRecyclerView()
+
+        // Set up typing indicator
+        setUpTypingIndicator()
+        listenForTypingStatus()
 
 
         return binding.root
@@ -110,19 +115,19 @@ class ChatFragment : Fragment() {
             }
 
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-                TODO("Not yet implemented")
+                // Do nothing
             }
 
             override fun onChildRemoved(snapshot: DataSnapshot) {
-                TODO("Not yet implemented")
+                // Do nothing
             }
 
             override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
-                TODO("Not yet implemented")
+                // Do nothing
             }
 
             override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
+                // Do nothing
             }
 
         })
@@ -137,6 +142,77 @@ class ChatFragment : Fragment() {
             adapter = messageAdapter
             setHasFixedSize(true)
         }
+    }
+
+    private fun setUpTypingIndicator() {
+        binding.messageInputEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                // Do nothing
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val user = currentUser
+                // Split the string at '@'
+                val parts = user.split("@")
+                // Get the part before '@'
+                val username = parts[0]
+                // Set the current user as typing
+                typingStatusRef.child(username).setValue(currentUser)
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                if (s.isNullOrEmpty()) {
+                    val user = currentUser
+                    // Split the string at '@'
+                    val parts = user.split("@")
+                    // Get the part before '@'
+                    val username = parts[0]
+                    // Remove the current user from the typing status
+                    typingStatusRef.child(username).removeValue()
+                }
+            }
+
+        })
+    }
+
+    private fun listenForTypingStatus() {
+        typingStatusRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val typingUsers = mutableListOf<String>()
+
+                for (userSnapshot in snapshot.children) {
+                    //
+                    val user = currentUser
+                    // Split the string at '@'
+                    val parts = user.split("@")
+                    // Get the part before '@'
+                    val username = parts[0]
+                    //
+                    val typingUser = userSnapshot.getValue(String::class.java)
+                    val typingUserParts = typingUser?.split("@")
+                    val currentTyper = typingUserParts?.get(0)
+                    if (currentTyper != null && currentTyper != username) {
+                        typingUsers.add(currentTyper)
+                    }
+                }
+
+                if (typingUsers.isNotEmpty()) {
+                    binding.typingIndicatorTextView.visibility = View.VISIBLE
+                    binding.typingIndicatorTextView.text = when (typingUsers.size) {
+                        1 -> "${typingUsers[0]} is typing..."
+                        2 -> "${typingUsers.joinToString(" and ")} are typing..."
+                        else -> "Multiple people are typing..."
+                    }
+                } else {
+                    binding.typingIndicatorTextView.visibility = View.GONE
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Do nothing
+            }
+
+        })
     }
 
 
