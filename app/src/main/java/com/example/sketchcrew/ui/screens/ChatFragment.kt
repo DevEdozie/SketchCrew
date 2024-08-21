@@ -15,6 +15,8 @@ import com.example.sketchcrew.R
 import com.example.sketchcrew.databinding.FragmentChatBinding
 import com.example.sketchcrew.firebase.ChatMessage
 import com.example.sketchcrew.firebase.MessageAdapter
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.auth.ktx.auth
@@ -29,7 +31,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 
-class ChatFragment : Fragment() {
+class ChatFragment : BottomSheetDialogFragment() {
 
     private lateinit var binding: FragmentChatBinding
     private lateinit var messageAdapter: MessageAdapter
@@ -45,9 +47,10 @@ class ChatFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        //
+        setStyle(STYLE_NORMAL, R.style.BottomSheetDialogTheme)
         // Inflate the layout for this fragment
         binding = FragmentChatBinding.inflate(layoutInflater, container, false)
-
 
         // Get a reference to the database
         database =
@@ -66,6 +69,9 @@ class ChatFragment : Fragment() {
         // Set up typing indicator
         setUpTypingIndicator()
         listenForTypingStatus()
+
+        // Set up function to dismiss the dialog
+        setupCancelButton()
 
 
         return binding.root
@@ -213,6 +219,22 @@ class ChatFragment : Fragment() {
             }
 
         })
+    }
+
+    private fun setupCancelButton() {
+        binding.cancelIv.setOnClickListener {
+            dismiss()
+        }
+    }
+
+    // TEST
+    override fun onStart() {
+        super.onStart()
+        val bottomSheet =
+            dialog?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+        bottomSheet?.layoutParams?.height = ViewGroup.LayoutParams.MATCH_PARENT
+        val behavior = BottomSheetBehavior.from(bottomSheet!!)
+        behavior.state = BottomSheetBehavior.STATE_EXPANDED
     }
 
 
