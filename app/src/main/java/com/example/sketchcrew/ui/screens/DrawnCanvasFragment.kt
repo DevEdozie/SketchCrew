@@ -330,6 +330,17 @@ class DrawnCanvasFragment : Fragment() {
             binding.myCanvas.setColor(Color.BLACK)
             binding.myCanvas.setBrushWidth(16f)
         }
+        binding.menu.setOnClickListener {
+            binding.menu.visibility =View.GONE
+            binding.menuOpen.visibility = View.VISIBLE
+            binding.linearLayout3.visibility = View.VISIBLE
+        }
+
+        binding.menuOpen.setOnClickListener {
+            binding.menuOpen.visibility =View.GONE
+            binding.menu.visibility = View.VISIBLE
+            binding.linearLayout3.visibility = View.GONE
+        }
 
         binding.pen.setOnClickListener {
             binding.myCanvas.setTool(DrawingTool.FREEHAND)
