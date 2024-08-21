@@ -4,6 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/canvasListFragment">
+    <action
+        android:id="@+id/action_global_drawnCanvasFragment"
+        app:destination="@id/drawnCanvasFragment" />
 
     <fragment
         android:id="@+id/canvasListFragment"
@@ -26,5 +29,22 @@
             android:name="id"
             android:defaultValue="0"
             app:argType="integer" />
+        <action
+            android:id="@+id/action_drawnCanvasFragment_to_navigation"
+            app:destination="@id/navigation" />
     </fragment>
+    <navigation android:id="@+id/navigation"
+        app:startDestination="@id/sketchesActivity">
+        <activity
+            android:id="@+id/sketchesActivity"
+            android:name="com.example.sketchcrew.ui.screens.SketchesActivity"
+            android:label="SketchesActivity" />
+<!--        <action-->
+<!--            android:id="@+id/action_global_drawnCanvasFragment"-->
+<!--            app:destination="@id/drawnCanvasFragment" />-->
+        <argument
+            android:name="id"
+            app:argType="integer"
+            android:defaultValue="0" />
+    </navigation>
 </navigation>
