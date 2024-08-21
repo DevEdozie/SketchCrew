@@ -11,6 +11,9 @@ import android.graphics.PathMeasure
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.net.Uri
+import android.text.Layout
+import android.text.StaticLayout
+import android.text.TextPaint
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
@@ -84,6 +87,7 @@ class CanvasView @JvmOverloads constructor(
     //Variables for caching
     private lateinit var extraCanvas: Canvas
     private lateinit var extraBitmap: Bitmap
+    private lateinit var staticLayout: StaticLayout
 
     private var drawing = Path()
 
@@ -154,8 +158,17 @@ class CanvasView @JvmOverloads constructor(
 
     fun setTextToDraw(text: String, x: Float, y: Float) {
         textToDraw = text
-        textX = x
-        textY = y
+        val textPaint: TextPaint = TextPaint()
+        textPaint.setAntiAlias(true)
+        textPaint.setTextSize(16 * getResources().getDisplayMetrics().density);
+        textPaint.color = 0xFF000000.toInt()
+
+        val width = textPaint.measureText(textToDraw).toFloat()
+        staticLayout= StaticLayout(text, textPaint,
+            width.toInt(), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0F, false)
+
+//        textX = x
+//        textY = y
         invalidate() // Redraw the view
     }
 
@@ -208,13 +221,14 @@ class CanvasView @JvmOverloads constructor(
             }
 
             textToDraw?.let {
-                paint.color = Color.WHITE
-                paint.style = Paint.Style.FILL
-                canvas.drawPaint(paint)
+//                paint.color = Color.WHITE
+//                paint.style = Paint.Style.FILL
+//                canvas.drawPaint(paint)
 
-                paint.color = Color.BLACK
-                paint.textSize = 48F
-                canvas.drawText(it, textX, textY, paint)
+//                paint.color = Color.BLACK
+//                paint.textSize = 48F
+                staticLayout.draw(canvas);
+//                canvas.drawText(it, textX, textY, paint)
             }
             restore()
         }
