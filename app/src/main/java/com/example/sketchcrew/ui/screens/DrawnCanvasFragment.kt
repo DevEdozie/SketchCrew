@@ -1,5 +1,7 @@
 package com.example.sketchcrew.ui.screens
 
+import android.app.Dialog
+import android.content.Context
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
@@ -17,9 +19,11 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.example.sketchcrew.R
 import com.example.sketchcrew.data.local.database.RoomDB
 import com.example.sketchcrew.data.local.models.CanvasModel
@@ -57,7 +61,7 @@ class DrawnCanvasFragment : Fragment() {
 
     // Firebase
     private lateinit var database: DatabaseReference
-
+    // --> DO NOT TOUCH
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -72,7 +76,7 @@ class DrawnCanvasFragment : Fragment() {
         canvasView = binding.canvasLayout.findViewById(R.id.my_canvas)
         // database
         database = FirebaseDatabase.getInstance().getReference("drawings")
-
+        // --> DO NOT TOUCH
 
         val pen: View = binding.pen
         val arrow: View = binding.arrow
@@ -237,12 +241,16 @@ class DrawnCanvasFragment : Fragment() {
                     }
                 }
             }
+            // FIREBASE FUNCTIONS: DO NOT TOUCH -->
             //Set up send collaboration feature
             setupSendCollaboration()
             // Set up receive collaboration feature
             setupReceiveCollaboration()
             // Set up stop collaboration feature
             setUpStopCollaboration()
+            // Set up chat button to navigate to chat screen
+            setUpChatButton()
+            // <-- DO NOT TOUCH
         }
         binding.red.setOnClickListener {
             paintColor.color = Color.RED
@@ -404,6 +412,7 @@ class DrawnCanvasFragment : Fragment() {
 //        }
 //    }
 
+
     private fun addNewLayer() {
         canvasView.createNewLayer(width, height)
         Toast.makeText(requireContext(), "addLayer: New Layer Added", Toast.LENGTH_LONG).show()
@@ -523,7 +532,6 @@ class DrawnCanvasFragment : Fragment() {
     }
 
 
-
     inner class SaveCanvasDialog(
         context: Context,
         private val onSave: (String) -> Unit
@@ -555,6 +563,7 @@ class DrawnCanvasFragment : Fragment() {
         }
     }
 
+    // FIREBASE FUNCTIONS: DO NOT TOUCH -->
 
 
     private fun setupSendCollaboration() {
@@ -562,109 +571,34 @@ class DrawnCanvasFragment : Fragment() {
             canvasView.saveToFirebase()
             // TEST
             canvasView.loadFromFirebase()
-//            val dialog = AlertDialog.Builder(this.requireContext())
-//            val input = EditText(this.requireContext())
-//            input.inputType = InputType.TYPE_CLASS_TEXT
-            // Create a Unique Id for this drawing
-//            val drawingId = database.push().key!!
-//            drawingId = database.push().key!!
-//            dialog.setTitle("Project ID")
-//            dialog.setView(input)
-//            dialog.setMessage(canvasView.getUniqueId())
-            // Set the id in the Edittext
-//            input.setText(drawingId)
-//            input.setText(canvasView.getUniqueId())
-//            dialog.setPositiveButton("Ok") { _, _ ->
-//                database = FirebaseDatabase.getInstance().getReference("drawings/$drawingId")
-//              TEST
-//                canvasView.saveToFirebase()
-
-//                // Save current canvas data to Firebase
-//                val jsonArray = canvasView.saveToJson()
-//                database.child(drawingId).child("canvasData").setValue(jsonArray.toString())
-//
-//                // Save user id as a collaborator
-//                val userId = FirebaseAuth.getInstance().currentUser?.uid
-//                database.child(drawingId).child("collaborators").child(userId!!).setValue(true)
-//
-//                // Notify user
-//                Toast.makeText(requireContext(), "Collaboration set up", Toast.LENGTH_SHORT).show()
-//            }
-//
-//            dialog.setNegativeButton("Cancel", null)
-//            dialog.show()
         }
     }
 
     private fun setupReceiveCollaboration() {
         binding.receiveCollab.setOnClickListener {
             canvasView.loadFromFirebase()
-//            val dialog = AlertDialog.Builder(requireContext())
-//            val input = EditText(requireContext())
-//            input.inputType = InputType.TYPE_CLASS_TEXT
-//            dialog.setTitle("Enter Drawing ID")
-//            dialog.setView(input)
-//            dialog.setPositiveButton("Ok") { _, _ ->
-//                val drawingId = input.text.toString()
-////                database = FirebaseDatabase.getInstance().getReference("drawings/$drawingId")
-//
-//                // Get Canvas data from Firebase
-//                database.child(drawingId).child("canvasData")
-//                    .addValueEventListener(object : ValueEventListener {
-//                        override fun onDataChange(snapshot: DataSnapshot) {
-//                            val jsonArray = JSONArray(snapshot.value.toString())
-//                            if (jsonArray != null) {
-//                                canvasView.loadFromJson(jsonArray)
-//                                // Optionally, notify the user or refresh the UI
-//                                Toast.makeText(
-//                                    requireContext(),
-//                                    "Canvas data loaded",
-//                                    Toast.LENGTH_SHORT
-//                                ).show()
-//                            }
-//                        }
-//
-//                        override fun onCancelled(error: DatabaseError) {
-//                            // Handle error
-//                            Toast.makeText(
-//                                requireContext(),
-//                                "Error loading data",
-//                                Toast.LENGTH_SHORT
-//                            )
-//                                .show()
-//                        }
-//                    })
-//            }
-//
-//            dialog.setNegativeButton("Cancel", null)
-//            dialog.show()
+
         }
     }
-}
 
-    private fun setUpStopCollaboration(){
+    private fun setUpStopCollaboration() {
         binding.endCollab.setOnClickListener {
             canvasView.stopCollaboration()
         }
     }
 
+    private fun setUpChatButton() {
+        binding.chatBtn.setOnClickListener {
+            val bottomSheet = ChatFragment()
+            bottomSheet.show(parentFragmentManager, "ChatFragment")
+        }
+    }
+
+
+    // <------: END
+
 }
 
-
-//
-//     fun saveToFirebase() {
-//         canvasView = binding.canvasLayout.findViewById(R.id.my_canvas)
-//        // Save current canvas data to Firebase
-//        val jsonArray = canvasView.saveToJson()
-//        database.child(drawingId).child("canvasData").setValue(jsonArray.toString())
-//
-//        // Save user id as a collaborator
-//        val userId = FirebaseAuth.getInstance().currentUser?.uid
-//        database.child(drawingId).child("collaborators").child(userId!!).setValue(true)
-//
-//        // Notify user
-//        Toast.makeText(requireContext(), "Collaboration set up", Toast.LENGTH_SHORT).show()
-//    }
 
 
 

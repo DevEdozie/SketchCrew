@@ -21,10 +21,10 @@ class HomeActivity : AppCompatActivity() {
                 R.id.home -> {
                     true
                 }
-                R.id.explore -> {
-                    navigateTo(SketchesActivity::class.java)
-                    true
-                }
+//                R.id.explore -> {
+//                    navigateTo(SketchesActivity::class.java)
+//                    true
+//                }
                 R.id.profile -> {
                     navigateTo(ProfileActivity::class.java)
                     true
