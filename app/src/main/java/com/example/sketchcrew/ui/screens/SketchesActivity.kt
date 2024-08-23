@@ -4,7 +4,6 @@ import Sketch
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.sketchcrew.R
 import com.example.sketchcrew.SketchAdapter
 import com.example.sketchcrew.databinding.ActivitySketchesBinding
 
@@ -33,7 +32,6 @@ class SketchesActivity : AppCompatActivity() {
     }
 
     private fun loadData() {
-
     }
 
     private fun deleteSketch(sketch: Sketch) {

@@ -4,6 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/canvasListFragment">
+    <action
+        android:id="@+id/action_global_drawnCanvasFragment"
+        app:destination="@id/drawnCanvasFragment" />
 
     <fragment
         android:id="@+id/canvasListFragment"
@@ -23,9 +26,9 @@
             android:id="@+id/action_drawnCanvasFragment_to_canvasListFragment"
             app:destination="@id/canvasListFragment" />
         <argument
-            android:name="pathData"
-            app:argType="integer"
-            android:defaultValue="0" />
+            android:name="id"
+            android:defaultValue="0"
+            app:argType="integer" />
         <action
             android:id="@+id/action_drawnCanvasFragment_to_chatFragment"
             app:destination="@id/chatFragment" />

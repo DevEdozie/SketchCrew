@@ -1,7 +1,11 @@
 package com.example.sketchcrew.ui.screens
 
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Path
 import android.os.Bundle
 import android.util.Log
+import android.util.Pair
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,12 +19,18 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.sketchcrew.R
 import com.example.sketchcrew.data.local.database.RoomDB
 import com.example.sketchcrew.data.local.models.CanvasData
+import com.example.sketchcrew.data.local.models.Drawing
+import com.example.sketchcrew.data.local.models.PairConverter
+import com.example.sketchcrew.data.local.models.PathData
 import com.example.sketchcrew.databinding.FragmentCanvasListBinding
 import com.example.sketchcrew.repository.CanvasRepository
 import com.example.sketchcrew.ui.adapters.CanvasListAdapter
+import com.example.sketchcrew.ui.adapters.DrawingAdapter
 import com.example.sketchcrew.ui.adapters.PathAdapter
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModel
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModelFactory
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -35,7 +45,7 @@ class CanvasListFragment : Fragment() {
     private lateinit var repository: CanvasRepository
     private lateinit var adapter: CanvasListAdapter
     private lateinit var recycle: RecyclerView
-    private lateinit var pathAdapter: PathAdapter
+//    private lateinit var pathAdapter: PathAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -53,109 +63,29 @@ class CanvasListFragment : Fragment() {
         binding.newCanvas.setOnClickListener {
             findNavController().navigate(R.id.action_canvasListFragment_to_drawnCanvasFragment)
         }
-
-
-        lifecycleScope.launch {
-            viewModel.loadCanvases()
-            viewModel.canvases.observe(viewLifecycleOwner, Observer { canvases ->
-                Log.d(TAG, "onCreateView: $canvases")
-                adapter =
-                    CanvasListAdapter(canvases, object : CanvasListAdapter.OnItemClickListener {
-                        override fun onCanvasClick(canvasData: CanvasData) {
-                            lifecycleScope.launch {
-                                val pathData = viewModel.getCanvas(canvasData.id)?.paths.toString()
-                                    .trimIndent()
-//                        val gson = Gson()
-//                        val type = object : TypeToken<List<PathData>>() {}.type
-//                        val pathDataList: List<PathData> = gson.fromJson(pathData, type)
-//                        val pathDataString = convertToPathDataString(pathDataList)
-                                if (pathData == null) {
-                                    findNavController().navigate(R.id.action_canvasListFragment_to_drawnCanvasFragment)
-                                } else {
-                                    val action =
-                                        CanvasListFragmentDirections.actionCanvasListFragmentToDrawnCanvasFragment(
-                                            pathData.toInt()
-                                        )
-                                    findNavController().navigate(action)
-                                }
-                            }
-                        }
-
-                        override fun onSaveCanvas(canvasData: CanvasData) {
-                            lifecycleScope.launch {
-                                viewModel.saveCanvas(canvasData)
-                            }
-                        }
-
-                        override fun onDeleteCanvas(canvasData: CanvasData) {
-                            lifecycleScope.launch {
-                                viewModel.deleteCanvas(canvasData)
-                            }
-                        }
-                    })
-                recycle.adapter = adapter
-            })
-
-
-//            { canvas ->
-//                // Handle canvas selection (e.g., navigate to drawing screen)
-//
-//            }
-//        })
-
-        }
-
-
-//        viewModel.canvases.observe(viewLifecycleOwner) { canvases ->
-//            adapter.submitList(canvases)
-//        }
-
-
         return _binding.root
     }
 
     private fun loadPaths() {
-        val db = RoomDB.getDatabase(requireContext())
+        val drawAdapter = DrawingAdapter ({ drawing ->
+            val action =
+                CanvasListFragmentDirections.actionCanvasListFragmentToDrawnCanvasFragment(
+                    drawing.id.toInt()
+                )
+            findNavController().navigate(action)
+        },
+            { drawing ->
+                lifecycleScope.launch (Dispatchers.IO){
+                    viewModel.deleteDrawing(drawing.id)
+                }
+            }
+        )
+        recycle.adapter = drawAdapter
         lifecycleScope.launch {
-            val paths = withContext(Dispatchers.IO) {
-                db.pathDao().getAllPaths()
-            }
-            pathAdapter = PathAdapter(paths) { pathData ->
-                // Handle path click
-                val action =
-                    CanvasListFragmentDirections.actionCanvasListFragmentToDrawnCanvasFragment(
-                        pathData.id
-                    )
-                findNavController().navigate(action)
-            }
-//                val intent = Intent(this@PathListActivity, EditPathActivity::class.java).apply {
-//                    putExtra("pathId", pathData.id)
-//                }
-//                startActivity(intent)
+            viewModel.loadDrawings.observe(viewLifecycleOwner){ drawing ->
+                drawAdapter.submitList(drawing)
 
-            recycle.adapter = pathAdapter
+            }
         }
-
-    }
-
-//    fun convertToPathDataString(pathDataList: List<PathData>): String {
-//        return buildString {
-//            pathDataList.forEachIndexed { index, pathData ->
-//                // Extract x and y coordinates from mNativePaint
-//                // Assuming mNativePaint encodes coordinates in a specific format, e.g., as integers or floats
-//                // Here, you must replace this example with your actual logic to extract coordinates
-//                val x = pathData.second.mNativePaint.toFloat() // this is a placeholder logic
-//                val y = pathData.second.mNativePaint.toFloat() // this is a placeholder logic
-//
-//                if (index != 0) {
-//                    append(";")
-//                }
-//                append("$x,$y")
-//            }
-//        }
-//    }
-
-    companion object {
-
     }
 }

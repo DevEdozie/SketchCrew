@@ -1,12 +1,20 @@
 package com.example.sketchcrew.ui.screens
 
-import android.app.Dialog
+import android.Manifest
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -18,6 +26,8 @@ import android.widget.Spinner
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
@@ -25,8 +35,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.sketchcrew.R
-import com.example.sketchcrew.data.local.database.RoomDB
-import com.example.sketchcrew.data.local.models.CanvasModel
+import com.example.sketchcrew.data.local.models.Drawing
 import com.example.sketchcrew.data.local.models.PairConverter
 import com.example.sketchcrew.databinding.FragmentDrawnCanvasBinding
 import com.example.sketchcrew.repository.CanvasRepository
@@ -38,10 +47,11 @@ import com.example.sketchcrew.utils.FileNameGen
 import com.example.sketchcrew.utils.Truncator
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-
+import java.io.IOException
 
 private const val TAG = "DrawnCanvasFragment"
 
@@ -53,6 +63,9 @@ class DrawnCanvasFragment : Fragment() {
     val binding get() = _binding
     private lateinit var canvasView: CanvasView
     private var pathId: Int = 0
+    private var pathStr: String? = null
+    private var  pathColor: Int = 0
+    private var pathStroke: Float = 0F
     private val listOfButtons: ArrayList<View> = ArrayList<View>()
     var mutableListButtons = mutableListOf<View>()
     private lateinit var repository: CanvasRepository
@@ -277,16 +290,19 @@ class DrawnCanvasFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val args = DrawnCanvasFragmentArgs.fromBundle(requireArguments())
 //        val pathData = args.pathData!!.trimIndent()
-        pathId = args.pathData
+        pathId = args.id
 
-//        binding.canvasLayout.findViewById<CanvasView>(R.id.my_canvas).setPath(pathData)
-        binding.myCanvas.createNewLayer(width = 1, height = 1)
-        loadPath()
-        binding.eraser.setOnClickListener {
+        viewModel.getDrawingById(pathId.toLong()).observe(viewLifecycleOwner) { drawing ->
+            if (drawing != null) {
+                restoreDrawing(drawing)
+            }
+        }
+
+         binding.eraser.setOnClickListener {
             binding.eraser.tooltipText = "Eraser"
             binding.myCanvas.setEraserMode(true)
             binding.myCanvas.setColor(Color.WHITE)
-        }
+         }
 
         binding.undo.setOnClickListener {
             binding.undo.tooltipText = "Undo"
@@ -305,18 +321,42 @@ class DrawnCanvasFragment : Fragment() {
         binding.rectangle.setOnClickListener {
             binding.arrow.tooltipText = "Square"
             binding.myCanvas.setTool(DrawingTool.SQUARE)
+            binding.myCanvas.setBrushWidth(16f)
         }
 
         binding.ellipse.setOnClickListener {
+            binding.ellipse.tooltipText = "Circle"
             binding.myCanvas.setTool(DrawingTool.CIRCLE)
+            binding.myCanvas.setBrushWidth(16f)
+        }
+        binding.menu.setOnClickListener {
+            binding.menu.visibility =View.GONE
+            binding.menuOpen.visibility = View.VISIBLE
+            binding.linearLayout3.visibility = View.VISIBLE
+        }
+
+        binding.menuOpen.setOnClickListener {
+            binding.menuOpen.visibility =View.GONE
+            binding.menu.visibility = View.VISIBLE
+            binding.linearLayout3.visibility = View.GONE
         }
 
         binding.pen.setOnClickListener {
+            binding.pen.tooltipText = "Pen"
             binding.myCanvas.setTool(DrawingTool.FREEHAND)
+            binding.myCanvas.setColor(Color.BLACK)
+            binding.myCanvas.setBrushWidth(16f)
+        }
 
+        binding.pencil.setOnClickListener {
+            binding.pencil.tooltipText = "Pencil"
+            binding.myCanvas.setTool(DrawingTool.FREEHAND)
+            binding.myCanvas.setColor(Color.parseColor("#b6b6b6"))
+            binding.myCanvas.setBrushWidth(12f)
         }
 
         binding.brush.setOnClickListener {
+            binding.brush.tooltipText = "Brushes"
             if (binding.linearLayout2.visibility == View.VISIBLE) {
                 binding.linearLayout2.visibility = View.GONE
             } else {
@@ -338,6 +378,7 @@ class DrawnCanvasFragment : Fragment() {
             binding.myCanvas.setBrushWidth(64f)
         }
         binding.layer.setOnClickListener {
+            binding.layer.tooltipText = "Layer Manager"
             if (binding.linearLayout4.visibility == View.VISIBLE) {
                 binding.linearLayout4.visibility = View.GONE
             } else {
@@ -348,6 +389,7 @@ class DrawnCanvasFragment : Fragment() {
             }
         }
         binding.text.setOnClickListener {
+            binding.text.tooltipText = "Enter Text"
             showTextDialog()
         }
 
@@ -363,6 +405,7 @@ class DrawnCanvasFragment : Fragment() {
             switchLayer(0)
         }
         binding.download.setOnClickListener {
+            binding.download.tooltipText = "Download File"
             val bitmap = binding.myCanvas.captureBitmap()
             val fileName: String =
                 Truncator(FileNameGen().generateFileNameJPEG(), 24, false).textTruncate()
@@ -375,42 +418,39 @@ class DrawnCanvasFragment : Fragment() {
 
         }
 
-        binding.saveButton.setOnClickListener {
+        binding.open.setOnClickListener {
+            binding.open.tooltipText = "Open File"
+            openFilePicker()
+        }
+
+        binding.save.setOnClickListener {
+            binding.save.tooltipText = "Save File"
             showSaveCanvasDialog()
         }
     }
 
-    private fun loadPath() {
-        val db = RoomDB.getDatabase(requireContext())
-        lifecycleScope.launch {
-            val pathData = withContext(Dispatchers.IO) {
-                db.pathDao().getPathById(pathId)
-            }
-            pathData?.let {
-//                binding.myCanvas.loadPathData(pathData)
-                binding.myCanvas.setPath(it.path)
-                binding.myCanvas.setColor(it.color)
-                binding.myCanvas.setBrushWidth(it.strokeWidth)
-            }
-        }
+    private fun restoreDrawing(drawing: Drawing) {
+        Log.d(TAG, "restoreDrawing: ${drawing.pathData}")
+        val pathsJson = PairConverter().fromPaths(drawing.pathData)
+        Log.d(TAG, "pathsJson: ${pathsJson}")
+
+
+            binding.myCanvas.paths.addAll(pathsJson)
+
     }
 
-//    fun convertToPathDataString(pathDataList: List<PathData>): String {
-//        return buildString {
-//            pathDataList.forEachIndexed { index, pathData ->
-//                // Extract x and y coordinates from mNativePaint
-//                // Assuming mNativePaint encodes coordinates in a specific format, e.g., as integers or floats
-//                // Here, you must replace this example with your actual logic to extract coordinates
-//                val x = pathData.second.mNativePaint.toFloat() // this is a placeholder logic
-//                val y = pathData.second.mNativePaint.toFloat() // this is a placeholder logic
-//
-//                if (index != 0) {
-//                    append(";")
-//                }
-//                append("$x,$y")
-//            }
-//        }
-//    }
+    fun loadPath(pathStr: String, pathColor: Int, pathStroke: Float) {
+        val paint = Paint()
+        paint.apply {
+            strokeWidth = pathStroke
+            color = pathColor
+        }
+
+        var pathData = PairConverter().fromPaths(pathStr)
+        pathData.forEach { it ->
+            binding.myCanvas.paths.add(it)
+        }
+    }
 
 
     private fun addNewLayer() {
@@ -427,6 +467,99 @@ class DrawnCanvasFragment : Fragment() {
         canvasView.removeLayer(index)
         Toast.makeText(requireContext(), "removeLayer: Layer Removed", Toast.LENGTH_LONG).show()
     }
+
+
+    private fun checkStoragePermission() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                READ_EXTERNAL_STORAGE_REQUEST_CODE
+            )
+        } else {
+            // Permission already granted, proceed to load the bitmap
+            val filePath = "/storage/emulated/0/Android/data/com.example.sketchcrew/files/"
+            loadBitmapFromExternalStorage(filePath)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == READ_EXTERNAL_STORAGE_REQUEST_CODE) {
+            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                // Permission granted
+                val filePath = "/storage/emulated/0/Android/data/com.example.sketchcrew/files/"
+                loadBitmapFromExternalStorage(filePath)
+            } else {
+                // Permission denied
+                Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun loadBitmapFromExternalStorage(filePath: String): Bitmap? {
+//        val filePath = "path/to/your/image.jpg"  // Replace with actual file path
+        val bitmap = BitmapFactory.decodeFile(filePath)
+
+        if (bitmap != null) {
+            displayBitmapOnCanvas(bitmap)
+        } else {
+            Toast.makeText(requireContext(), "Failed to load image", Toast.LENGTH_SHORT).show()
+        }
+        return bitmap
+    }
+
+    private fun displayBitmapOnCanvas(bitmap: Bitmap) {
+
+        // Create a mutable bitmap to draw on
+        val mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
+
+        // Create a canvas with the mutable bitmap
+        val canvas = Canvas(mutableBitmap)
+
+        // Draw the bitmap on the canvas (if you have more drawings, add them here)
+        canvas.drawBitmap(bitmap, 0f, 0f, null)
+
+        // Set the bitmap to the custom view
+        canvasView.setBitmap(mutableBitmap)
+    }
+
+    private fun openFilePicker() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+            type = "image/*"
+        }
+        startActivityForResult(intent, REQUEST_CODE_PICK_IMAGE)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
+            val uri = data?.data ?: return
+            val filePath = getRealPathFromURI(uri)
+            if (filePath != null) {
+                loadBitmapFromExternalStorage(filePath)
+            }
+        }
+    }
+
+    private fun getRealPathFromURI(uri: Uri): String? {
+        var filePath: String? = null
+        val cursor = requireContext().contentResolver.query(uri, null, null, null, null)
+        cursor?.use {
+            if (it.moveToFirst()) {
+                val columnIndex = it.getColumnIndex(MediaStore.Images.Media.DATA)
+                filePath = it.getString(columnIndex)
+            }
+        }
+        return filePath
+    }
+
+
 
     private fun showTextDialog() {
 
@@ -474,8 +607,7 @@ class DrawnCanvasFragment : Fragment() {
 
             // Handle the save action here
             handleSave(fileName, description, selectedFormat)
-            binding.myCanvas.saveCurrentPathToDatabase()
-            loadPath()
+//            loadPath()
 
             dialog.dismiss()
         }
@@ -483,40 +615,54 @@ class DrawnCanvasFragment : Fragment() {
         dialog.show()
     }
 
+    fun savePathToFile(pathData: String, fileName: String) {
+        try {
+            requireContext().openFileOutput(fileName, Context.MODE_PRIVATE).use {
+                it.write(pathData.toByteArray())
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
     private fun handleSave(fileName: String, description: String, selectedFormat: String) {
 
         Log.d(TAG, "onCreateView: save button clicked! ${canvasView.id}")
-        var filename = ""
+       var filename = ""
         if (fileName.isNullOrEmpty()) {
             filename = FileNameGen().generateFileNamePNG()
         } else {
             if (selectedFormat == "PNG") {
                 filename = "${fileName}.png"
             }
-            if (selectedFormat == "JPG") {
+            if (selectedFormat == "JPEG") {
                 filename = "${fileName}.jpg"
             }
             if (selectedFormat == "SVG") {
                 filename = "${fileName}.svg"
             }
         }
+        val pathsList = canvasView.paths
+
         lifecycleScope.launch(Dispatchers.IO) {
+
             val bitmap = binding.myCanvas.captureBitmap()
             val drawnBitmap = binding.myCanvas.saveBitmapToFile(
                 requireContext(), bitmap,
                 filename
             )
-            val pathsList = binding.myCanvas.paths
             val myPath = PairConverter().fromPathList(pathsList)
             Log.d(TAG, "saveCanvas: $myPath")
-
-
-            val newCanvas =
-                CanvasModel(id = 0, name = filename, desc = description, myPath).toCanvasData()
-            viewModel.saveCanvas(newCanvas)
+            val paths = canvasView.paths
+            var serial = ""
+                serial = PairConverter().fromPathList(paths)
+                val serializedPaint = serial
+                Log.d(TAG, "handleSave (serializedPaint): $serializedPaint")
+                val drawing = Drawing(filename = filename, pathData = serial, paintData = serializedPaint)
+                viewModel.saveDrawing(drawing)
             Log.d(TAG, "DrawnBitmap: $drawnBitmap")
-//            Toast.makeText(requireContext(), "Drawing saved!", Toast.LENGTH_LONG).show()
         }
+        Toast.makeText(requireContext(), "Drawing Saved", Toast.LENGTH_LONG).show()
     }
 
     private fun changeColor(color: Int) {
@@ -529,42 +675,9 @@ class DrawnCanvasFragment : Fragment() {
 
     companion object {
         var paintColor = Paint()
+        private val READ_EXTERNAL_STORAGE_REQUEST_CODE = 101
+        private val REQUEST_CODE_PICK_IMAGE = 102
     }
-
-
-    inner class SaveCanvasDialog(
-        context: Context,
-        private val onSave: (String) -> Unit
-    ) : Dialog(context) {
-
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
-            setContentView(R.layout.save_canvas_dialog)
-
-            val canvasNameEditText: EditText = findViewById(R.id.canvasNameEditText)
-            val saveButton: Button = findViewById(R.id.saveButton)
-            val cancelButton: Button = findViewById(R.id.cancelButton)
-
-            canvasNameEditText.doAfterTextChanged {
-                saveButton.isEnabled = it.toString().trim().isNotEmpty()
-            }
-
-            saveButton.setOnClickListener {
-                val canvasName = canvasNameEditText.text.toString().trim()
-                if (canvasName.isNotEmpty()) {
-                    onSave(canvasName)
-                    dismiss()
-                }
-            }
-
-            cancelButton.setOnClickListener {
-                dismiss()
-            }
-        }
-    }
-
-    // FIREBASE FUNCTIONS: DO NOT TOUCH -->
-
 
     private fun setupSendCollaboration() {
         binding.sendCollab.setOnClickListener {
