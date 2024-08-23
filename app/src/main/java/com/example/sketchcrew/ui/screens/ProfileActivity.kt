@@ -32,6 +32,7 @@ class ProfileActivity : AppCompatActivity() {
             }
         }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityProfileBinding.inflate(layoutInflater)
@@ -43,8 +44,16 @@ class ProfileActivity : AppCompatActivity() {
             onBackPressed()
         }
 
-        // Set up click listener for oldImageView to open the image picker
+        // Set up click listener for both image views to open the image picker
         binding.oldImageView.setOnClickListener {
+            if (hasStoragePermission()) {
+                openImagePicker()
+            } else {
+                requestStoragePermission()
+            }
+        }
+
+        binding.profileImage.setOnClickListener {
             if (hasStoragePermission()) {
                 openImagePicker()
             } else {
@@ -98,7 +107,7 @@ class ProfileActivity : AppCompatActivity() {
             binding.oldImageView.visibility = android.view.View.GONE
         } catch (e: Exception) {
             e.printStackTrace()
-           // Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -145,7 +154,11 @@ class ProfileActivity : AppCompatActivity() {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 openImagePicker()
             } else {
-                Toast.makeText(this, "Permission denied. Unable to access storage.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Permission denied. Unable to access storage.",
+                    Toast.LENGTH_SHORT
+                ).show()
                 Log.d("ProfileActivity", "Permission denied: ${permissions[0]}")
             }
         }

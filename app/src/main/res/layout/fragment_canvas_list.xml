@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/Relative"
     android:layout_width="match_parent"
@@ -11,28 +12,38 @@
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_margin="16dp"
         android:text="Canvas List"
         android:textColor="@color/black"
         android:textSize="16sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/canvas_list"
         android:layout_width="match_parent"
-        android:layout_height="600dp"
-        android:layout_below="@id/title"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/new_canvas"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/title"
         tools:itemCount="2"
         tools:listitem="@layout/canvas_list_item" />
 
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/new_canvas"
-        android:layout_width="196dp"
+        android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:layout_below="@id/canvas_list"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="232dp"
-        android:text="New Canvas" />
-</RelativeLayout>
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/black_button_bkg"
+        android:text="New Canvas"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

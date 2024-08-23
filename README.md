@@ -26,23 +26,23 @@ SketchCrew is a digital sketchpad Android application designed to provide artist
 ![Splash Screen](https://github.com/DevEdozie/SketchCrew/blob/main/splash_screen.jpeg)
 *Splash Screen*
 
-![First Onboarding screen](https://github.com/DevEdozie/SketchCrew/blob/main/first_ob_screen.jpeg)
+![First Onboarding screen](https://github.com/DevEdozie/SketchCrew/blob/main/B-FirstObScreen.jpg)
 *First Onboarding screen*
 
 
-![Second Onboarding screen](https://github.com/DevEdozie/SketchCrew/blob/main/second_ob_screen.jpeg)
+![Second Onboarding screen](https://github.com/DevEdozie/SketchCrew/blob/main/B-SecondObScreen.jpg)
 *Second Onboarding screen*
 
-![Third Onboarding screen](https://github.com/DevEdozie/SketchCrew/blob/main/third_ob_screen.jpeg)
+![Third Onboarding screen](https://github.com/DevEdozie/SketchCrew/blob/main/B-ThirdObScreen.jpg)
 *Third Onboarding screen*
 
-![SignUp screen](https://github.com/DevEdozie/SketchCrew/blob/main/sign_up_screen.jpeg)
+![SignUp screen](https://github.com/DevEdozie/SketchCrew/blob/main/B-SignUpScreen.jpg)
 *SignUp screen*
 
-![SignIn screen](https://github.com/DevEdozie/SketchCrew/blob/main/sign_in_screen.jpeg)
+![SignIn screen](https://github.com/DevEdozie/SketchCrew/blob/main/B-SignInScreen.jpg)
 *SignIn screen*
 
-![Home screen](https://github.com/DevEdozie/SketchCrew/blob/main/home_screen.jpeg)
+![Home screen](https://github.com/DevEdozie/SketchCrew/blob/main/B-HomeScreen.jpg)
 *Home screen*
 
 ![Canvas Screen with shapes](https://github.com/DevEdozie/SketchCrew/blob/main/shapes.jpeg)
@@ -57,7 +57,8 @@ SketchCrew is a digital sketchpad Android application designed to provide artist
 ![Canvas Screen with eraser](https://github.com/DevEdozie/SketchCrew/blob/main/eraser_screen.jpeg)
 *Canvas Screen with eraser*
 
-
+![Canvas List](https://github.com/DevEdozie/SketchCrew/blob/main/B-CanvasViewScreenList.jpg)
+*Canvas List*
 
 
 
@@ -91,7 +92,7 @@ To set up SketchCrew locally, follow these steps:
 
 You can download the latest version of the SketchCrew app directly from the following link:
 
-[Download APK](https://github.com/DevEdozie/SketchCrew/blob/main/SketchCrew.jks)
+[Download APK](https://github.com/DevEdozie/SketchCrew/blob/main/SketchCrew-v3.apk)
 
 *Make sure to enable "Install from Unknown Sources" on your Android device if installing the APK directly.*
 

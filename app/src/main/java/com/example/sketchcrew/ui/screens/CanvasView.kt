@@ -66,7 +66,7 @@ class CanvasView @JvmOverloads constructor(
     private lateinit var database: DatabaseReference
     private var valueEventListener: ValueEventListener? = null
     private var isShared = false // Variable to check if code is being shared or not
-//    var drawingId = "Empty"
+    // < --
 
 
     init {
@@ -656,6 +656,7 @@ class CanvasView @JvmOverloads constructor(
 
 
     // My Firebase functions: -> DO NOT TOUCH PLEASE
+
     // Serialization of Paths and Paints
     fun saveToJson(): JSONArray {
         return serializePathsAndPaints(paths)
@@ -747,19 +748,6 @@ class CanvasView @JvmOverloads constructor(
     }
 
     // Firebase Integration
-//    fun saveToFirebase() {
-//        database = FirebaseDatabase.getInstance().getReference("drawings")
-//        val jsonArray = saveToJson()
-//        val id = getUniqueId()
-//        database.child(getUniqueId()).child("canvasData").setValue(jsonArray.toString())
-//
-//        // Save user id as a collaborator
-//        val userId = FirebaseAuth.getInstance().currentUser?.uid
-//        database.child(drawingId).child("collaborators").child(userId!!).setValue(true)
-//
-//        // Notify user
-//        Toast.makeText(context, "Collaboration set up", Toast.LENGTH_SHORT).show()
-//    }
 
     fun saveToFirebase() {
         database = FirebaseDatabase.getInstance().getReference("drawings")
