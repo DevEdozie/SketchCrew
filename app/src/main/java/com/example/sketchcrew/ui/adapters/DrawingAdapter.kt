@@ -10,7 +10,7 @@ import com.example.sketchcrew.data.local.models.Drawing
 import com.example.sketchcrew.databinding.CanvasListItemBinding
 
 // DrawingAdapter.kt
-class DrawingAdapter(private val onClick: (Drawing) -> Unit) :
+class DrawingAdapter(private val onClick: (Drawing) -> Unit, private val onDelete: (Drawing) -> Unit) :
     ListAdapter<Drawing, DrawingAdapter.DrawingViewHolder>(DrawingDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DrawingViewHolder {
@@ -22,10 +22,14 @@ class DrawingAdapter(private val onClick: (Drawing) -> Unit) :
         val drawing = getItem(position)
         holder.bind(drawing)
         holder.itemView.setOnClickListener { onClick(drawing) }
+        holder.deleteButton.setOnClickListener {
+            onDelete(drawing)
+        }
     }
 
     class DrawingViewHolder(private val binding: CanvasListItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
+        val deleteButton: TextView = binding.textViewDelete
         fun bind(drawing: Drawing) {
             // Bind data to views
             val textView: TextView = binding.textViewTitle

@@ -63,18 +63,23 @@ class CanvasListFragment : Fragment() {
         binding.newCanvas.setOnClickListener {
             findNavController().navigate(R.id.action_canvasListFragment_to_drawnCanvasFragment)
         }
-
         return _binding.root
     }
 
     private fun loadPaths() {
-        val drawAdapter = DrawingAdapter { drawing ->
+        val drawAdapter = DrawingAdapter ({ drawing ->
             val action =
                 CanvasListFragmentDirections.actionCanvasListFragmentToDrawnCanvasFragment(
                     drawing.id.toInt()
                 )
             findNavController().navigate(action)
-        }
+        },
+            { drawing ->
+                lifecycleScope.launch (Dispatchers.IO){
+                    viewModel.deleteDrawing(drawing.id)
+                }
+            }
+        )
         recycle.adapter = drawAdapter
         lifecycleScope.launch {
             viewModel.loadDrawings.observe(viewLifecycleOwner){ drawing ->
@@ -82,18 +87,5 @@ class CanvasListFragment : Fragment() {
 
             }
         }
-    }
-
-    private fun stringToPath(pathString: String): Path {
-        val path = Path()
-        val commands = pathString.split(",")
-        commands.forEach {
-            val args = it.substring(1).split(",").map { it.toFloat() }
-            when (it[0]) {
-                'M' -> path.moveTo(args[0], args[1])
-                // Handle additional commands L, Q, C, etc.
-            }
-        }
-        return path
     }
 }

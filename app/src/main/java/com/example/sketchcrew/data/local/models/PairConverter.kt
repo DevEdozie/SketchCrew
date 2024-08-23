@@ -2,14 +2,19 @@ package com.example.sketchcrew.data.local.models
 
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.*
 import androidx.room.TypeConverter
 import com.example.sketchcrew.utils.PaintSerializer
 import com.example.sketchcrew.utils.PathSerializer
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonArray
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
+import com.google.gson.JsonObject
+import com.google.gson.JsonSerializationContext
+import com.google.gson.JsonSerializer
 import com.google.gson.reflect.TypeToken
 import java.lang.reflect.Type
 
@@ -35,7 +40,11 @@ class PairConverter {
 
 class CustomPairDeserializer : JsonDeserializer<Pair<Path, Paint>> {
 
-    override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Pair<Path, Paint> {
+    override fun deserialize(
+        json: JsonElement,
+        typeOfT: Type,
+        context: JsonDeserializationContext
+    ): Pair<Path, Paint> {
         val jsonObject = json.asJsonObject
 
         // Deserialize the "first" part (list of points)
@@ -51,8 +60,13 @@ class CustomPairDeserializer : JsonDeserializer<Pair<Path, Paint>> {
         }
 
         // Deserialize the "second" part (Paint object)
-        val paint = context.deserialize<Paint>(jsonObject.get("second"), Paint::class.java)
+        val paintJson = jsonObject.getAsJsonObject("second")
+        val paint = context.deserialize<Paint>(paintJson, Paint::class.java)
 
         return Pair(path, paint)
     }
 }
+
+
+
+

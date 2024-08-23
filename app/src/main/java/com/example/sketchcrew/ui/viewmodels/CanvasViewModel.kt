@@ -33,6 +33,11 @@ class CanvasViewModel(private val repository: CanvasRepository) : ViewModel() {
 
     fun getDrawingById(id: Long): LiveData<Drawing> = repository.getDrawingById(id)
 
+    suspend fun deleteDrawing(id: Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.deleteDrawingById(id)
+        }
+    }
     suspend fun savePath(pathData: PathData) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.savePath(pathData)

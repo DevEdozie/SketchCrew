@@ -36,6 +36,10 @@ class CanvasRepository(context: Context) {
         drawingDao.insertDrawing(drawing)
     }
 
+    suspend fun deleteDrawingById(id: Long) {
+        drawingDao.deleteDrawing(id)
+    }
+
     suspend fun updatePath(pathData: PathData) {
         pathDao.update(pathData)
     }

@@ -297,10 +297,7 @@ class DrawnCanvasFragment : Fragment() {
             binding.eraser.tooltipText = "Eraser"
             binding.myCanvas.setEraserMode(true)
             binding.myCanvas.setColor(Color.WHITE)
-//            binding.eraser.setOnClickListener {
-//                binding.myCanvas.setColor(Color.BLACK)
-//            }
-        }
+         }
 
         binding.undo.setOnClickListener {
             binding.undo.tooltipText = "Undo"
@@ -314,20 +311,18 @@ class DrawnCanvasFragment : Fragment() {
         binding.arrow.setOnClickListener {
             binding.arrow.tooltipText = "Arrow"
             binding.myCanvas.setTool(DrawingTool.ARROW)
-            binding.myCanvas.setColor(Color.BLACK)
             binding.myCanvas.setBrushWidth(16f)
         }
 
         binding.rectangle.setOnClickListener {
             binding.arrow.tooltipText = "Square"
             binding.myCanvas.setTool(DrawingTool.SQUARE)
-            binding.myCanvas.setColor(Color.BLACK)
             binding.myCanvas.setBrushWidth(16f)
         }
 
         binding.ellipse.setOnClickListener {
+            binding.ellipse.tooltipText = "Circle"
             binding.myCanvas.setTool(DrawingTool.CIRCLE)
-            binding.myCanvas.setColor(Color.BLACK)
             binding.myCanvas.setBrushWidth(16f)
         }
         binding.menu.setOnClickListener {
@@ -343,12 +338,21 @@ class DrawnCanvasFragment : Fragment() {
         }
 
         binding.pen.setOnClickListener {
+            binding.pen.tooltipText = "Pen"
             binding.myCanvas.setTool(DrawingTool.FREEHAND)
             binding.myCanvas.setColor(Color.BLACK)
             binding.myCanvas.setBrushWidth(16f)
         }
 
+        binding.pencil.setOnClickListener {
+            binding.pencil.tooltipText = "Pencil"
+            binding.myCanvas.setTool(DrawingTool.FREEHAND)
+            binding.myCanvas.setColor(Color.parseColor("#b6b6b6"))
+            binding.myCanvas.setBrushWidth(12f)
+        }
+
         binding.brush.setOnClickListener {
+            binding.brush.tooltipText = "Brushes"
             if (binding.linearLayout2.visibility == View.VISIBLE) {
                 binding.linearLayout2.visibility = View.GONE
             } else {
@@ -370,6 +374,7 @@ class DrawnCanvasFragment : Fragment() {
             binding.myCanvas.setBrushWidth(64f)
         }
         binding.layer.setOnClickListener {
+            binding.layer.tooltipText = "Layer Manager"
             if (binding.linearLayout4.visibility == View.VISIBLE) {
                 binding.linearLayout4.visibility = View.GONE
             } else {
@@ -380,6 +385,7 @@ class DrawnCanvasFragment : Fragment() {
             }
         }
         binding.text.setOnClickListener {
+            binding.text.tooltipText = "Enter Text"
             showTextDialog()
         }
 
@@ -395,6 +401,7 @@ class DrawnCanvasFragment : Fragment() {
             switchLayer(0)
         }
         binding.download.setOnClickListener {
+            binding.download.tooltipText = "Download File"
             val bitmap = binding.myCanvas.captureBitmap()
             val fileName: String =
                 Truncator(FileNameGen().generateFileNameJPEG(), 24, false).textTruncate()
@@ -408,11 +415,12 @@ class DrawnCanvasFragment : Fragment() {
         }
 
         binding.open.setOnClickListener {
-
+            binding.open.tooltipText = "Open File"
             openFilePicker()
         }
 
         binding.save.setOnClickListener {
+            binding.save.tooltipText = "Save File"
             showSaveCanvasDialog()
         }
     }

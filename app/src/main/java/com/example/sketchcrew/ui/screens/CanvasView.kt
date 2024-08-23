@@ -25,7 +25,6 @@ import androidx.core.content.res.ResourcesCompat
 import com.example.sketchcrew.R
 import com.example.sketchcrew.data.local.models.Drawing
 import com.example.sketchcrew.data.local.models.PairConverter
-import com.example.sketchcrew.data.local.models.PathCommand
 import com.example.sketchcrew.data.local.models.PathData
 import com.example.sketchcrew.utils.LayerManager
 import com.example.sketchcrew.utils.PathIteratorFirebase
@@ -124,7 +123,6 @@ class CanvasView @JvmOverloads constructor(
             strokeWidth = 16f
         }
         scaleGestureDetector = ScaleGestureDetector(context, ScaleListener())
-//        layerManager = LayerManager()
     }
 
     private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
@@ -166,9 +164,6 @@ class CanvasView @JvmOverloads constructor(
         val width = textPaint.measureText(textToDraw).toFloat()
         staticLayout= StaticLayout(text, textPaint,
             width.toInt(), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0F, false)
-
-//        textX = x
-//        textY = y
         invalidate() // Redraw the view
     }
 
@@ -206,7 +201,6 @@ class CanvasView @JvmOverloads constructor(
                             color = Color.WHITE
                         }
                         setEraserMode(true)
-                        currentColor = Color.WHITE
                     }
 
                     else -> {
@@ -221,18 +215,11 @@ class CanvasView @JvmOverloads constructor(
             }
 
             textToDraw?.let {
-//                paint.color = Color.WHITE
-//                paint.style = Paint.Style.FILL
-//                canvas.drawPaint(paint)
-
-//                paint.color = Color.BLACK
-//                paint.textSize = 48F
                 staticLayout.draw(canvas);
-//                canvas.drawText(it, textX, textY, paint)
             }
             restore()
         }
-        invalidate()
+//        invalidate()
     }
 
     private fun drawSquare(canvas: Canvas) {
@@ -585,53 +572,53 @@ class CanvasView @JvmOverloads constructor(
         invalidate()  // Redraw the view
     }
 
-    fun getPathData(path: Path): String {
-
-        val pathData = mutableListOf<PathCommand>()
-        val pathMeasure = PathMeasure(path, false)
-        val segment = FloatArray(2)
-
-        var distance = 0f
-        while (distance < pathMeasure.length) {
-            pathMeasure.getPosTan(distance, segment, null)
-            pathData.add(PathCommand(segment[0], segment[1]))
-            distance += pathMeasure.length / 100 // Sample 100 points or more if needed
-        }
-
-        return Gson().toJson(pathData)
-//        val pathData = StringBuilder()
+//    fun getPathData(path: Path): String {
 //
-//        val pathPoints = FloatArray(6) // Array to store the coordinates from the path
-//        val pathIterator = PathIterator(path)
+//        val pathData = mutableListOf<PathCommand>()
+//        val pathMeasure = PathMeasure(path, false)
+//        val segment = FloatArray(2)
 //
-//        while (!pathIterator.isDone()) {
-//            val type = pathIterator.currentSegment(pathPoints)
-//            when (type) {
-//                PathIterator.SEG_MOVETO -> {
-//                    pathData.append("M${pathPoints[0]},${pathPoints[1]} ")
-//                }
-//
-//                PathIterator.SEG_LINETO -> {
-//                    pathData.append("L${pathPoints[0]},${pathPoints[1]} ")
-//                }
-//
-//                PathIterator.SEG_QUADTO -> {
-//                    pathData.append("Q${pathPoints[0]},${pathPoints[1]} ${pathPoints[2]},${pathPoints[3]} ")
-//                }
-//
-//                PathIterator.SEG_CUBICTO -> {
-//                    pathData.append("C${pathPoints[0]},${pathPoints[1]} ${pathPoints[2]},${pathPoints[3]} ${pathPoints[4]},${pathPoints[5]} ")
-//                }
-//
-//                PathIterator.SEG_CLOSE -> {
-//                    pathData.append("Z ")
-//                }
-//            }
-//            pathIterator.next()
+//        var distance = 0f
+//        while (distance < pathMeasure.length) {
+//            pathMeasure.getPosTan(distance, segment, null)
+//            pathData.add(PathCommand(segment[0], segment[1]))
+//            distance += pathMeasure.length / 100 // Sample 100 points or more if needed
 //        }
 //
-//        return pathData.toString().trim()
-    }
+//        return Gson().toJson(pathData)
+////        val pathData = StringBuilder()
+////
+////        val pathPoints = FloatArray(6) // Array to store the coordinates from the path
+////        val pathIterator = PathIterator(path)
+////
+////        while (!pathIterator.isDone()) {
+////            val type = pathIterator.currentSegment(pathPoints)
+////            when (type) {
+////                PathIterator.SEG_MOVETO -> {
+////                    pathData.append("M${pathPoints[0]},${pathPoints[1]} ")
+////                }
+////
+////                PathIterator.SEG_LINETO -> {
+////                    pathData.append("L${pathPoints[0]},${pathPoints[1]} ")
+////                }
+////
+////                PathIterator.SEG_QUADTO -> {
+////                    pathData.append("Q${pathPoints[0]},${pathPoints[1]} ${pathPoints[2]},${pathPoints[3]} ")
+////                }
+////
+////                PathIterator.SEG_CUBICTO -> {
+////                    pathData.append("C${pathPoints[0]},${pathPoints[1]} ${pathPoints[2]},${pathPoints[3]} ${pathPoints[4]},${pathPoints[5]} ")
+////                }
+////
+////                PathIterator.SEG_CLOSE -> {
+////                    pathData.append("Z ")
+////                }
+////            }
+////            pathIterator.next()
+////        }
+////
+////        return pathData.toString().trim()
+//    }
 
 
     fun captureBitmap(): Bitmap {
