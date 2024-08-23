@@ -18,11 +18,13 @@
         app:layout_constraintVertical_bias="0">
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/home_ui"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="10dp"
             android:layout_marginEnd="16dp"
+            android:layout_marginBottom="40dp"
             app:layout_constraintBottom_toTopOf="@+id/bottomTab"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -183,6 +185,8 @@
                 android:background="@drawable/homepage_card"
                 android:elevation="2dp"
                 android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/offersText">
 
                 <ImageView
@@ -215,10 +219,11 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="30dp"
                     android:layout_marginBottom="21dp"
-                    android:text="Enjoy a user-friendly drawing experience that adapts\n to your style as an artist."
+                    android:text="Enjoy a user-friendly drawing experience that adapts to your style as an artist."
                     android:textColor="@color/wellness_text_grey1"
                     android:textSize="13sp"
                     app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0"
                     app:layout_constraintStart_toStartOf="@id/drawTextView"
                     app:layout_constraintTop_toBottomOf="@id/drawTextView" />
@@ -232,6 +237,8 @@
                 android:background="@drawable/homepage_card"
                 android:elevation="2dp"
                 android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/drawLayout">
 
                 <ImageView
@@ -264,10 +271,11 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="30dp"
                     android:layout_marginBottom="21dp"
-                    android:text="Stay connected with your collaborators. Discuss ideas, \nprovide feedback while working on your sketch."
+                    android:text="Stay connected with your collaborators. Discuss ideas, provide feedback while working on your sketch."
                     android:textColor="@color/wellness_text_grey1"
                     android:textSize="13sp"
                     app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0"
                     app:layout_constraintStart_toStartOf="@id/chatTextView"
                     app:layout_constraintTop_toBottomOf="@id/chatTextView" />
@@ -281,6 +289,9 @@
                 android:background="@drawable/homepage_card"
                 android:elevation="2dp"
                 android:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="@id/home_ui"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/ChatLayout">
 
                 <ImageView
@@ -313,10 +324,11 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="30dp"
                     android:layout_marginBottom="21dp"
-                    android:text="Collaborate on a sketch in real time. Share your canvas\n and work together from anywhere."
+                    android:text="Collaborate on a sketch in real time. Share your canvas and work together from anywhere."
                     android:textColor="@color/wellness_text_grey1"
                     android:textSize="13sp"
                     app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0"
                     app:layout_constraintStart_toStartOf="@id/collabTextView"
                     app:layout_constraintTop_toBottomOf="@id/collabTextView" />
