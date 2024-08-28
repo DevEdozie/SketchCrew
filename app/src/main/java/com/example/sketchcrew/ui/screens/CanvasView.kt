@@ -386,19 +386,18 @@ class CanvasView @JvmOverloads constructor(
     fun createNewLayer(width: Int, height: Int) {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         layerManager.addLayer(bitmap)
-        layerArray.add(bitmap)
-        currentLayer = bitmap
-        Canvas(bitmap)
+        invalidate()
     }
 
-    fun switchToLayer(index: Int) {
+    fun switchToLayer(index: Int): Bitmap? {
         currentLayer = layerManager.getLayer(index)
-        Canvas(currentLayer!!)
+        Canvas(currentLayer!!)  //Check this line ie usage is incorrect
+        return currentLayer!!
     }
 
     fun removeLayer(index: Int) {
         layerManager.removeLayer(index)
-        Canvas(layerArray[index])
+        invalidate()
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
