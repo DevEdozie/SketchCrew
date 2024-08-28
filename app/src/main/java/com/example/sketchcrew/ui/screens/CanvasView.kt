@@ -64,13 +64,18 @@ class CanvasView @JvmOverloads constructor(
 
     // Firebase Variables :-> DO NOT TOUCH
     private lateinit var database: DatabaseReference
+    private lateinit var drawingIdRef: DatabaseReference
     private var valueEventListener: ValueEventListener? = null
     private var isShared = false // Variable to check if code is being shared or not
+    var isSender = false // Variable to check if user is the sender
+    var isReceiver = false // Variable to check if user is the sender
+    var drawingId: String? = null
     // < --
 
 
     init {
         init()
+        initFirebase()
     }
 
     private var currentPath = Path()
@@ -108,6 +113,14 @@ class CanvasView @JvmOverloads constructor(
     private var textX: Float = 0f
     private var textY: Float = 0f
     private var bitmap: Bitmap? = null
+
+
+    private fun initFirebase() {
+        // Firebase Database reference
+        database = FirebaseDatabase.getInstance().getReference("drawings")
+        drawingId = database.push().key
+        drawingIdRef = drawingId?.let { database.child(it) }!!
+    }
 
 
     private fun init() {
@@ -162,8 +175,10 @@ class CanvasView @JvmOverloads constructor(
         textPaint.color = 0xFF000000.toInt()
 
         val width = textPaint.measureText(textToDraw).toFloat()
-        staticLayout= StaticLayout(text, textPaint,
-            width.toInt(), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0F, false)
+        staticLayout = StaticLayout(
+            text, textPaint,
+            width.toInt(), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0F, false
+        )
         invalidate() // Redraw the view
     }
 
@@ -516,7 +531,7 @@ class CanvasView @JvmOverloads constructor(
         var paintColor = Paint()
     }
 
-    fun setPath(path: Path): String{
+    fun setPath(path: Path): String {
         val pathData = StringBuilder()
         val coords = FloatArray(2)
         val pathMeasure = PathMeasure(path, false)
@@ -684,7 +699,7 @@ class CanvasView @JvmOverloads constructor(
         return jsonArray
     }
 
-     fun serializePath(path: Path): JSONArray {
+    fun serializePath(path: Path): JSONArray {
         val pathPoints = JSONArray()
         val pathIterator = PathIteratorFirebase(path)
 
@@ -749,10 +764,22 @@ class CanvasView @JvmOverloads constructor(
 
     // Firebase Integration
 
+//    fun saveToFirebase() {
+//        database = FirebaseDatabase.getInstance().getReference("drawings")
+//        val jsonArray = saveToJson()
+//        database.child("canvasData").setValue(jsonArray.toString())
+//        isShared = true
+//        Toast.makeText(
+//            context,
+//            "Data Updated...",
+//            Toast.LENGTH_SHORT
+//        ).show()
+//    }
+
     fun saveToFirebase() {
-        database = FirebaseDatabase.getInstance().getReference("drawings")
         val jsonArray = saveToJson()
-        database.child("canvasData").setValue(jsonArray.toString())
+//        drawingId?.let { database.child(it).setValue(jsonArray.toString()) }
+        drawingIdRef.setValue(jsonArray.toString())
         isShared = true
         Toast.makeText(
             context,
@@ -761,8 +788,17 @@ class CanvasView @JvmOverloads constructor(
         ).show()
     }
 
+
     fun loadFromFirebase() {
-        database = FirebaseDatabase.getInstance().getReference("drawings")
+//        database = FirebaseDatabase.getInstance().getReference("drawings").child("$drawingId")
+        // TEST
+//        initFirebase()
+        if (isReceiver) {
+            // Get a reference to the database
+            database = FirebaseDatabase.getInstance().getReference("drawings")
+            // Set drawing reference based on the ID gotten from the dialog
+            drawingIdRef = drawingId?.let { database.child(it) }!!
+        }
         valueEventListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val jsonArray = JSONArray(snapshot.value.toString())
@@ -789,9 +825,41 @@ class CanvasView @JvmOverloads constructor(
                     .show()
             }
         }
-        database.child("canvasData").addValueEventListener(valueEventListener as ValueEventListener)
+        drawingIdRef.addValueEventListener(valueEventListener as ValueEventListener)
         isShared = true
     }
+
+//    fun loadFromFirebase() {
+//        database = FirebaseDatabase.getInstance().getReference("drawings")
+//        valueEventListener = object : ValueEventListener {
+//            override fun onDataChange(snapshot: DataSnapshot) {
+//                val jsonArray = JSONArray(snapshot.value.toString())
+//                if (jsonArray != null) {
+//                    loadFromJson(jsonArray)
+//                    // Test
+////                    saveToFirebase()
+//                    // Optionally, notify the user or refresh the UI
+//                    Toast.makeText(
+//                        context,
+//                        "Canvas data loaded...",
+//                        Toast.LENGTH_SHORT
+//                    ).show()
+//                }
+//            }
+//
+//            override fun onCancelled(error: DatabaseError) {
+//                // Handle error
+//                Toast.makeText(
+//                    context,
+//                    "Error loading data",
+//                    Toast.LENGTH_SHORT
+//                )
+//                    .show()
+//            }
+//        }
+//        database.child("canvasData").addValueEventListener(valueEventListener as ValueEventListener)
+//        isShared = true
+//    }
 
     fun stopCollaboration() {
         database = FirebaseDatabase.getInstance().getReference("drawings")
@@ -831,7 +899,7 @@ class CanvasView @JvmOverloads constructor(
 //        drawingId = database.push().key!!
 //        return drawingId
 //    }
-
+// **************************
     // FIREBASE -> END
 
     fun loadPathData(path: Path, paint: Paint) {
@@ -872,23 +940,24 @@ class CanvasView @JvmOverloads constructor(
 
     fun saveCurrentPathToDatabase(filename: String, desc: String) {
 //        var pathString = getPathData(currentPath)
-        val pathDataList = paths.map {
-            (path, paint) -> {
-            PathData(
-                name = filename,
-                desc = desc,
-                path = setPath(path), // Convert Path to String
-                color = paint.color,
-                strokeWidth = paint.strokeWidth
-            )
-        }
+        val pathDataList = paths.map { (path, paint) ->
+            {
+                PathData(
+                    name = filename,
+                    desc = desc,
+                    path = setPath(path), // Convert Path to String
+                    color = paint.color,
+                    strokeWidth = paint.strokeWidth
+                )
+            }
         }
         val serializedPaths = Gson().toJson(pathDataList)
         val serializedPaint = Gson().toJson(paint)
 
-        val drawing = Drawing(filename = filename, pathData = serializedPaths, paintData = serializedPaint)
+        val drawing =
+            Drawing(filename = filename, pathData = serializedPaths, paintData = serializedPaint)
 
-            // Save to database using coroutine or other threading strategy
+        // Save to database using coroutine or other threading strategy
 
 //        val pathData = PathData(
 //            name = filename,

@@ -64,7 +64,7 @@ class DrawnCanvasFragment : Fragment() {
     private lateinit var canvasView: CanvasView
     private var pathId: Int = 0
     private var pathStr: String? = null
-    private var  pathColor: Int = 0
+    private var pathColor: Int = 0
     private var pathStroke: Float = 0F
     private val listOfButtons: ArrayList<View> = ArrayList<View>()
     var mutableListButtons = mutableListOf<View>()
@@ -298,11 +298,11 @@ class DrawnCanvasFragment : Fragment() {
             }
         }
 
-         binding.eraser.setOnClickListener {
+        binding.eraser.setOnClickListener {
             binding.eraser.tooltipText = "Eraser"
             binding.myCanvas.setEraserMode(true)
             binding.myCanvas.setColor(Color.WHITE)
-         }
+        }
 
         binding.undo.setOnClickListener {
             binding.undo.tooltipText = "Undo"
@@ -330,13 +330,13 @@ class DrawnCanvasFragment : Fragment() {
             binding.myCanvas.setBrushWidth(16f)
         }
         binding.menu.setOnClickListener {
-            binding.menu.visibility =View.GONE
+            binding.menu.visibility = View.GONE
             binding.menuOpen.visibility = View.VISIBLE
             binding.linearLayout3.visibility = View.VISIBLE
         }
 
         binding.menuOpen.setOnClickListener {
-            binding.menuOpen.visibility =View.GONE
+            binding.menuOpen.visibility = View.GONE
             binding.menu.visibility = View.VISIBLE
             binding.linearLayout3.visibility = View.GONE
         }
@@ -435,7 +435,7 @@ class DrawnCanvasFragment : Fragment() {
         Log.d(TAG, "pathsJson: ${pathsJson}")
 
 
-            binding.myCanvas.paths.addAll(pathsJson)
+        binding.myCanvas.paths.addAll(pathsJson)
 
     }
 
@@ -470,8 +470,12 @@ class DrawnCanvasFragment : Fragment() {
 
 
     private fun checkStoragePermission() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
-            != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            )
+            != PackageManager.PERMISSION_GRANTED
+        ) {
             ActivityCompat.requestPermissions(
                 requireActivity(),
                 arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
@@ -560,7 +564,6 @@ class DrawnCanvasFragment : Fragment() {
     }
 
 
-
     private fun showTextDialog() {
 
         val editText = EditText(requireContext())
@@ -628,7 +631,7 @@ class DrawnCanvasFragment : Fragment() {
     private fun handleSave(fileName: String, description: String, selectedFormat: String) {
 
         Log.d(TAG, "onCreateView: save button clicked! ${canvasView.id}")
-       var filename = ""
+        var filename = ""
         if (fileName.isNullOrEmpty()) {
             filename = FileNameGen().generateFileNamePNG()
         } else {
@@ -655,11 +658,12 @@ class DrawnCanvasFragment : Fragment() {
             Log.d(TAG, "saveCanvas: $myPath")
             val paths = canvasView.paths
             var serial = ""
-                serial = PairConverter().fromPathList(paths)
-                val serializedPaint = serial
-                Log.d(TAG, "handleSave (serializedPaint): $serializedPaint")
-                val drawing = Drawing(filename = filename, pathData = serial, paintData = serializedPaint)
-                viewModel.saveDrawing(drawing)
+            serial = PairConverter().fromPathList(paths)
+            val serializedPaint = serial
+            Log.d(TAG, "handleSave (serializedPaint): $serializedPaint")
+            val drawing =
+                Drawing(filename = filename, pathData = serial, paintData = serializedPaint)
+            viewModel.saveDrawing(drawing)
             Log.d(TAG, "DrawnBitmap: $drawnBitmap")
         }
         Toast.makeText(requireContext(), "Drawing Saved", Toast.LENGTH_LONG).show()
@@ -679,20 +683,84 @@ class DrawnCanvasFragment : Fragment() {
         private val REQUEST_CODE_PICK_IMAGE = 102
     }
 
+    // FIREBASE CODE:::: DO NOT TOUCH
+
+//    private fun setupSendCollaboration() {
+//        binding.sendCollab.setOnClickListener {
+//
+//            canvasView.saveToFirebase()
+//            // TEST
+//            canvasView.loadFromFirebase()
+//        }
+//    }
+
     private fun setupSendCollaboration() {
         binding.sendCollab.setOnClickListener {
-            canvasView.saveToFirebase()
-            // TEST
-            canvasView.loadFromFirebase()
+            val dialogView =
+                LayoutInflater.from(requireContext()).inflate(R.layout.share_dialog, null)
+            val drawingIdTv = dialogView.findViewById<EditText>(R.id.drawingId)
+
+//            canvasView.isSender = true
+//            canvasView.isReceiver = false
+            drawingIdTv.setText(canvasView.drawingId)
+
+            AlertDialog.Builder(requireContext())
+                .setTitle("Drawing Id")
+                .setView(dialogView)
+                .setPositiveButton("OK") { _, _ ->
+
+                    canvasView.saveToFirebase()
+                    // TEST
+                    canvasView.isReceiver = false
+                    canvasView.loadFromFirebase()
+                }
+                .setNegativeButton("Cancel", null)
+                // Negation
+                .show()
+
         }
     }
 
     private fun setupReceiveCollaboration() {
         binding.receiveCollab.setOnClickListener {
-            canvasView.loadFromFirebase()
+            val dialogView =
+                LayoutInflater.from(requireContext()).inflate(R.layout.share_dialog, null)
+            val drawingIdTv = dialogView.findViewById<EditText>(R.id.drawingId)
+
+
+//            canvasView.isReceiver = true
+//            canvasView.isSender = false
+
+            AlertDialog.Builder(requireContext())
+                .setTitle("Drawing Id")
+                .setView(dialogView)
+                .setPositiveButton("OK") { _, _ ->
+                    if (drawingIdTv.text.isEmpty()) {
+                        Toast.makeText(
+                            requireContext(),
+                            "Field can not be empty",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        canvasView.isReceiver = true
+                        canvasView.drawingId = drawingIdTv.text.toString()
+                        canvasView.loadFromFirebase()
+                    }
+
+                }
+                .setNegativeButton("Cancel", null)
+                // Negation
+                .show()
+
 
         }
     }
+//    private fun setupReceiveCollaboration() {
+//        binding.receiveCollab.setOnClickListener {
+//            canvasView.loadFromFirebase()
+//
+//        }
+//    }
 
     private fun setUpStopCollaboration() {
         binding.endCollab.setOnClickListener {
