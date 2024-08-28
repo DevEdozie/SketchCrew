@@ -74,6 +74,7 @@ class DrawnCanvasFragment : Fragment() {
 
     // Firebase
     private lateinit var database: DatabaseReference
+    private var chatButtonIsVisible = false
     // --> DO NOT TOUCH
 
     override fun onCreateView(
@@ -696,6 +697,12 @@ class DrawnCanvasFragment : Fragment() {
 
     private fun setupSendCollaboration() {
         binding.sendCollab.setOnClickListener {
+            // Make chat button visible
+            if (!chatButtonIsVisible) {
+                binding.chatBtn.visibility = View.VISIBLE
+                chatButtonIsVisible = true
+            }
+
             val dialogView =
                 LayoutInflater.from(requireContext()).inflate(R.layout.share_dialog, null)
             val drawingIdTv = dialogView.findViewById<EditText>(R.id.drawingId)
@@ -708,14 +715,26 @@ class DrawnCanvasFragment : Fragment() {
                 .setTitle("Drawing Id")
                 .setView(dialogView)
                 .setPositiveButton("OK") { _, _ ->
-
+                    // Make chat button visible
+                    if (!chatButtonIsVisible) {
+                        binding.chatBtn.visibility = View.VISIBLE
+                        chatButtonIsVisible = true
+                    }
+                    //
                     canvasView.saveToFirebase()
                     // TEST
                     canvasView.isReceiver = false
                     canvasView.loadFromFirebase()
                 }
-                .setNegativeButton("Cancel", null)
-                // Negation
+                .setNegativeButton("Cancel") { dialog, _ ->
+                    // Perform actions when "Cancel" is clicked
+                    // For example, hide the chat button again
+                    if (chatButtonIsVisible) {
+                        binding.chatBtn.visibility = View.GONE
+                        chatButtonIsVisible = false
+                    }
+                    dialog.dismiss() // Close the dialog
+                }
                 .show()
 
         }
@@ -723,6 +742,8 @@ class DrawnCanvasFragment : Fragment() {
 
     private fun setupReceiveCollaboration() {
         binding.receiveCollab.setOnClickListener {
+
+
             val dialogView =
                 LayoutInflater.from(requireContext()).inflate(R.layout.share_dialog, null)
             val drawingIdTv = dialogView.findViewById<EditText>(R.id.drawingId)
@@ -742,14 +763,27 @@ class DrawnCanvasFragment : Fragment() {
                             Toast.LENGTH_SHORT
                         ).show()
                     } else {
+                        // Make chat button visible
+                        if (!chatButtonIsVisible) {
+                            binding.chatBtn.visibility = View.VISIBLE
+                            chatButtonIsVisible = true
+                        }
+                        //
                         canvasView.isReceiver = true
                         canvasView.drawingId = drawingIdTv.text.toString()
                         canvasView.loadFromFirebase()
                     }
 
                 }
-                .setNegativeButton("Cancel", null)
-                // Negation
+                .setNegativeButton("Cancel") { dialog, _ ->
+                    // Perform actions when "Cancel" is clicked
+                    // For example, hide the chat button again
+                    if (chatButtonIsVisible) {
+                        binding.chatBtn.visibility = View.GONE
+                        chatButtonIsVisible = false
+                    }
+                    dialog.dismiss() // Close the dialog
+                }
                 .show()
 
 
@@ -764,6 +798,9 @@ class DrawnCanvasFragment : Fragment() {
 
     private fun setUpStopCollaboration() {
         binding.endCollab.setOnClickListener {
+            // Make chat button invisible
+            binding.chatBtn.visibility = View.GONE
+            chatButtonIsVisible = false
             canvasView.stopCollaboration()
         }
     }

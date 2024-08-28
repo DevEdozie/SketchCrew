@@ -861,29 +861,11 @@ class CanvasView @JvmOverloads constructor(
 //        isShared = true
 //    }
 
+    // TEST
     fun stopCollaboration() {
-        database = FirebaseDatabase.getInstance().getReference("drawings")
-        // Remove the data from the database
-//        database.child("canvasData").removeValue().addOnCompleteListener { task ->
-//            if (task.isSuccessful) {
-//                // Data deleted successfully, you can perform further actions here
-//                Toast.makeText(
-//                    context,
-//                    "...",
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//            } else {
-//                // Handle any errors
-//                Toast.makeText(
-//                    context,
-//                    "Error",
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//            }
-//        }
         // Detach the listener to stop receiving updates
         valueEventListener?.let {
-            database.child("canvasData").removeEventListener(it)
+            drawingIdRef.removeEventListener(it)
         }
         isShared = false
         Toast.makeText(
@@ -893,6 +875,38 @@ class CanvasView @JvmOverloads constructor(
         ).show()
     }
 
+//    fun stopCollaboration() {
+//        database = FirebaseDatabase.getInstance().getReference("drawings")
+//        // Remove the data from the database
+////        database.child("canvasData").removeValue().addOnCompleteListener { task ->
+////            if (task.isSuccessful) {
+////                // Data deleted successfully, you can perform further actions here
+////                Toast.makeText(
+////                    context,
+////                    "...",
+////                    Toast.LENGTH_SHORT
+////                ).show()
+////            } else {
+////                // Handle any errors
+////                Toast.makeText(
+////                    context,
+////                    "Error",
+////                    Toast.LENGTH_SHORT
+////                ).show()
+////            }
+////        }
+//        // Detach the listener to stop receiving updates
+//        valueEventListener?.let {
+//            database.child("canvasData").removeEventListener(it)
+//        }
+//        isShared = false
+//        Toast.makeText(
+//            context,
+//            "Collaboration ended...",
+//            Toast.LENGTH_SHORT
+//        ).show()
+//    }
+//
 
 //    fun getUniqueId(): String {
 //        database = FirebaseDatabase.getInstance().getReference("drawings")
