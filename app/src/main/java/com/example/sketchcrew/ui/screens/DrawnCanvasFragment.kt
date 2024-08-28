@@ -433,10 +433,7 @@ class DrawnCanvasFragment : Fragment() {
         Log.d(TAG, "restoreDrawing: ${drawing.pathData}")
         val pathsJson = PairConverter().fromPaths(drawing.pathData)
         Log.d(TAG, "pathsJson: ${pathsJson}")
-
-
-            binding.myCanvas.paths.addAll(pathsJson)
-
+        binding.myCanvas.paths.addAll(pathsJson)
     }
 
     fun loadPath(pathStr: String, pathColor: Int, pathStroke: Float) {
@@ -559,8 +556,6 @@ class DrawnCanvasFragment : Fragment() {
         return filePath
     }
 
-
-
     private fun showTextDialog() {
 
         val editText = EditText(requireContext())
@@ -646,11 +641,11 @@ class DrawnCanvasFragment : Fragment() {
 
         lifecycleScope.launch(Dispatchers.IO) {
 
-            val bitmap = binding.myCanvas.captureBitmap()
-            val drawnBitmap = binding.myCanvas.saveBitmapToFile(
-                requireContext(), bitmap,
-                filename
-            )
+//            val bitmap = binding.myCanvas.captureBitmap()
+//            val drawnBitmap = binding.myCanvas.saveBitmapToFile(
+//                requireContext(), bitmap,
+//                filename
+//            )
             val myPath = PairConverter().fromPathList(pathsList)
             Log.d(TAG, "saveCanvas: $myPath")
             val paths = canvasView.paths
@@ -660,7 +655,7 @@ class DrawnCanvasFragment : Fragment() {
                 Log.d(TAG, "handleSave (serializedPaint): $serializedPaint")
                 val drawing = Drawing(filename = filename, pathData = serial, paintData = serializedPaint)
                 viewModel.saveDrawing(drawing)
-            Log.d(TAG, "DrawnBitmap: $drawnBitmap")
+//            Log.d(TAG, "DrawnBitmap: $drawnBitmap")
         }
         Toast.makeText(requireContext(), "Drawing Saved", Toast.LENGTH_LONG).show()
     }

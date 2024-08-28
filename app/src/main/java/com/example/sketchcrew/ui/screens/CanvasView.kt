@@ -180,6 +180,7 @@ class CanvasView @JvmOverloads constructor(
             }
             for ((path, paint) in paths) {
                 canvas.drawPath(path, paint)
+                invalidate()
             }
             currentLayer?.let {
                 val myCanvas = Canvas(it)
@@ -219,7 +220,6 @@ class CanvasView @JvmOverloads constructor(
             }
             restore()
         }
-//        invalidate()
     }
 
     private fun drawSquare(canvas: Canvas) {
@@ -249,16 +249,26 @@ class CanvasView @JvmOverloads constructor(
         canvas.drawLine(startX, startY, endX, endY, linePaint)
 
         val arrowPath = Path()
-        arrowPath.moveTo(endX, endY)
-        arrowPath.lineTo(
-            (endX - arrowHeadLength * cos(angle - arrowHeadAngle)).toFloat(),
-            (endY - arrowHeadLength * sin(angle - arrowHeadAngle)).toFloat()
-        )
-        arrowPath.moveTo(endX, endY)
-        arrowPath.lineTo(
-            (endX - arrowHeadLength * cos(angle + arrowHeadAngle)).toFloat(),
-            (endY - arrowHeadLength * sin(angle + arrowHeadAngle)).toFloat()
-        )
+
+        arrowPath.lineTo(endX, endY)
+
+        // Calculate the first point of the arrowhead
+        val p1X = (endX - arrowHeadLength * cos(angle - arrowHeadAngle)).toFloat()
+        val p1Y = (endY - arrowHeadLength * sin(angle - arrowHeadAngle)).toFloat()
+
+        // Calculate the second point of the arrowhead
+        val p2X = (endX - arrowHeadLength * cos(angle + arrowHeadAngle)).toFloat()
+        val p2Y = (endY - arrowHeadLength * sin(angle + arrowHeadAngle)).toFloat()
+
+        // Draw the first side of the arrowhead
+        arrowPath.moveTo(p1X, p1Y)
+
+        // Draw the second side of the arrowhead from the first point
+        arrowPath.lineTo(p2X, p2Y)
+
+        // Optionally, close the path to make it a filled arrowhead
+        arrowPath.lineTo(endX, endY)
+
         canvas.drawPath(arrowPath, linePaint)
         invalidate()
     }
@@ -292,16 +302,23 @@ class CanvasView @JvmOverloads constructor(
         val arrowHeadLength = 30f
         val arrowHeadAngle = Math.toRadians(45.0)
 
-        arrowPath.moveTo(endX, endY)
-        arrowPath.lineTo(
-            (endX - arrowHeadLength * cos(angle - arrowHeadAngle)).toFloat(),
-            (endY - arrowHeadLength * sin(angle - arrowHeadAngle)).toFloat()
-        )
-        arrowPath.moveTo(endX, endY)
-        arrowPath.lineTo(
-            (endX - arrowHeadLength * cos(angle + arrowHeadAngle)).toFloat(),
-            (endY - arrowHeadLength * sin(angle + arrowHeadAngle)).toFloat()
-        )
+        // Calculate the points for the arrowhead
+        val p1X = (endX - arrowHeadLength * cos(angle - arrowHeadAngle)).toFloat()
+        val p1Y = (endY - arrowHeadLength * sin(angle - arrowHeadAngle)).toFloat()
+
+        val p2X = (endX - arrowHeadLength * cos(angle + arrowHeadAngle)).toFloat()
+        val p2Y = (endY - arrowHeadLength * sin(angle + arrowHeadAngle)).toFloat()
+
+        // Draw the arrowhead as a part of the same path
+        arrowPath.lineTo(p1X, p1Y)
+        arrowPath.lineTo(endX, endY) // Move back to the end point of the arrow
+        arrowPath.lineTo(p2X, p2Y)
+
+
+        arrowPath.lineTo(p1X, p1Y)
+        arrowPath.lineTo(endX, endY)
+        arrowPath.lineTo(p2X, p2Y)
+
         paths.add(Pair(arrowPath, paint))
         return arrowPath
     }
@@ -422,7 +439,6 @@ class CanvasView @JvmOverloads constructor(
                     DrawingTool.ARROW -> paths.add(Pair(drawArrowPath(), Paint(paint)))
                     else -> {
                         currentPath.moveTo(x, y)
-                        mpaths.add(currentPath)
                     }
                 }
                 mpaths.add(currentPath)
@@ -535,90 +551,12 @@ class CanvasView @JvmOverloads constructor(
         } while (pathMeasure.nextContour())
 
         return pathData.toString()
-//        path = Path().apply {
-//            // Convert path data string back to Path object
-//            // Assume pathData is a series of coordinates in the format "x1,y1;x2,y2;..."
-//            val coordinates = pathData.split(";")
-//            coordinates.forEachIndexed { index, coordinate ->
-//                val points = coordinate.split(",")
-//                if (points.size == 2) {
-//                    try {
-//                        val x = points[0].toFloat()
-//                        val y = points[1].toFloat()
-//                        if (index == 0) {
-//                            moveTo(x, y)
-//                        } else {
-//                            lineTo(x, y)
-//                        }
-//                    } catch (e: NumberFormatException) {
-//                        // Log or handle the error gracefully
-//                        Log.e("CanvasView", "Invalid coordinate format: $coordinate")
-//                    }
-//                } else {
-//                    // Log or handle the error gracefully
-//                    Log.e("CanvasView", "Invalid coordinate pair: $coordinate")
-//                }
-//            }
-//        }
-//        invalidate()
-
-//        currentPath.addPath(path)
-//        mpaths.add(path)
-//        return path
     }
 
     fun setBitmap(bitmap: Bitmap) {
         this.bitmap = bitmap
         invalidate()  // Redraw the view
     }
-
-//    fun getPathData(path: Path): String {
-//
-//        val pathData = mutableListOf<PathCommand>()
-//        val pathMeasure = PathMeasure(path, false)
-//        val segment = FloatArray(2)
-//
-//        var distance = 0f
-//        while (distance < pathMeasure.length) {
-//            pathMeasure.getPosTan(distance, segment, null)
-//            pathData.add(PathCommand(segment[0], segment[1]))
-//            distance += pathMeasure.length / 100 // Sample 100 points or more if needed
-//        }
-//
-//        return Gson().toJson(pathData)
-////        val pathData = StringBuilder()
-////
-////        val pathPoints = FloatArray(6) // Array to store the coordinates from the path
-////        val pathIterator = PathIterator(path)
-////
-////        while (!pathIterator.isDone()) {
-////            val type = pathIterator.currentSegment(pathPoints)
-////            when (type) {
-////                PathIterator.SEG_MOVETO -> {
-////                    pathData.append("M${pathPoints[0]},${pathPoints[1]} ")
-////                }
-////
-////                PathIterator.SEG_LINETO -> {
-////                    pathData.append("L${pathPoints[0]},${pathPoints[1]} ")
-////                }
-////
-////                PathIterator.SEG_QUADTO -> {
-////                    pathData.append("Q${pathPoints[0]},${pathPoints[1]} ${pathPoints[2]},${pathPoints[3]} ")
-////                }
-////
-////                PathIterator.SEG_CUBICTO -> {
-////                    pathData.append("C${pathPoints[0]},${pathPoints[1]} ${pathPoints[2]},${pathPoints[3]} ${pathPoints[4]},${pathPoints[5]} ")
-////                }
-////
-////                PathIterator.SEG_CLOSE -> {
-////                    pathData.append("Z ")
-////                }
-////            }
-////            pathIterator.next()
-////        }
-////
-////        return pathData.toString().trim()
-//    }
 
 
     fun captureBitmap(): Bitmap {
