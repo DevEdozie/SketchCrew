@@ -28,12 +28,29 @@
             app:layout_constraintBottom_toTopOf="@+id/bottomTab"
             app:layout_constraintTop_toTopOf="parent">
 
-            <ImageView
+            <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/profileImage"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"
+                android:visibility="visible"
+                android:padding="1dp"
+                android:src="@drawable/profile_ic"
+                android:textColor="#7F56D9"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="TO" />
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/oldImage"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:visibility="visible"
                 android:padding="1dp"
                 android:src="@drawable/profile_ic"
                 android:textColor="#7F56D9"
