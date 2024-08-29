@@ -10,7 +10,6 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Path
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -29,26 +28,25 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
+import androidx.navigation.findNavController
 import com.example.sketchcrew.R
 import com.example.sketchcrew.data.local.models.Drawing
 import com.example.sketchcrew.data.local.models.PairConverter
 import com.example.sketchcrew.databinding.FragmentDrawnCanvasBinding
 import com.example.sketchcrew.repository.CanvasRepository
 import com.example.sketchcrew.ui.screens.CanvasView.Companion.brushColor
+import com.example.sketchcrew.ui.screens.CanvasView.Companion.firebaseAuth
 import com.example.sketchcrew.ui.screens.CanvasView.Companion.shapeType
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModel
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModelFactory
 import com.example.sketchcrew.utils.FileNameGen
 import com.example.sketchcrew.utils.Truncator
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.IOException
@@ -64,7 +62,7 @@ class DrawnCanvasFragment : Fragment() {
     private lateinit var canvasView: CanvasView
     private var pathId: Int = 0
     private var pathStr: String? = null
-    private var  pathColor: Int = 0
+    private var pathColor: Int = 0
     private var pathStroke: Float = 0F
     private val listOfButtons: ArrayList<View> = ArrayList<View>()
     var mutableListButtons = mutableListOf<View>()
@@ -85,7 +83,7 @@ class DrawnCanvasFragment : Fragment() {
         viewModel = ViewModelProvider(this, CanvasViewModelFactory(repository))
             .get(CanvasViewModel::class.java)
         _binding = FragmentDrawnCanvasBinding.inflate(inflater, container, false)
-
+        firebaseAuth = FirebaseAuth.getInstance()
         canvasView = binding.canvasLayout.findViewById(R.id.my_canvas)
         // database
         database = FirebaseDatabase.getInstance().getReference("drawings")
@@ -298,11 +296,11 @@ class DrawnCanvasFragment : Fragment() {
             }
         }
 
-         binding.eraser.setOnClickListener {
+        binding.eraser.setOnClickListener {
             binding.eraser.tooltipText = "Eraser"
             binding.myCanvas.setEraserMode(true)
             binding.myCanvas.setColor(Color.WHITE)
-         }
+        }
 
         binding.undo.setOnClickListener {
             binding.undo.tooltipText = "Undo"
@@ -329,16 +327,25 @@ class DrawnCanvasFragment : Fragment() {
             binding.myCanvas.setTool(DrawingTool.CIRCLE)
             binding.myCanvas.setBrushWidth(16f)
         }
+
+        binding.ibBack.setOnClickListener {
+            view.findNavController().navigate(R.id.action_drawnCanvasFragment_to_canvasListFragment)
+        }
+
         binding.menu.setOnClickListener {
-            binding.menu.visibility =View.GONE
+            binding.menu.visibility = View.GONE
             binding.menuOpen.visibility = View.VISIBLE
             binding.linearLayout3.visibility = View.VISIBLE
+            binding.linearLayout2.visibility = View.GONE
+            binding.linearLayout4.visibility = View.GONE
         }
 
         binding.menuOpen.setOnClickListener {
-            binding.menuOpen.visibility =View.GONE
+            binding.menuOpen.visibility = View.GONE
             binding.menu.visibility = View.VISIBLE
             binding.linearLayout3.visibility = View.GONE
+            binding.linearLayout2.visibility = View.GONE
+            binding.linearLayout4.visibility = View.GONE
         }
 
         binding.pen.setOnClickListener {
@@ -467,8 +474,12 @@ class DrawnCanvasFragment : Fragment() {
 
 
     private fun checkStoragePermission() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
-            != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            )
+            != PackageManager.PERMISSION_GRANTED
+        ) {
             ActivityCompat.requestPermissions(
                 requireActivity(),
                 arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
@@ -623,7 +634,7 @@ class DrawnCanvasFragment : Fragment() {
     private fun handleSave(fileName: String, description: String, selectedFormat: String) {
 
         Log.d(TAG, "onCreateView: save button clicked! ${canvasView.id}")
-       var filename = ""
+        var filename = ""
         if (fileName.isNullOrEmpty()) {
             filename = FileNameGen().generateFileNamePNG()
         } else {
@@ -650,11 +661,18 @@ class DrawnCanvasFragment : Fragment() {
             Log.d(TAG, "saveCanvas: $myPath")
             val paths = canvasView.paths
             var serial = ""
-                serial = PairConverter().fromPathList(paths)
-                val serializedPaint = serial
-                Log.d(TAG, "handleSave (serializedPaint): $serializedPaint")
-                val drawing = Drawing(filename = filename, pathData = serial, paintData = serializedPaint)
-                viewModel.saveDrawing(drawing)
+            serial = PairConverter().fromPathList(paths)
+            val serializedPaint = serial
+            Log.d(TAG, "handleSave (serializedPaint): $serializedPaint")
+            Log.d(TAG, "AUTH ID: ${firebaseAuth.currentUser!!.uid}")
+            val drawing = Drawing(
+                filename = filename,
+                description = description,
+                authId = "${firebaseAuth.currentUser!!.uid}",
+                pathData = serial,
+                paintData = serializedPaint
+            )
+            viewModel.saveDrawing(drawing)
 //            Log.d(TAG, "DrawnBitmap: $drawnBitmap")
         }
         Toast.makeText(requireContext(), "Drawing Saved", Toast.LENGTH_LONG).show()

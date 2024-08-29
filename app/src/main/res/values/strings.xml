@@ -54,6 +54,9 @@
     <string name="elevate">Elevate your design and collaborate seamlessly with your team in real-time</string>
     <string name="sketches">SKETCHES</string>
     <string name="enter_text">Enter text</string>
+    <string name="canvas_title">Canvas Title</string>
+    <string name="no_description">No Description</string>
+    <string name="delete">Delete</string>
 
 
 </resources>

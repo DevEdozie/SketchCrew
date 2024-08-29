@@ -7,7 +7,8 @@ import androidx.room.PrimaryKey
 data class Drawing(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val filename: String,
-//    val paths: String // This will store the serialized paths
+    val description: String,
+    val authId: String,
     val pathData: String,
     val paintData: String
 )
