@@ -30,6 +30,8 @@ class HomeActivity : AppCompatActivity() {
         firestore = FirebaseFirestore.getInstance()
         storage = FirebaseStorage.getInstance()
 
+        loadUserProfileImage()
+
         binding.bottomNavigation.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.home -> {
@@ -44,15 +46,15 @@ class HomeActivity : AppCompatActivity() {
                     navigateTo(ProfileActivity::class.java)
                     true
                 }
+
                 else -> false
             }
         }
 
-        binding.fab.setOnClickListener{
+        binding.fab.setOnClickListener {
             navigateTo(MainActivity::class.java)
         }
 
-        loadUserProfileImage()
     }
 
 
@@ -72,9 +74,14 @@ class HomeActivity : AppCompatActivity() {
                 binding.profileImage.setImageBitmap(bitmap)
                 binding.profileImage.visibility = android.view.View.VISIBLE
                 binding.oldImage.visibility = android.view.View.GONE
+                binding.oldImage.visibility = android.view.View.GONE
+
             }.addOnFailureListener { exception ->
                 // Handle any errors that occurred while getting the download URL
-                Log.e("ProfileActivity", "Failed to retrieve profile image from Storage: ${exception.message}")
+                Log.e(
+                    "ProfileActivity",
+                    "Failed to retrieve profile image from Storage: ${exception.message}"
+                )
                 Toast.makeText(this, "Failed to load profile image", Toast.LENGTH_SHORT).show()
                 binding.profileImage.visibility = android.view.View.GONE
                 binding.oldImage.visibility = android.view.View.VISIBLE

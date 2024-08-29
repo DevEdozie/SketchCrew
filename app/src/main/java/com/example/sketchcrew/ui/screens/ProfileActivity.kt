@@ -153,7 +153,6 @@ class ProfileActivity : AppCompatActivity() {
     }
 
 
-
     private fun saveImageUriToDatabase(downloadUri: String) {
         val user = firebaseAuth.currentUser
         if (user != null) {
