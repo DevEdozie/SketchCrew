@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.androidx.navigation.dynamic.features.fragment)
     implementation(libs.firebase.database)
     implementation(libs.firebase.database.ktx)
+    implementation(libs.firebase.firestore.ktx)
     androidTestImplementation(libs.androidx.navigation.testing)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
@@ -89,4 +90,5 @@ dependencies {
     implementation (libs.circleimageview)
     implementation (libs.firebase.storage)
 
+    implementation (libs.glide)
 }
