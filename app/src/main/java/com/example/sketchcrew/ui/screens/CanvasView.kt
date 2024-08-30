@@ -341,7 +341,6 @@ class CanvasView @JvmOverloads constructor(
         paint.apply {
             this.color = color
             xfermode = null
-            strokeWidth = 60f
         }
     }
 
@@ -373,7 +372,6 @@ class CanvasView @JvmOverloads constructor(
         paint.apply {
             this.color = color
         }
-        currentColor = color
         setBrush(color)
     }
 
