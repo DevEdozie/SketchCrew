@@ -540,6 +540,7 @@ class DrawnCanvasFragment : Fragment() {
         startActivityForResult(intent, REQUEST_CODE_PICK_IMAGE)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CODE_PICK_IMAGE && resultCode == Activity.RESULT_OK) {

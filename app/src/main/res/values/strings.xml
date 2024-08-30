@@ -64,6 +64,8 @@
     <string name="send_chat">Send Chat</string>
     <string name="no_drawings">No Sketch Drawn yet</string>
     <string name="no_drawings_created_yet">No Sketch Drawn Yet</string>
+    <string name="canvas_list">Canvas List</string>
+    <string name="new_canvas">New Canvas</string>
 
 
 </resources>

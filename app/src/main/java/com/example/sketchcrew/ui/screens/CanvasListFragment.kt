@@ -22,15 +22,12 @@ import com.example.sketchcrew.ui.viewmodels.CanvasViewModelFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-private const val TAG = "CanvasListFragment"
-
 class CanvasListFragment : Fragment() {
 
     private lateinit var viewModel: CanvasViewModel
     private lateinit var _binding: FragmentCanvasListBinding
     private val binding get() = _binding
     private lateinit var repository: CanvasRepository
-    private lateinit var adapter: CanvasListAdapter
     private lateinit var recycle: RecyclerView
     private lateinit var  emptyView: LinearLayout
 
@@ -41,8 +38,7 @@ class CanvasListFragment : Fragment() {
         // Inflate the layout for this fragment
         _binding = FragmentCanvasListBinding.inflate(inflater, container, false)
         repository = CanvasRepository(requireContext())
-        viewModel = ViewModelProvider(this, CanvasViewModelFactory(repository))
-            .get(CanvasViewModel::class.java)
+        viewModel = ViewModelProvider(this, CanvasViewModelFactory(repository))[CanvasViewModel::class.java]
         recycle = binding.canvasList
         emptyView = binding.emptyView
         recycle.layoutManager = LinearLayoutManager(requireContext())
