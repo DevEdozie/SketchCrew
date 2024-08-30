@@ -15,6 +15,7 @@ import com.example.sketchcrew.R
 import com.example.sketchcrew.databinding.FragmentChatBinding
 import com.example.sketchcrew.firebase.ChatMessage
 import com.example.sketchcrew.firebase.MessageAdapter
+import com.example.sketchcrew.utils.FirebaseChatManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.firebase.auth.FirebaseAuth
@@ -35,9 +36,10 @@ class ChatFragment : BottomSheetDialogFragment() {
 
     private lateinit var binding: FragmentChatBinding
     private lateinit var messageAdapter: MessageAdapter
-    private lateinit var messageList: ArrayList<ChatMessage>
-    private lateinit var database: DatabaseReference
-    private lateinit var typingStatusRef: DatabaseReference
+    lateinit var messageList: ArrayList<ChatMessage>
+
+    //    private lateinit var database: DatabaseReference
+//    private lateinit var typingStatusRef: DatabaseReference
     private var currentUser: String = ""
     private lateinit var auth: FirebaseAuth
 
@@ -53,9 +55,9 @@ class ChatFragment : BottomSheetDialogFragment() {
         binding = FragmentChatBinding.inflate(layoutInflater, container, false)
 
         // Get a reference to the database
-        database =
-            FirebaseDatabase.getInstance().getReference().child("messages")
-        typingStatusRef = FirebaseDatabase.getInstance().getReference("typingStatus")
+//        database =
+//            FirebaseDatabase.getInstance().getReference().child("messages")
+//        typingStatusRef = FirebaseDatabase.getInstance().getReference("typingStatus")
         // Get a reference to the Firebase auth
         auth = Firebase.auth
         // Get a reference to the current user
@@ -67,8 +69,8 @@ class ChatFragment : BottomSheetDialogFragment() {
         setUpRecyclerView()
 
         // Set up typing indicator
-        setUpTypingIndicator()
-        listenForTypingStatus()
+//        setUpTypingIndicator()
+//        listenForTypingStatus()
 
         // Set up function to dismiss the dialog
         setupCancelButton()
@@ -81,9 +83,11 @@ class ChatFragment : BottomSheetDialogFragment() {
     private fun setUpSendButton() {
         // Set up the send button click listener
         binding.sendButton.setOnClickListener {
+
+
             // Get current message in the message field
             val messageInput = binding.messageInputEditText.text.toString()
-
+//
             // Get current date and time in a neat format
             val currentTime =
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"))
@@ -97,8 +101,10 @@ class ChatFragment : BottomSheetDialogFragment() {
                     messageTime = currentTime
                 )
                 // Add the message to the database
-                val newMessageRef = database.push() // automatically generates a new key
-                newMessageRef.setValue(message)
+                val newMessageRef =
+                    FirebaseChatManager.chatDB?.push() // automatically generates a new key
+//                val newMessageRef = database.push() // automatically generates a new key
+                newMessageRef?.setValue(message)
                 // Clear the input field
                 binding.messageInputEditText.text.clear()
             }
@@ -106,7 +112,8 @@ class ChatFragment : BottomSheetDialogFragment() {
         }
 
         // Set up the database listener
-        database.addChildEventListener(object : ChildEventListener {
+//        database.addChildEventListener(object : ChildEventListener {
+        FirebaseChatManager.chatDB?.addChildEventListener(object : ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 // Get the message value from the snapshot
                 val message = snapshot.getValue(ChatMessage::class.java)
@@ -150,82 +157,94 @@ class ChatFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private fun setUpTypingIndicator() {
-        binding.messageInputEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                // Do nothing
-            }
+//    private fun setUpTypingIndicator() {
+//        binding.messageInputEditText.addTextChangedListener(object : TextWatcher {
+//            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+//                // Do nothing
+//            }
+//
+//            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+//                val user = currentUser
+//                // Split the string at '@'
+//                val parts = user.split("@")
+//                // Get the part before '@'
+//                val username = parts[0]
+//                // Set the current user as typing
+////                typingStatusRef.child(username).setValue(currentUser)
+////                FirebaseChatManager.typingStatusRef?.child(username)?.setValue(currentUser)
+//            }
+//
+//            override fun afterTextChanged(s: Editable?) {
+//                if (s.isNullOrEmpty()) {
+//                    val user = currentUser
+//                    // Split the string at '@'
+//                    val parts = user.split("@")
+//                    // Get the part before '@'
+//                    val username = parts[0]
+//                    // Remove the current user from the typing status
+////                    FirebaseChatManager.typingStatusRef?.child(username)?.removeValue()
+//                }
+//            }
+//
+//        })
+//    }
 
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                val user = currentUser
-                // Split the string at '@'
-                val parts = user.split("@")
-                // Get the part before '@'
-                val username = parts[0]
-                // Set the current user as typing
-                typingStatusRef.child(username).setValue(currentUser)
-            }
-
-            override fun afterTextChanged(s: Editable?) {
-                if (s.isNullOrEmpty()) {
-                    val user = currentUser
-                    // Split the string at '@'
-                    val parts = user.split("@")
-                    // Get the part before '@'
-                    val username = parts[0]
-                    // Remove the current user from the typing status
-                    typingStatusRef.child(username).removeValue()
-                }
-            }
-
-        })
-    }
-
-    private fun listenForTypingStatus() {
-        typingStatusRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val typingUsers = mutableListOf<String>()
-
-                for (userSnapshot in snapshot.children) {
-                    //
-                    val user = currentUser
-                    // Split the string at '@'
-                    val parts = user.split("@")
-                    // Get the part before '@'
-                    val username = parts[0]
-                    //
-                    val typingUser = userSnapshot.getValue(String::class.java)
-                    val typingUserParts = typingUser?.split("@")
-                    val currentTyper = typingUserParts?.get(0)
-                    if (currentTyper != null && currentTyper != username) {
-                        typingUsers.add(currentTyper)
-                    }
-                }
-
-                if (typingUsers.isNotEmpty()) {
-                    binding.typingIndicatorTextView.visibility = View.VISIBLE
-                    binding.typingIndicatorTextView.text = when (typingUsers.size) {
-                        1 -> "${typingUsers[0]} is typing..."
-                        2 -> "${typingUsers.joinToString(" and ")} are typing..."
-                        else -> "Multiple people are typing..."
-                    }
-                } else {
-                    binding.typingIndicatorTextView.visibility = View.GONE
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                // Do nothing
-            }
-
-        })
-    }
-
+    //    private fun listenForTypingStatus() {
+////        FirebaseChatManager.typingStatusRef?.addValueEventListener(object : ValueEventListener {
+//            override fun onDataChange(snapshot: DataSnapshot) {
+//                val typingUsers = mutableListOf<String>()
+//
+//                for (userSnapshot in snapshot.children) {
+//                    //
+//                    val user = currentUser
+//                    // Split the string at '@'
+//                    val parts = user.split("@")
+//                    // Get the part before '@'
+//                    val username = parts[0]
+//                    //
+//                    val typingUser = userSnapshot.getValue(String::class.java)
+//                    val typingUserParts = typingUser?.split("@")
+//                    val currentTyper = typingUserParts?.get(0)
+//                    if (currentTyper != null && currentTyper != username) {
+//                        typingUsers.add(currentTyper)
+//                    }
+//                }
+//
+//                if (typingUsers.isNotEmpty()) {
+//                    binding.typingIndicatorTextView.visibility = View.VISIBLE
+//                    binding.typingIndicatorTextView.text = when (typingUsers.size) {
+//                        1 -> "${typingUsers[0]} is typing..."
+//                        2 -> "${typingUsers.joinToString(" and ")} are typing..."
+//                        else -> "Multiple people are typing..."
+//                    }
+//                } else {
+//                    binding.typingIndicatorTextView.visibility = View.GONE
+//                }
+//            }
+//
+//            override fun onCancelled(error: DatabaseError) {
+//                // Do nothing
+//            }
+//
+//        })
+//    }
+//
     private fun setupCancelButton() {
         binding.cancelIv.setOnClickListener {
             dismiss()
         }
     }
+//
+//    // Clear message list locally
+//    fun clearMessageList() {
+//        val size = messageList.size
+//        if (size > 0) {
+//            messageList.clear()
+//            // Notify the adapter about the removal of all items
+//            messageAdapter.notifyItemRangeRemoved(0, size)
+//        }
+//    }
+
 
     // TEST
     override fun onStart() {

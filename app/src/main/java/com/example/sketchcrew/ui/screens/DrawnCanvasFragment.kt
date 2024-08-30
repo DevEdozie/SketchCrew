@@ -44,6 +44,7 @@ import com.example.sketchcrew.ui.screens.CanvasView.Companion.shapeType
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModel
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModelFactory
 import com.example.sketchcrew.utils.FileNameGen
+import com.example.sketchcrew.utils.FirebaseChatManager
 import com.example.sketchcrew.utils.Truncator
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
@@ -725,6 +726,8 @@ class DrawnCanvasFragment : Fragment() {
                     // TEST
                     canvasView.isReceiver = false
                     canvasView.loadFromFirebase()
+                    // CHAT TEST
+                    FirebaseChatManager.initializeChatDb(canvasView.drawingIdRef)
                 }
                 .setNegativeButton("Cancel") { dialog, _ ->
                     // Perform actions when "Cancel" is clicked
@@ -742,15 +745,10 @@ class DrawnCanvasFragment : Fragment() {
 
     private fun setupReceiveCollaboration() {
         binding.receiveCollab.setOnClickListener {
-
-
             val dialogView =
                 LayoutInflater.from(requireContext()).inflate(R.layout.share_dialog, null)
             val drawingIdTv = dialogView.findViewById<EditText>(R.id.drawingId)
 
-
-//            canvasView.isReceiver = true
-//            canvasView.isSender = false
 
             AlertDialog.Builder(requireContext())
                 .setTitle("Drawing Id")
@@ -772,6 +770,8 @@ class DrawnCanvasFragment : Fragment() {
                         canvasView.isReceiver = true
                         canvasView.drawingId = drawingIdTv.text.toString()
                         canvasView.loadFromFirebase()
+                        // CHAT TEST
+                        FirebaseChatManager.initializeChatDb(canvasView.drawingIdRef)
                     }
 
                 }

@@ -28,6 +28,7 @@ import com.example.sketchcrew.data.local.models.PairConverter
 import com.example.sketchcrew.data.local.models.PathData
 import com.example.sketchcrew.utils.LayerManager
 import com.example.sketchcrew.utils.PathIteratorFirebase
+import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -35,6 +36,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.gson.Gson
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
 import java.io.FileInputStream
@@ -64,8 +66,12 @@ class CanvasView @JvmOverloads constructor(
 
     // Firebase Variables :-> DO NOT TOUCH
     private lateinit var database: DatabaseReference
-    private lateinit var drawingIdRef: DatabaseReference
+    lateinit var drawingIdRef: DatabaseReference
+
     private var valueEventListener: ValueEventListener? = null
+
+    // TEST
+//    private var childEventListener: ChildEventListener? = null
     private var isShared = false // Variable to check if code is being shared or not
     var isSender = false // Variable to check if user is the sender
     var isReceiver = false // Variable to check if user is the sender
@@ -790,44 +796,107 @@ class CanvasView @JvmOverloads constructor(
 
 
     fun loadFromFirebase() {
-//        database = FirebaseDatabase.getInstance().getReference("drawings").child("$drawingId")
-        // TEST
-//        initFirebase()
         if (isReceiver) {
             // Get a reference to the database
             database = FirebaseDatabase.getInstance().getReference("drawings")
-            // Set drawing reference based on the ID gotten from the dialog
+            // Set drawing reference based on the ID obtained from the dialog
             drawingIdRef = drawingId?.let { database.child(it) }!!
         }
+
+        // Initialize the ValueEventListener
         valueEventListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val jsonArray = JSONArray(snapshot.value.toString())
-                if (jsonArray != null) {
-                    loadFromJson(jsonArray)
-                    // Test
-//                    saveToFirebase()
-                    // Optionally, notify the user or refresh the UI
-                    Toast.makeText(
-                        context,
-                        "Canvas data loaded...",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                // Handle changes only at the drawingIdRef node
+                if (snapshot.exists()) {
+                    // Fetch the data at this node
+                    val jsonData = snapshot.value.toString()
+
+                    // Convert the data to JSON (or handle it as needed)
+                    try {
+                        val jsonArray = JSONArray(jsonData)
+
+                        // Load data into your canvas
+                        loadFromJson(jsonArray)
+                        Toast.makeText(context, "Canvas data loaded...", Toast.LENGTH_SHORT).show()
+                    } catch (e: JSONException) {
+                        // Handle JSON parsing errors if necessary
+//                        Toast.makeText(context, "Error parsing data", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                // Handle error
-                Toast.makeText(
-                    context,
-                    "Error loading data",
-                    Toast.LENGTH_SHORT
-                )
-                    .show()
+                Toast.makeText(context, "Error loading data", Toast.LENGTH_SHORT).show()
             }
         }
+
+        // Add the event listener to the drawingIdRef
         drawingIdRef.addValueEventListener(valueEventListener as ValueEventListener)
         isShared = true
     }
+
+
+    fun stopCollaboration() {
+        // Detach the listener to stop receiving updates
+        valueEventListener?.let {
+            drawingIdRef.removeEventListener(it)
+        }
+        isShared = false
+        Toast.makeText(context, "Collaboration ended...", Toast.LENGTH_SHORT).show()
+    }
+
+
+//    fun loadFromFirebase() {
+//        if (isReceiver) {
+//            // Get a reference to the database
+//            database = FirebaseDatabase.getInstance().getReference("drawings")
+//            // Set drawing reference based on the ID gotten from the dialog
+//            drawingIdRef = drawingId?.let { database.child(it) }!!
+//        }
+//
+//        valueEventListener = object : ValueEventListener {
+//            override fun onDataChange(snapshot: DataSnapshot) {
+//                // Iterate over each child of the snapshot (which are the top-level nodes)
+//                for (drawingSnapshot in snapshot.children) {
+//                    val currentId = drawingSnapshot.key
+//                    // Handle only the top-level drawing IDs and ignore child nodes like "messages"
+//                    if (currentId == drawingId) {
+//                        // Load the data from the snapshot for the current drawing ID
+//                        val jsonData = drawingSnapshot.value.toString()
+//
+//                        // Convert the data to JSON (or handle it as needed)
+//                        val jsonArray = JSONArray(jsonData)
+//
+//                        // Load data into your canvas
+//                        if (jsonArray != null) {
+//                            loadFromJson(jsonArray)
+//                            // Optionally, notify the user or refresh the UI
+//                            Toast.makeText(
+//                                context,
+//                                "Canvas data loaded...",
+//                                Toast.LENGTH_SHORT
+//                            ).show()
+//                        }
+//                        break // Exit the loop after processing the relevant drawing ID
+//                    }
+//                }
+//            }
+//
+//            override fun onCancelled(error: DatabaseError) {
+//                // Handle error
+//                Toast.makeText(
+//                    context,
+//                    "Error loading data",
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//            }
+//        }
+//
+//        // Add the event listener to the reference
+//        database.addValueEventListener(valueEventListener as ValueEventListener)
+////        drawingIdRef.addValueEventListener(valueEventListener as ValueEventListener)
+//        isShared = true
+//    }
 
 //    fun loadFromFirebase() {
 //        database = FirebaseDatabase.getInstance().getReference("drawings")
@@ -862,18 +931,22 @@ class CanvasView @JvmOverloads constructor(
 //    }
 
     // TEST
-    fun stopCollaboration() {
-        // Detach the listener to stop receiving updates
-        valueEventListener?.let {
-            drawingIdRef.removeEventListener(it)
-        }
-        isShared = false
-        Toast.makeText(
-            context,
-            "Collaboration ended...",
-            Toast.LENGTH_SHORT
-        ).show()
-    }
+//    fun stopCollaboration() {
+//        // Detach the listener to stop receiving updates
+//        valueEventListener?.let {
+//            drawingIdRef.removeEventListener(it)
+//        }
+//        isShared = false
+//        Toast.makeText(
+//            context,
+//            "Collaboration ended...",
+//            Toast.LENGTH_SHORT
+//        ).show()
+//    }
+
+//    fun getDrawingIdRef(): DatabaseReference {
+//        return drawingIdRef
+//    }
 
 //    fun stopCollaboration() {
 //        database = FirebaseDatabase.getInstance().getReference("drawings")
