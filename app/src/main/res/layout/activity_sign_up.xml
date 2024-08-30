@@ -9,17 +9,17 @@
 
 
     <com.airbnb.lottie.LottieAnimationView
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         android:id="@+id/animationView"
-        android:visibility="gone"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        app:lottie_rawRes="@raw/loading"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:lottie_autoPlay="true"
-        app:lottie_loop="true"/>
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/loading" />
 
     <TextView
         android:id="@+id/welcome_txt"
@@ -41,8 +41,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:gravity="center"
-        android:textColor="@color/black"
         android:text="Sign Up to continue"
+        android:textColor="@color/black"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -58,6 +58,7 @@
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="50dp"
         app:boxStrokeColor="@color/black"
+        app:errorIconDrawable="@null"
         app:hintTextColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
@@ -81,12 +82,13 @@
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="24dp"
         app:boxStrokeColor="@color/black"
+        app:endIconMode="password_toggle"
+        app:errorIconDrawable="@null"
         app:hintTextColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/emailLayout"
-        app:passwordToggleEnabled="true">
+        app:layout_constraintTop_toBottomOf="@id/emailLayout">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/passET"
@@ -105,12 +107,13 @@
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="24dp"
         app:boxStrokeColor="@color/black"
+        app:endIconMode="password_toggle"
+        app:errorIconDrawable="@null"
         app:hintTextColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/passwordLayout"
-        app:passwordToggleEnabled="true">
+        app:layout_constraintTop_toBottomOf="@id/passwordLayout">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/confirmPassEt"
