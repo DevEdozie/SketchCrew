@@ -36,7 +36,6 @@ import com.example.sketchcrew.data.local.models.Drawing
 import com.example.sketchcrew.data.local.models.PairConverter
 import com.example.sketchcrew.databinding.FragmentDrawnCanvasBinding
 import com.example.sketchcrew.repository.CanvasRepository
-import com.example.sketchcrew.ui.screens.CanvasView.Companion.brushColor
 import com.example.sketchcrew.ui.screens.CanvasView.Companion.firebaseAuth
 import com.example.sketchcrew.ui.screens.CanvasView.Companion.shapeType
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModel

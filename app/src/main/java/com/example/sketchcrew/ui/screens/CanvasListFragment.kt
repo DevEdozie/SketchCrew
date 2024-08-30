@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -31,6 +32,7 @@ class CanvasListFragment : Fragment() {
     private lateinit var repository: CanvasRepository
     private lateinit var adapter: CanvasListAdapter
     private lateinit var recycle: RecyclerView
+    private lateinit var  emptyView: LinearLayout
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,6 +44,7 @@ class CanvasListFragment : Fragment() {
         viewModel = ViewModelProvider(this, CanvasViewModelFactory(repository))
             .get(CanvasViewModel::class.java)
         recycle = binding.canvasList
+        emptyView = binding.emptyView
         recycle.layoutManager = LinearLayoutManager(requireContext())
         loadPaths()
         binding.newCanvas.setOnClickListener {
@@ -71,7 +74,14 @@ class CanvasListFragment : Fragment() {
         recycle.adapter = drawAdapter
         lifecycleScope.launch {
             viewModel.loadDrawings.observe(viewLifecycleOwner) { drawing ->
-                drawAdapter.submitList(drawing)
+                if (drawing.isEmpty()) {
+                    recycle.visibility = View.GONE
+                    emptyView.visibility = View.VISIBLE
+                } else {
+                    recycle.visibility = View.VISIBLE
+                    emptyView.visibility = View.GONE
+                    drawAdapter.submitList(drawing)
+                }
 
             }
         }

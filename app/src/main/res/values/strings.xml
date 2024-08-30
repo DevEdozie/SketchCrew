@@ -62,6 +62,8 @@
     <string name="receive_collaboration">Receive Collaboration</string>
     <string name="stop_collaboration">Stop Collaboration</string>
     <string name="send_chat">Send Chat</string>
+    <string name="no_drawings">No Sketch Drawn yet</string>
+    <string name="no_drawings_created_yet">No Sketch Drawn Yet</string>
 
 
 </resources>
