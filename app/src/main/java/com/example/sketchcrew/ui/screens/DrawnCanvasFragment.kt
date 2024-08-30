@@ -11,6 +11,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -698,11 +699,16 @@ class DrawnCanvasFragment : Fragment() {
 
     private fun setupSendCollaboration() {
         binding.sendCollab.setOnClickListener {
-            // Make chat button visible
-            if (!chatButtonIsVisible) {
-                binding.chatBtn.visibility = View.VISIBLE
-                chatButtonIsVisible = true
+            if (!isNetworkAvailable()) {
+                Toast.makeText(requireContext(), "No network connection", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
+
+            // Make chat button visible
+//            if (!chatButtonIsVisible) {
+//                binding.chatBtn.visibility = View.VISIBLE
+//                chatButtonIsVisible = true
+//            }
 
             val dialogView =
                 LayoutInflater.from(requireContext()).inflate(R.layout.share_dialog, null)
@@ -745,6 +751,12 @@ class DrawnCanvasFragment : Fragment() {
 
     private fun setupReceiveCollaboration() {
         binding.receiveCollab.setOnClickListener {
+
+            if (!isNetworkAvailable()) {
+                Toast.makeText(requireContext(), "No network connection", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val dialogView =
                 LayoutInflater.from(requireContext()).inflate(R.layout.share_dialog, null)
             val drawingIdTv = dialogView.findViewById<EditText>(R.id.drawingId)
@@ -798,6 +810,11 @@ class DrawnCanvasFragment : Fragment() {
 
     private fun setUpStopCollaboration() {
         binding.endCollab.setOnClickListener {
+            if (!isNetworkAvailable()) {
+                Toast.makeText(requireContext(), "No network connection", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             // Make chat button invisible
             binding.chatBtn.visibility = View.GONE
             chatButtonIsVisible = false
@@ -810,6 +827,13 @@ class DrawnCanvasFragment : Fragment() {
             val bottomSheet = ChatFragment()
             bottomSheet.show(parentFragmentManager, "ChatFragment")
         }
+    }
+
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager =
+            requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = connectivityManager.activeNetworkInfo
+        return networkInfo != null && networkInfo.isConnected
     }
 
 

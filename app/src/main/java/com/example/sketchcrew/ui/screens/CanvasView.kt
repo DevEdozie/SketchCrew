@@ -10,6 +10,7 @@ import android.graphics.Path
 import android.graphics.PathMeasure
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
+import android.net.ConnectivityManager
 import android.net.Uri
 import android.text.Layout
 import android.text.StaticLayout
@@ -783,19 +784,31 @@ class CanvasView @JvmOverloads constructor(
 //    }
 
     fun saveToFirebase() {
+
+        if (!isNetworkAvailable()) {
+            Toast.makeText(context, "No network connection", Toast.LENGTH_SHORT).show()
+            return
+        }
         val jsonArray = saveToJson()
-//        drawingId?.let { database.child(it).setValue(jsonArray.toString()) }
         drawingIdRef.setValue(jsonArray.toString())
-        isShared = true
-        Toast.makeText(
-            context,
-            "Data Updated...",
-            Toast.LENGTH_SHORT
-        ).show()
+            .addOnSuccessListener {
+                isShared = true
+                Toast.makeText(context, "Data Updated...", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(context, "Failed to save data: ${e.message}", Toast.LENGTH_SHORT)
+                    .show()
+            }
     }
 
 
     fun loadFromFirebase() {
+
+        if (!isNetworkAvailable()) {
+            Toast.makeText(context, "No network connection", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         if (isReceiver) {
             // Get a reference to the database
             database = FirebaseDatabase.getInstance().getReference("drawings")
@@ -826,7 +839,7 @@ class CanvasView @JvmOverloads constructor(
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(context, "Error loading data", Toast.LENGTH_SHORT).show()
+                handleDatabaseError(error)
             }
         }
 
@@ -845,6 +858,34 @@ class CanvasView @JvmOverloads constructor(
         Toast.makeText(context, "Collaboration ended...", Toast.LENGTH_SHORT).show()
     }
 
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = connectivityManager.activeNetworkInfo
+        return networkInfo != null && networkInfo.isConnected
+    }
+
+    private fun handleDatabaseError(error: DatabaseError) {
+        when (error.code) {
+            DatabaseError.NETWORK_ERROR -> Toast.makeText(
+                context,
+                "Network error occurred",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            DatabaseError.DISCONNECTED -> Toast.makeText(
+                context,
+                "Disconnected from the network",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            else -> Toast.makeText(
+                context,
+                "Error loading data: ${error.message}",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
 
 //    fun loadFromFirebase() {
 //        if (isReceiver) {
