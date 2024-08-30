@@ -384,33 +384,33 @@ class DrawnCanvasFragment : Fragment() {
         binding.brush3.setOnClickListener {
             binding.myCanvas.setBrushWidth(64f)
         }
-        binding.layer.setOnClickListener {
-            binding.layer.tooltipText = "Layer Manager"
-            if (binding.linearLayout4.visibility == View.VISIBLE) {
-                binding.linearLayout4.visibility = View.GONE
-            } else {
-                if (binding.linearLayout2.visibility == View.VISIBLE) {
-                    binding.linearLayout2.visibility = View.GONE
-                }
-                binding.linearLayout4.visibility = View.VISIBLE
-            }
-        }
+//        binding.layer.setOnClickListener {
+//            binding.layer.tooltipText = "Layer Manager"
+//            if (binding.linearLayout4.visibility == View.VISIBLE) {
+//                binding.linearLayout4.visibility = View.GONE
+//            } else {
+//                if (binding.linearLayout2.visibility == View.VISIBLE) {
+//                    binding.linearLayout2.visibility = View.GONE
+//                }
+//                binding.linearLayout4.visibility = View.VISIBLE
+//            }
+//        }
         binding.text.setOnClickListener {
             binding.text.tooltipText = "Enter Text"
             showTextDialog()
         }
 
-        binding.addLayer.setOnClickListener {
-            addNewLayer()
-        }
-
-        binding.removeLayer.setOnClickListener {
-            removeLayer(0)
-        }
-
-        binding.switchLayer.setOnClickListener {
-            switchLayer(0)
-        }
+//        binding.addLayer.setOnClickListener {
+//            addNewLayer()
+//        }
+//
+//        binding.removeLayer.setOnClickListener {
+//            removeLayer(0)
+//        }
+//
+//        binding.switchLayer.setOnClickListener {
+//            switchLayer(0)
+//        }
         binding.download.setOnClickListener {
             binding.download.tooltipText = "Download File"
             val bitmap = binding.myCanvas.captureBitmap()
@@ -457,20 +457,20 @@ class DrawnCanvasFragment : Fragment() {
     }
 
 
-    private fun addNewLayer() {
-        canvasView.createNewLayer(width, height)
-        Toast.makeText(requireContext(), "addLayer: New Layer Added", Toast.LENGTH_LONG).show()
-    }
-
-    fun switchLayer(index: Int) {
-        canvasView.switchToLayer(index)
-        Toast.makeText(requireContext(), "getLayer: Layer Switched", Toast.LENGTH_LONG).show()
-    }
-
-    fun removeLayer(index: Int) {
-        canvasView.removeLayer(index)
-        Toast.makeText(requireContext(), "removeLayer: Layer Removed", Toast.LENGTH_LONG).show()
-    }
+//    private fun addNewLayer() {
+//        canvasView.createNewLayer(width, height)
+//        Toast.makeText(requireContext(), "addLayer: New Layer Added", Toast.LENGTH_LONG).show()
+//    }
+//
+//    fun switchLayer(index: Int) {
+//        canvasView.switchToLayer(index)
+//        Toast.makeText(requireContext(), "getLayer: Layer Switched", Toast.LENGTH_LONG).show()
+//    }
+//
+//    fun removeLayer(index: Int) {
+//        canvasView.removeLayer(index)
+//        Toast.makeText(requireContext(), "removeLayer: Layer Removed", Toast.LENGTH_LONG).show()
+//    }
 
 
     private fun checkStoragePermission() {

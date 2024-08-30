@@ -49,9 +49,9 @@ class CanvasView @JvmOverloads constructor(
 
     private var scaleFactor = 1.0f
     private lateinit var scaleGestureDetector: ScaleGestureDetector
-    private var layerManager: LayerManager = LayerManager()
+//    private var layerManager: LayerManager = LayerManager()
     private var currentLayer: Bitmap? = null
-    private var layerArray = mutableListOf<Bitmap>()
+//    private var layerArray = mutableListOf<Bitmap>()
 
     // Firebase Variables :-> DO NOT TOUCH
     private lateinit var database: DatabaseReference
@@ -127,7 +127,7 @@ class CanvasView @JvmOverloads constructor(
         extraBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         extraCanvas = Canvas(extraBitmap)
         extraCanvas.drawColor(backgroundColor)
-        layerArray.add(extraBitmap)
+//        layerArray.add(extraBitmap)
 //        if (width > 0 && height > 0) {
 //            createNewLayer(width, height)
 //        }
@@ -385,22 +385,22 @@ class CanvasView @JvmOverloads constructor(
         invalidate()
     }
 
-    fun createNewLayer(width: Int, height: Int) {
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        layerManager.addLayer(bitmap)
-        invalidate()
-    }
-
-    fun switchToLayer(index: Int): Bitmap? {
-        currentLayer = layerManager.getLayer(index)
-        Canvas(currentLayer!!)  //Check this line ie usage is incorrect
-        return currentLayer!!
-    }
-
-    fun removeLayer(index: Int) {
-        layerManager.removeLayer(index)
-        invalidate()
-    }
+//    fun createNewLayer(width: Int, height: Int) {
+//        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+//        layerManager.addLayer(bitmap)
+//        invalidate()
+//    }
+//
+//    fun switchToLayer(index: Int): Bitmap? {
+//        currentLayer = layerManager.getLayer(index)
+//        Canvas(currentLayer!!)  //Check this line ie usage is incorrect
+//        return currentLayer!!
+//    }
+//
+//    fun removeLayer(index: Int) {
+//        layerManager.removeLayer(index)
+//        invalidate()
+//    }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val x = event.x
@@ -477,10 +477,10 @@ class CanvasView @JvmOverloads constructor(
 
 
     fun captureBitmap(): Bitmap {
-//        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(currentLayer!!)
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
         draw(canvas)
-        return currentLayer!!
+        return bitmap
     }
 
     fun saveBitmapToFile(context: Context, bitmap: Bitmap, filename: String): Uri? {

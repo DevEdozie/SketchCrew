@@ -196,13 +196,13 @@
                 android:src="@drawable/baseline_drive_file_rename_outline_24"
                 android:visibility="visible" />
 
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/layer"
-                android:layout_width="40dp"
-                android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:src="@drawable/baseline_layer_24"
-                android:visibility="visible" />
+<!--            <androidx.appcompat.widget.AppCompatImageView-->
+<!--                android:id="@+id/layer"-->
+<!--                android:layout_width="40dp"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:padding="8dp"-->
+<!--                android:src="@drawable/baseline_layer_24"-->
+<!--                android:visibility="visible" />-->
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/text"
