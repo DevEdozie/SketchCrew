@@ -16,7 +16,6 @@ import java.io.File
 
 class HomeActivity : AppCompatActivity() {
 
-
     private lateinit var binding: ActivityHomeBinding
     private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
