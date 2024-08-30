@@ -33,7 +33,9 @@ class DrawingAdapter(private val onClick: (Drawing) -> Unit, private val onDelet
         fun bind(drawing: Drawing) {
             // Bind data to views
             val textView: TextView = binding.textViewTitle
+            val descText: TextView = binding.textViewDesc
             textView.text = drawing.filename
+            descText.text = drawing.description
         }
     }
 

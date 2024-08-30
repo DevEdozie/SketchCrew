@@ -15,7 +15,7 @@ import com.example.sketchcrew.data.local.models.Drawing
 import com.example.sketchcrew.data.local.models.PairConverter
 import com.example.sketchcrew.data.local.models.PathData
 
-@Database(entities = [CanvasModel::class, PathData::class, Drawing::class], version = 8, exportSchema = false)
+@Database(entities = [CanvasModel::class, PathData::class, Drawing::class], version = 9, exportSchema = false)
 @TypeConverters(PairConverter::class)
 abstract class RoomDB : RoomDatabase() {
     abstract fun canvasDao(): CanvasDao

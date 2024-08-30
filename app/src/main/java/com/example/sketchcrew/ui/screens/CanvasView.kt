@@ -7,7 +7,6 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
-import android.graphics.PathMeasure
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.net.ConnectivityManager
@@ -16,35 +15,26 @@ import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
-import android.view.ViewConfiguration
 import android.widget.Toast
-import androidx.core.content.FileProvider
 import androidx.core.content.res.ResourcesCompat
 import com.example.sketchcrew.R
-import com.example.sketchcrew.data.local.models.Drawing
-import com.example.sketchcrew.data.local.models.PairConverter
-import com.example.sketchcrew.data.local.models.PathData
-import com.example.sketchcrew.utils.LayerManager
 import com.example.sketchcrew.utils.PathIteratorFirebase
 import com.google.firebase.database.ChildEventListener
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.gson.Gson
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.io.IOException
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -61,9 +51,9 @@ class CanvasView @JvmOverloads constructor(
 
     private var scaleFactor = 1.0f
     private lateinit var scaleGestureDetector: ScaleGestureDetector
-    private var layerManager: LayerManager = LayerManager()
+//    private var layerManager: LayerManager = LayerManager()
     private var currentLayer: Bitmap? = null
-    private var layerArray = mutableListOf<Bitmap>()
+//    private var layerArray = mutableListOf<Bitmap>()
 
     // Firebase Variables :-> DO NOT TOUCH
     private lateinit var database: DatabaseReference
@@ -78,7 +68,6 @@ class CanvasView @JvmOverloads constructor(
     var isReceiver = false // Variable to check if user is the sender
     var drawingId: String? = null
     // < --
-
 
     init {
         init()
@@ -100,16 +89,6 @@ class CanvasView @JvmOverloads constructor(
     private lateinit var extraBitmap: Bitmap
     private lateinit var staticLayout: StaticLayout
 
-    private var drawing = Path()
-
-    private val curPath = Path()
-
-    private var motionTouchEventX = 0f
-    private var motionTouchEventY = 0f
-
-    private var currentX = 0f
-    private var currentY = 0f
-    private val touchTolerance = ViewConfiguration.get(context).scaledTouchSlop
     private var currentColor = Color.BLACK
     private var eraserMode = false
 
@@ -117,8 +96,6 @@ class CanvasView @JvmOverloads constructor(
 
     private val backgroundColor = ResourcesCompat.getColor(resources, R.color.black, null)
     private var textToDraw: String? = null
-    private var textX: Float = 0f
-    private var textY: Float = 0f
     private var bitmap: Bitmap? = null
 
 
@@ -130,9 +107,10 @@ class CanvasView @JvmOverloads constructor(
     }
 
 
+
     private fun init() {
         paintColor.apply {
-            color = brushColor
+            color = Color.BLACK
             // Smooths out edges of what is drawn without affecting shape.
             isAntiAlias = true
             // Dithering affects how colors with higher-precision than the device are down-sampled.
@@ -168,20 +146,21 @@ class CanvasView @JvmOverloads constructor(
         extraBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         extraCanvas = Canvas(extraBitmap)
         extraCanvas.drawColor(backgroundColor)
-        layerArray.add(extraBitmap)
-        if (width > 0 && height > 0) {
-            createNewLayer(width, height)
-        }
+//        layerArray.add(extraBitmap)
+//        if (width > 0 && height > 0) {
+//            createNewLayer(width, height)
+//        }
     }
 
     fun setTextToDraw(text: String, x: Float, y: Float) {
         textToDraw = text
-        val textPaint: TextPaint = TextPaint()
-        textPaint.setAntiAlias(true)
-        textPaint.setTextSize(16 * getResources().getDisplayMetrics().density);
+        val textPaint = TextPaint()
+        textPaint.isAntiAlias = true
+        textPaint.textSize = 16 * resources.displayMetrics.density
         textPaint.color = 0xFF000000.toInt()
 
-        val width = textPaint.measureText(textToDraw).toFloat()
+        val width = textPaint.measureText(textToDraw)
+
         staticLayout = StaticLayout(
             text, textPaint,
             width.toInt(), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0F, false
@@ -196,12 +175,22 @@ class CanvasView @JvmOverloads constructor(
             canvas.scale(scaleFactor, scaleFactor)
 
             for (i in pathList.indices) {
-                paint.color = colorList[i]
+                if (eraserMode) {
+                    // Ensure eraser settings are applied when eraserMode is on
+//                    paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+//                    paint.color = Color.TRANSPARENT
+                    setEraser()
+                } else {
+                    paint.xfermode = null
+                    paint.color = colorList[i]
+                }
+
                 canvas.drawPath(pathList[i], paint)
                 invalidate()
             }
             for ((path, paint) in paths) {
                 canvas.drawPath(path, paint)
+                invalidate()
             }
             currentLayer?.let {
                 val myCanvas = Canvas(it)
@@ -237,11 +226,11 @@ class CanvasView @JvmOverloads constructor(
             }
 
             textToDraw?.let {
-                staticLayout.draw(canvas);
+                staticLayout.draw(canvas)
             }
             restore()
+            invalidate()
         }
-//        invalidate()
     }
 
     private fun drawSquare(canvas: Canvas) {
@@ -271,16 +260,26 @@ class CanvasView @JvmOverloads constructor(
         canvas.drawLine(startX, startY, endX, endY, linePaint)
 
         val arrowPath = Path()
-        arrowPath.moveTo(endX, endY)
-        arrowPath.lineTo(
-            (endX - arrowHeadLength * cos(angle - arrowHeadAngle)).toFloat(),
-            (endY - arrowHeadLength * sin(angle - arrowHeadAngle)).toFloat()
-        )
-        arrowPath.moveTo(endX, endY)
-        arrowPath.lineTo(
-            (endX - arrowHeadLength * cos(angle + arrowHeadAngle)).toFloat(),
-            (endY - arrowHeadLength * sin(angle + arrowHeadAngle)).toFloat()
-        )
+
+        arrowPath.lineTo(endX, endY)
+
+        // Calculate the first point of the arrowhead
+        val p1X = (endX - arrowHeadLength * cos(angle - arrowHeadAngle)).toFloat()
+        val p1Y = (endY - arrowHeadLength * sin(angle - arrowHeadAngle)).toFloat()
+
+        // Calculate the second point of the arrowhead
+        val p2X = (endX - arrowHeadLength * cos(angle + arrowHeadAngle)).toFloat()
+        val p2Y = (endY - arrowHeadLength * sin(angle + arrowHeadAngle)).toFloat()
+
+        // Draw the first side of the arrowhead
+        arrowPath.moveTo(p1X, p1Y)
+
+        // Draw the second side of the arrowhead from the first point
+        arrowPath.lineTo(p2X, p2Y)
+
+        // Optionally, close the path to make it a filled arrowhead
+        arrowPath.lineTo(endX, endY)
+
         canvas.drawPath(arrowPath, linePaint)
         invalidate()
     }
@@ -314,16 +313,23 @@ class CanvasView @JvmOverloads constructor(
         val arrowHeadLength = 30f
         val arrowHeadAngle = Math.toRadians(45.0)
 
-        arrowPath.moveTo(endX, endY)
-        arrowPath.lineTo(
-            (endX - arrowHeadLength * cos(angle - arrowHeadAngle)).toFloat(),
-            (endY - arrowHeadLength * sin(angle - arrowHeadAngle)).toFloat()
-        )
-        arrowPath.moveTo(endX, endY)
-        arrowPath.lineTo(
-            (endX - arrowHeadLength * cos(angle + arrowHeadAngle)).toFloat(),
-            (endY - arrowHeadLength * sin(angle + arrowHeadAngle)).toFloat()
-        )
+        // Calculate the points for the arrowhead
+        val p1X = (endX - arrowHeadLength * cos(angle - arrowHeadAngle)).toFloat()
+        val p1Y = (endY - arrowHeadLength * sin(angle - arrowHeadAngle)).toFloat()
+
+        val p2X = (endX - arrowHeadLength * cos(angle + arrowHeadAngle)).toFloat()
+        val p2Y = (endY - arrowHeadLength * sin(angle + arrowHeadAngle)).toFloat()
+
+        // Draw the arrowhead as a part of the same path
+        arrowPath.lineTo(p1X, p1Y)
+        arrowPath.lineTo(endX, endY) // Move back to the end point of the arrow
+        arrowPath.lineTo(p2X, p2Y)
+
+
+        arrowPath.lineTo(p1X, p1Y)
+        arrowPath.lineTo(endX, endY)
+        arrowPath.lineTo(p2X, p2Y)
+
         paths.add(Pair(arrowPath, paint))
         return arrowPath
     }
@@ -343,11 +349,15 @@ class CanvasView @JvmOverloads constructor(
     }
 
     private fun setEraser() {
-        paint.apply {
-            this.color = Color.WHITE
+        paintColor.apply {
             xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
-            strokeWidth = 60f
+            strokeWidth = 80f
+            color = Color.TRANSPARENT
+            Log.d("CanvasView", "Eraser Mode Activated")
         }
+
+        brushColor = Color.TRANSPARENT
+        currentColor = Color.TRANSPARENT
     }
 
     private fun setBrush(color: Int) {
@@ -368,10 +378,17 @@ class CanvasView @JvmOverloads constructor(
 
     fun setEraserMode(isEraser: Boolean) {
         eraserMode = isEraser
-
+        Log.d("CanvasView", "Eraser Mode Set: $eraserMode")
         if (eraserMode) {
             setEraser()
-            paint.color = Color.WHITE
+//            paint.color = Color.WHITE
+        } else {
+            // Reset paint settings when eraser mode is turned off
+            paint.xfermode = null
+            paint.strokeWidth = 10f
+            // Set the paint color back to the drawing color
+            paint.color = currentColor
+            brushColor = Color.BLACK
         }
     }
 
@@ -388,23 +405,22 @@ class CanvasView @JvmOverloads constructor(
         invalidate()
     }
 
-    fun createNewLayer(width: Int, height: Int) {
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        layerManager.addLayer(bitmap)
-        layerArray.add(bitmap)
-        currentLayer = bitmap
-        Canvas(bitmap)
-    }
-
-    fun switchToLayer(index: Int) {
-        currentLayer = layerManager.getLayer(index)
-        Canvas(currentLayer!!)
-    }
-
-    fun removeLayer(index: Int) {
-        layerManager.removeLayer(index)
-        Canvas(layerArray[index])
-    }
+//    fun createNewLayer(width: Int, height: Int) {
+//        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+//        layerManager.addLayer(bitmap)
+//        invalidate()
+//    }
+//
+//    fun switchToLayer(index: Int): Bitmap? {
+//        currentLayer = layerManager.getLayer(index)
+//        Canvas(currentLayer!!)  //Check this line ie usage is incorrect
+//        return currentLayer!!
+//    }
+//
+//    fun removeLayer(index: Int) {
+//        layerManager.removeLayer(index)
+//        invalidate()
+//    }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val x = event.x
@@ -442,9 +458,13 @@ class CanvasView @JvmOverloads constructor(
                     DrawingTool.CIRCLE -> paths.add(Pair(drawCirclePath(), Paint(paint)))
                     DrawingTool.SQUARE -> paths.add(Pair(drawSquarePath(), Paint(paint)))
                     DrawingTool.ARROW -> paths.add(Pair(drawArrowPath(), Paint(paint)))
+                    DrawingTool.ERASER -> {
+                        setEraser()
+                        paths.add(Pair(Path(currentPath), Paint(paint)))
+                    }
+
                     else -> {
                         currentPath.moveTo(x, y)
-                        mpaths.add(currentPath)
                     }
                 }
                 mpaths.add(currentPath)
@@ -458,75 +478,6 @@ class CanvasView @JvmOverloads constructor(
             }
         }
         return true
-    }
-
-
-    private fun touchStart() {
-//        path.reset()
-        path.moveTo(motionTouchEventX, motionTouchEventY)
-        currentX = motionTouchEventX
-        currentY = motionTouchEventY
-    }
-
-    private fun touchMove() {
-        val dx = Math.abs(motionTouchEventX - currentX)
-        val dy = Math.abs(motionTouchEventY - currentY)
-        if (dx >= touchTolerance || dy >= touchTolerance) {
-            // QuadTo() adds a quadratic bezier from the last point,
-            // approaching control point (x1,y1), and ending at (x2,y2).
-            path.quadTo(
-                currentX,
-                currentY,
-                (motionTouchEventX + currentX) / 2,
-                (motionTouchEventY + currentY) / 2
-            )
-            currentX = motionTouchEventX
-            currentY = motionTouchEventY
-            // Draw the path in the extra bitmap to cache it.
-            extraCanvas.drawPath(path, paint)
-            colorList.add(brushColor)
-            pathList.add(path)
-        }
-        invalidate()
-    }
-
-    private fun touchUp() {
-        drawing.addPath(curPath)
-        paths.add(Pair(curPath, paint))
-        when (currentTool) {
-            DrawingTool.FREEHAND -> paths.add(Pair(Path(currentPath), Paint(paint)))
-            DrawingTool.CIRCLE -> paths.add(Pair(drawCirclePath(), Paint(paint)))
-            DrawingTool.SQUARE -> paths.add(Pair(drawSquarePath(), Paint(paint)))
-            DrawingTool.ARROW -> paths.add(Pair(drawArrowPath(), Paint(paint)))
-            else -> {}
-        }
-        currentPath.reset()
-    }
-
-    fun savePaths(file: File) {
-        try {
-            ObjectOutputStream(FileOutputStream(file)).use { it.writeObject(mpaths) }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-    }
-
-    fun loadPaths(file: File) {
-        try {
-            ObjectInputStream(FileInputStream(file)).use { input ->
-                @Suppress("UNCHECKED_CAST")
-                val loadedPaths = input.readObject() as? MutableList<Path>
-                if (loadedPaths != null) {
-                    mpaths.clear()
-                    mpaths.addAll(loadedPaths)
-                    invalidate()
-                }
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        } catch (e: ClassNotFoundException) {
-            e.printStackTrace()
-        }
     }
 
     companion object {
@@ -587,6 +538,9 @@ class CanvasView @JvmOverloads constructor(
 //        currentPath.addPath(path)
 //        mpaths.add(path)
 //        return path
+
+        lateinit var firebaseAuth: FirebaseAuth
+
     }
 
     fun setBitmap(bitmap: Bitmap) {
@@ -594,60 +548,12 @@ class CanvasView @JvmOverloads constructor(
         invalidate()  // Redraw the view
     }
 
-//    fun getPathData(path: Path): String {
-//
-//        val pathData = mutableListOf<PathCommand>()
-//        val pathMeasure = PathMeasure(path, false)
-//        val segment = FloatArray(2)
-//
-//        var distance = 0f
-//        while (distance < pathMeasure.length) {
-//            pathMeasure.getPosTan(distance, segment, null)
-//            pathData.add(PathCommand(segment[0], segment[1]))
-//            distance += pathMeasure.length / 100 // Sample 100 points or more if needed
-//        }
-//
-//        return Gson().toJson(pathData)
-////        val pathData = StringBuilder()
-////
-////        val pathPoints = FloatArray(6) // Array to store the coordinates from the path
-////        val pathIterator = PathIterator(path)
-////
-////        while (!pathIterator.isDone()) {
-////            val type = pathIterator.currentSegment(pathPoints)
-////            when (type) {
-////                PathIterator.SEG_MOVETO -> {
-////                    pathData.append("M${pathPoints[0]},${pathPoints[1]} ")
-////                }
-////
-////                PathIterator.SEG_LINETO -> {
-////                    pathData.append("L${pathPoints[0]},${pathPoints[1]} ")
-////                }
-////
-////                PathIterator.SEG_QUADTO -> {
-////                    pathData.append("Q${pathPoints[0]},${pathPoints[1]} ${pathPoints[2]},${pathPoints[3]} ")
-////                }
-////
-////                PathIterator.SEG_CUBICTO -> {
-////                    pathData.append("C${pathPoints[0]},${pathPoints[1]} ${pathPoints[2]},${pathPoints[3]} ${pathPoints[4]},${pathPoints[5]} ")
-////                }
-////
-////                PathIterator.SEG_CLOSE -> {
-////                    pathData.append("Z ")
-////                }
-////            }
-////            pathIterator.next()
-////        }
-////
-////        return pathData.toString().trim()
-//    }
-
 
     fun captureBitmap(): Bitmap {
-//        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(currentLayer!!)
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
         draw(canvas)
-        return currentLayer!!
+        return bitmap
     }
 
     fun saveBitmapToFile(context: Context, bitmap: Bitmap, filename: String): Uri? {
@@ -1030,6 +936,7 @@ class CanvasView @JvmOverloads constructor(
 // **************************
     // FIREBASE -> END
 
+
     fun loadPathData(path: Path, paint: Paint) {
 //        val filename = path.
 //        val file = File("/storage/emulated/0/Android/data/com.example.sketchcrew/files/$filename")
@@ -1099,5 +1006,6 @@ class CanvasView @JvmOverloads constructor(
 //            db.drawingDao().insertDrawing(drawing)
 //        }
     }
+
 
 }

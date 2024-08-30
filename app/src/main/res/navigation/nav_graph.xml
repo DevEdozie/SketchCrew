@@ -16,6 +16,10 @@
         <action
             android:id="@+id/action_canvasListFragment_to_drawnCanvasFragment"
             app:destination="@id/drawnCanvasFragment" />
+        <action
+            android:id="@+id/action_canvasListFragment_to_nav_graph"
+            app:destination="@id/nav_graph"
+            app:popUpTo="@id/nav_graph" />
     </fragment>
     <fragment
         android:id="@+id/drawnCanvasFragment"
@@ -24,7 +28,9 @@
         tools:layout="@layout/fragment_drawn_canvas" >
         <action
             android:id="@+id/action_drawnCanvasFragment_to_canvasListFragment"
-            app:destination="@id/canvasListFragment" />
+            app:destination="@id/canvasListFragment"
+            app:popUpTo="@id/canvasListFragment"
+            app:popUpToInclusive="true" />
         <argument
             android:name="id"
             android:defaultValue="0"

@@ -2,7 +2,6 @@ package com.example.sketchcrew.ui.screens
 
 import android.Manifest
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -30,33 +29,31 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
+import androidx.navigation.findNavController
 import com.example.sketchcrew.R
 import com.example.sketchcrew.data.local.models.Drawing
 import com.example.sketchcrew.data.local.models.PairConverter
 import com.example.sketchcrew.databinding.FragmentDrawnCanvasBinding
 import com.example.sketchcrew.repository.CanvasRepository
-import com.example.sketchcrew.ui.screens.CanvasView.Companion.brushColor
+import com.example.sketchcrew.ui.screens.CanvasView.Companion.firebaseAuth
 import com.example.sketchcrew.ui.screens.CanvasView.Companion.shapeType
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModel
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModelFactory
 import com.example.sketchcrew.utils.FileNameGen
 import com.example.sketchcrew.utils.FirebaseChatManager
 import com.example.sketchcrew.utils.Truncator
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.IOException
 
 private const val TAG = "DrawnCanvasFragment"
 
+@Suppress("DEPRECATION")
 class DrawnCanvasFragment : Fragment() {
 
     private lateinit var _binding: FragmentDrawnCanvasBinding
@@ -65,9 +62,11 @@ class DrawnCanvasFragment : Fragment() {
     val binding get() = _binding
     private lateinit var canvasView: CanvasView
     private var pathId: Int = 0
+
     private var pathStr: String? = null
     private var pathColor: Int = 0
     private var pathStroke: Float = 0F
+
     private val listOfButtons: ArrayList<View> = ArrayList<View>()
     var mutableListButtons = mutableListOf<View>()
     private lateinit var repository: CanvasRepository
@@ -88,7 +87,7 @@ class DrawnCanvasFragment : Fragment() {
         viewModel = ViewModelProvider(this, CanvasViewModelFactory(repository))
             .get(CanvasViewModel::class.java)
         _binding = FragmentDrawnCanvasBinding.inflate(inflater, container, false)
-
+        firebaseAuth = FirebaseAuth.getInstance()
         canvasView = binding.canvasLayout.findViewById(R.id.my_canvas)
         // database
         database = FirebaseDatabase.getInstance().getReference("drawings")
@@ -332,16 +331,25 @@ class DrawnCanvasFragment : Fragment() {
             binding.myCanvas.setTool(DrawingTool.CIRCLE)
             binding.myCanvas.setBrushWidth(16f)
         }
+
+        binding.ibBack.setOnClickListener {
+            view.findNavController().navigate(R.id.action_drawnCanvasFragment_to_canvasListFragment)
+        }
+
         binding.menu.setOnClickListener {
             binding.menu.visibility = View.GONE
             binding.menuOpen.visibility = View.VISIBLE
             binding.linearLayout3.visibility = View.VISIBLE
+            binding.linearLayout2.visibility = View.GONE
+            binding.linearLayout4.visibility = View.GONE
         }
 
         binding.menuOpen.setOnClickListener {
             binding.menuOpen.visibility = View.GONE
             binding.menu.visibility = View.VISIBLE
             binding.linearLayout3.visibility = View.GONE
+            binding.linearLayout2.visibility = View.GONE
+            binding.linearLayout4.visibility = View.GONE
         }
 
         binding.pen.setOnClickListener {
@@ -380,33 +388,33 @@ class DrawnCanvasFragment : Fragment() {
         binding.brush3.setOnClickListener {
             binding.myCanvas.setBrushWidth(64f)
         }
-        binding.layer.setOnClickListener {
-            binding.layer.tooltipText = "Layer Manager"
-            if (binding.linearLayout4.visibility == View.VISIBLE) {
-                binding.linearLayout4.visibility = View.GONE
-            } else {
-                if (binding.linearLayout2.visibility == View.VISIBLE) {
-                    binding.linearLayout2.visibility = View.GONE
-                }
-                binding.linearLayout4.visibility = View.VISIBLE
-            }
-        }
+//        binding.layer.setOnClickListener {
+//            binding.layer.tooltipText = "Layer Manager"
+//            if (binding.linearLayout4.visibility == View.VISIBLE) {
+//                binding.linearLayout4.visibility = View.GONE
+//            } else {
+//                if (binding.linearLayout2.visibility == View.VISIBLE) {
+//                    binding.linearLayout2.visibility = View.GONE
+//                }
+//                binding.linearLayout4.visibility = View.VISIBLE
+//            }
+//        }
         binding.text.setOnClickListener {
             binding.text.tooltipText = "Enter Text"
             showTextDialog()
         }
 
-        binding.addLayer.setOnClickListener {
-            addNewLayer()
-        }
-
-        binding.removeLayer.setOnClickListener {
-            removeLayer(0)
-        }
-
-        binding.switchLayer.setOnClickListener {
-            switchLayer(0)
-        }
+//        binding.addLayer.setOnClickListener {
+//            addNewLayer()
+//        }
+//
+//        binding.removeLayer.setOnClickListener {
+//            removeLayer(0)
+//        }
+//
+//        binding.switchLayer.setOnClickListener {
+//            switchLayer(0)
+//        }
         binding.download.setOnClickListener {
             binding.download.tooltipText = "Download File"
             val bitmap = binding.myCanvas.captureBitmap()
@@ -437,39 +445,38 @@ class DrawnCanvasFragment : Fragment() {
         val pathsJson = PairConverter().fromPaths(drawing.pathData)
         Log.d(TAG, "pathsJson: ${pathsJson}")
 
-
         binding.myCanvas.paths.addAll(pathsJson)
 
     }
 
-    fun loadPath(pathStr: String, pathColor: Int, pathStroke: Float) {
-        val paint = Paint()
-        paint.apply {
-            strokeWidth = pathStroke
-            color = pathColor
-        }
+//    fun loadPath(pathStr: String, pathColor: Int, pathStroke: Float) {
+//        val paint = Paint()
+//        paint.apply {
+//            strokeWidth = pathStroke
+//            color = pathColor
+//        }
+//
+//        var pathData = PairConverter().fromPaths(pathStr)
+//        pathData.forEach { it ->
+//            binding.myCanvas.paths.add(it)
+//        }
+//    }
 
-        var pathData = PairConverter().fromPaths(pathStr)
-        pathData.forEach { it ->
-            binding.myCanvas.paths.add(it)
-        }
-    }
 
-
-    private fun addNewLayer() {
-        canvasView.createNewLayer(width, height)
-        Toast.makeText(requireContext(), "addLayer: New Layer Added", Toast.LENGTH_LONG).show()
-    }
-
-    fun switchLayer(index: Int) {
-        canvasView.switchToLayer(index)
-        Toast.makeText(requireContext(), "getLayer: Layer Switched", Toast.LENGTH_LONG).show()
-    }
-
-    fun removeLayer(index: Int) {
-        canvasView.removeLayer(index)
-        Toast.makeText(requireContext(), "removeLayer: Layer Removed", Toast.LENGTH_LONG).show()
-    }
+//    private fun addNewLayer() {
+//        canvasView.createNewLayer(width, height)
+//        Toast.makeText(requireContext(), "addLayer: New Layer Added", Toast.LENGTH_LONG).show()
+//    }
+//
+//    fun switchLayer(index: Int) {
+//        canvasView.switchToLayer(index)
+//        Toast.makeText(requireContext(), "getLayer: Layer Switched", Toast.LENGTH_LONG).show()
+//    }
+//
+//    fun removeLayer(index: Int) {
+//        canvasView.removeLayer(index)
+//        Toast.makeText(requireContext(), "removeLayer: Layer Removed", Toast.LENGTH_LONG).show()
+//    }
 
 
     private fun checkStoragePermission() {
@@ -491,6 +498,7 @@ class DrawnCanvasFragment : Fragment() {
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -543,6 +551,7 @@ class DrawnCanvasFragment : Fragment() {
         startActivityForResult(intent, REQUEST_CODE_PICK_IMAGE)
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CODE_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
@@ -621,15 +630,15 @@ class DrawnCanvasFragment : Fragment() {
         dialog.show()
     }
 
-    fun savePathToFile(pathData: String, fileName: String) {
-        try {
-            requireContext().openFileOutput(fileName, Context.MODE_PRIVATE).use {
-                it.write(pathData.toByteArray())
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-    }
+//    fun savePathToFile(pathData: String, fileName: String) {
+//        try {
+//            requireContext().openFileOutput(fileName, Context.MODE_PRIVATE).use {
+//                it.write(pathData.toByteArray())
+//            }
+//        } catch (e: IOException) {
+//            e.printStackTrace()
+//        }
+//    }
 
     private fun handleSave(fileName: String, description: String, selectedFormat: String) {
 
@@ -652,28 +661,31 @@ class DrawnCanvasFragment : Fragment() {
 
         lifecycleScope.launch(Dispatchers.IO) {
 
-            val bitmap = binding.myCanvas.captureBitmap()
-            val drawnBitmap = binding.myCanvas.saveBitmapToFile(
-                requireContext(), bitmap,
-                filename
-            )
+//            val bitmap = binding.myCanvas.captureBitmap()
+//            val drawnBitmap = binding.myCanvas.saveBitmapToFile(
+//                requireContext(), bitmap,
+//                filename
+//            )
             val myPath = PairConverter().fromPathList(pathsList)
             Log.d(TAG, "saveCanvas: $myPath")
             val paths = canvasView.paths
-            var serial = ""
-            serial = PairConverter().fromPathList(paths)
-            val serializedPaint = serial
-            Log.d(TAG, "handleSave (serializedPaint): $serializedPaint")
-            val drawing =
-                Drawing(filename = filename, pathData = serial, paintData = serializedPaint)
+
+
+            val serial = PairConverter().fromPathList(paths)
+            Log.d(TAG, "handleSave (serializedPaint): $serial")
+            Log.d(TAG, "AUTH ID: ${firebaseAuth.currentUser!!.uid}")
+            val drawing = Drawing(
+                filename = filename,
+                description = description,
+                authId = firebaseAuth.currentUser!!.uid,
+                pathData = serial,
+                paintData = serial
+            )
             viewModel.saveDrawing(drawing)
-            Log.d(TAG, "DrawnBitmap: $drawnBitmap")
+//            Log.d(TAG, "DrawnBitmap: $drawnBitmap")
+
         }
         Toast.makeText(requireContext(), "Drawing Saved", Toast.LENGTH_LONG).show()
-    }
-
-    private fun changeColor(color: Int) {
-        brushColor = color
     }
 
     private fun changeShapeType(shape: String) {
