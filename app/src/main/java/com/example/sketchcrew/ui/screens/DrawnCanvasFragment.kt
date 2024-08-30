@@ -2,7 +2,6 @@ package com.example.sketchcrew.ui.screens
 
 import android.Manifest
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -49,10 +48,10 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.IOException
 
 private const val TAG = "DrawnCanvasFragment"
 
+@Suppress("DEPRECATION")
 class DrawnCanvasFragment : Fragment() {
 
     private lateinit var _binding: FragmentDrawnCanvasBinding
@@ -61,9 +60,6 @@ class DrawnCanvasFragment : Fragment() {
     val binding get() = _binding
     private lateinit var canvasView: CanvasView
     private var pathId: Int = 0
-    private var pathStr: String? = null
-    private var pathColor: Int = 0
-    private var pathStroke: Float = 0F
     private val listOfButtons: ArrayList<View> = ArrayList<View>()
     var mutableListButtons = mutableListOf<View>()
     private lateinit var repository: CanvasRepository
@@ -443,18 +439,18 @@ class DrawnCanvasFragment : Fragment() {
         binding.myCanvas.paths.addAll(pathsJson)
     }
 
-    fun loadPath(pathStr: String, pathColor: Int, pathStroke: Float) {
-        val paint = Paint()
-        paint.apply {
-            strokeWidth = pathStroke
-            color = pathColor
-        }
-
-        var pathData = PairConverter().fromPaths(pathStr)
-        pathData.forEach { it ->
-            binding.myCanvas.paths.add(it)
-        }
-    }
+//    fun loadPath(pathStr: String, pathColor: Int, pathStroke: Float) {
+//        val paint = Paint()
+//        paint.apply {
+//            strokeWidth = pathStroke
+//            color = pathColor
+//        }
+//
+//        var pathData = PairConverter().fromPaths(pathStr)
+//        pathData.forEach { it ->
+//            binding.myCanvas.paths.add(it)
+//        }
+//    }
 
 
 //    private fun addNewLayer() {
@@ -492,6 +488,7 @@ class DrawnCanvasFragment : Fragment() {
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -621,15 +618,15 @@ class DrawnCanvasFragment : Fragment() {
         dialog.show()
     }
 
-    fun savePathToFile(pathData: String, fileName: String) {
-        try {
-            requireContext().openFileOutput(fileName, Context.MODE_PRIVATE).use {
-                it.write(pathData.toByteArray())
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-    }
+//    fun savePathToFile(pathData: String, fileName: String) {
+//        try {
+//            requireContext().openFileOutput(fileName, Context.MODE_PRIVATE).use {
+//                it.write(pathData.toByteArray())
+//            }
+//        } catch (e: IOException) {
+//            e.printStackTrace()
+//        }
+//    }
 
     private fun handleSave(fileName: String, description: String, selectedFormat: String) {
 
@@ -660,26 +657,21 @@ class DrawnCanvasFragment : Fragment() {
             val myPath = PairConverter().fromPathList(pathsList)
             Log.d(TAG, "saveCanvas: $myPath")
             val paths = canvasView.paths
-            var serial = ""
-            serial = PairConverter().fromPathList(paths)
-            val serializedPaint = serial
-            Log.d(TAG, "handleSave (serializedPaint): $serializedPaint")
+
+            val serial = PairConverter().fromPathList(paths)
+            Log.d(TAG, "handleSave (serializedPaint): $serial")
             Log.d(TAG, "AUTH ID: ${firebaseAuth.currentUser!!.uid}")
             val drawing = Drawing(
                 filename = filename,
                 description = description,
-                authId = "${firebaseAuth.currentUser!!.uid}",
+                authId = firebaseAuth.currentUser!!.uid,
                 pathData = serial,
-                paintData = serializedPaint
+                paintData = serial
             )
             viewModel.saveDrawing(drawing)
 //            Log.d(TAG, "DrawnBitmap: $drawnBitmap")
         }
         Toast.makeText(requireContext(), "Drawing Saved", Toast.LENGTH_LONG).show()
-    }
-
-    private fun changeColor(color: Int) {
-        brushColor = color
     }
 
     private fun changeShapeType(shape: String) {

@@ -21,7 +21,6 @@ import android.view.View
 import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import com.example.sketchcrew.R
-import com.example.sketchcrew.utils.LayerManager
 import com.example.sketchcrew.utils.PathIteratorFirebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -85,8 +84,6 @@ class CanvasView @JvmOverloads constructor(
 
     private val backgroundColor = ResourcesCompat.getColor(resources, R.color.black, null)
     private var textToDraw: String? = null
-    private var textX: Float = 0f
-    private var textY: Float = 0f
     private var bitmap: Bitmap? = null
 
     private fun init() {
@@ -135,12 +132,12 @@ class CanvasView @JvmOverloads constructor(
 
     fun setTextToDraw(text: String, x: Float, y: Float) {
         textToDraw = text
-        val textPaint: TextPaint = TextPaint()
+        val textPaint = TextPaint()
         textPaint.isAntiAlias = true
         textPaint.textSize = 16 * resources.displayMetrics.density
         textPaint.color = 0xFF000000.toInt()
 
-        val width = textPaint.measureText(textToDraw).toFloat()
+        val width = textPaint.measureText(textToDraw)
         staticLayout = StaticLayout(
             text, textPaint,
             width.toInt(), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0F, false

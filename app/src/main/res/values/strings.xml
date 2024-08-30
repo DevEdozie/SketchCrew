@@ -57,6 +57,11 @@
     <string name="canvas_title">Canvas Title</string>
     <string name="no_description">No Description</string>
     <string name="delete">Delete</string>
+    <string name="sketch_canvas">Sketch Canvas</string>
+    <string name="send_collaboration">Send Collaboration</string>
+    <string name="receive_collaboration">Receive Collaboration</string>
+    <string name="stop_collaboration">Stop Collaboration</string>
+    <string name="send_chat">Send Chat</string>
 
 
 </resources>
