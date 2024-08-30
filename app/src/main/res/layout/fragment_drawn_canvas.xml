@@ -404,7 +404,9 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_margin="24dp"
-        android:src="@drawable/message_ic"
+        android:visibility="gone"
+        android:src="@drawable/message_ic" 
         android:contentDescription="@string/send_chat"/>
+
 
 </RelativeLayout>

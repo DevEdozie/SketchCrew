@@ -11,7 +11,10 @@ import androidx.core.view.WindowInsetsCompat
 import com.example.sketchcrew.databinding.ActivitySignInBinding
 import com.example.sketchcrew.ui.screens.HomeActivity
 import com.example.sketchcrew.utils.LoadingDialog
+import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
@@ -39,33 +42,67 @@ class SignInActivity : AppCompatActivity() {
 
     private fun setUpSignInButton() {
         binding.signInBtn.setOnClickListener {
-//            binding.animationView.visibility = View.VISIBLE
             showLoading()
             val email = binding.emailEt.text.toString()
             val pass = binding.passET.text.toString()
 
             if (email.isNotEmpty() && pass.isNotEmpty()) {
-                firebaseAuth.signInWithEmailAndPassword(email, pass).addOnCompleteListener {
-                    if (it.isSuccessful) {
-//                        binding.animationView.visibility = View.INVISIBLE
+                firebaseAuth.signInWithEmailAndPassword(email, pass)
+                    .addOnCompleteListener {
                         stopLoading()
-                        Toast.makeText(this, "Sign in successful", Toast.LENGTH_SHORT)
-                            .show()
-                        val intent = Intent(this, HomeActivity::class.java)
-                        startActivity(intent)
-                    } else {
-//                        binding.animationView.visibility = View.INVISIBLE
-                        stopLoading()
-                        Toast.makeText(this, it.exception.toString(), Toast.LENGTH_SHORT).show()
+                        if (it.isSuccessful) {
+                            Toast.makeText(this, "Sign in successful", Toast.LENGTH_SHORT).show()
+                            val intent = Intent(this, HomeActivity::class.java)
+                            startActivity(intent)
+                        }
                     }
-                }
+                    .addOnFailureListener { e ->
+                        stopLoading()
+                        val errorMessage = when (e) {
+                            is FirebaseAuthInvalidUserException -> "No account found with this email."
+                            is FirebaseAuthInvalidCredentialsException -> "Incorrect password or email format."
+                            is FirebaseNetworkException -> "Network error. Please check your connection."
+                            else -> "Sign in failed: ${e.message}"
+                        }
+                        Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+                    }
             } else {
-//                binding.animationView.visibility = View.INVISIBLE
                 stopLoading()
                 Toast.makeText(this, "Fill up empty fields", Toast.LENGTH_SHORT).show()
             }
         }
     }
+
+
+//    private fun setUpSignInButton() {
+//        binding.signInBtn.setOnClickListener {
+////            binding.animationView.visibility = View.VISIBLE
+//            showLoading()
+//            val email = binding.emailEt.text.toString()
+//            val pass = binding.passET.text.toString()
+//
+//            if (email.isNotEmpty() && pass.isNotEmpty()) {
+//                firebaseAuth.signInWithEmailAndPassword(email, pass).addOnCompleteListener {
+//                    if (it.isSuccessful) {
+////                        binding.animationView.visibility = View.INVISIBLE
+//                        stopLoading()
+//                        Toast.makeText(this, "Sign in successful", Toast.LENGTH_SHORT)
+//                            .show()
+//                        val intent = Intent(this, HomeActivity::class.java)
+//                        startActivity(intent)
+//                    } else {
+////                        binding.animationView.visibility = View.INVISIBLE
+//                        stopLoading()
+//                        Toast.makeText(this, it.exception.toString(), Toast.LENGTH_SHORT).show()
+//                    }
+//                }
+//            } else {
+////                binding.animationView.visibility = View.INVISIBLE
+//                stopLoading()
+//                Toast.makeText(this, "Fill up empty fields", Toast.LENGTH_SHORT).show()
+//            }
+//        }
+//    }
 
 
     private fun setUpNav() {

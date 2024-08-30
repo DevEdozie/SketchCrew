@@ -9,6 +9,8 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Path
+import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -41,6 +43,7 @@ import com.example.sketchcrew.ui.screens.CanvasView.Companion.shapeType
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModel
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModelFactory
 import com.example.sketchcrew.utils.FileNameGen
+import com.example.sketchcrew.utils.FirebaseChatManager
 import com.example.sketchcrew.utils.Truncator
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
@@ -59,6 +62,11 @@ class DrawnCanvasFragment : Fragment() {
     val binding get() = _binding
     private lateinit var canvasView: CanvasView
     private var pathId: Int = 0
+
+    private var pathStr: String? = null
+    private var pathColor: Int = 0
+    private var pathStroke: Float = 0F
+
     private val listOfButtons: ArrayList<View> = ArrayList<View>()
     var mutableListButtons = mutableListOf<View>()
     private lateinit var repository: CanvasRepository
@@ -67,6 +75,7 @@ class DrawnCanvasFragment : Fragment() {
 
     // Firebase
     private lateinit var database: DatabaseReference
+    private var chatButtonIsVisible = false
     // --> DO NOT TOUCH
 
     override fun onCreateView(
@@ -435,7 +444,9 @@ class DrawnCanvasFragment : Fragment() {
         Log.d(TAG, "restoreDrawing: ${drawing.pathData}")
         val pathsJson = PairConverter().fromPaths(drawing.pathData)
         Log.d(TAG, "pathsJson: ${pathsJson}")
+
         binding.myCanvas.paths.addAll(pathsJson)
+
     }
 
 //    fun loadPath(pathStr: String, pathColor: Int, pathStroke: Float) {
@@ -564,6 +575,7 @@ class DrawnCanvasFragment : Fragment() {
         return filePath
     }
 
+
     private fun showTextDialog() {
 
         val editText = EditText(requireContext())
@@ -658,6 +670,7 @@ class DrawnCanvasFragment : Fragment() {
             Log.d(TAG, "saveCanvas: $myPath")
             val paths = canvasView.paths
 
+
             val serial = PairConverter().fromPathList(paths)
             Log.d(TAG, "handleSave (serializedPaint): $serial")
             Log.d(TAG, "AUTH ID: ${firebaseAuth.currentUser!!.uid}")
@@ -670,6 +683,7 @@ class DrawnCanvasFragment : Fragment() {
             )
             viewModel.saveDrawing(drawing)
 //            Log.d(TAG, "DrawnBitmap: $drawnBitmap")
+
         }
         Toast.makeText(requireContext(), "Drawing Saved", Toast.LENGTH_LONG).show()
     }
@@ -684,23 +698,138 @@ class DrawnCanvasFragment : Fragment() {
         private val REQUEST_CODE_PICK_IMAGE = 102
     }
 
+    // FIREBASE CODE:::: DO NOT TOUCH
+
+//    private fun setupSendCollaboration() {
+//        binding.sendCollab.setOnClickListener {
+//
+//            canvasView.saveToFirebase()
+//            // TEST
+//            canvasView.loadFromFirebase()
+//        }
+//    }
+
     private fun setupSendCollaboration() {
         binding.sendCollab.setOnClickListener {
-            canvasView.saveToFirebase()
-            // TEST
-            canvasView.loadFromFirebase()
+            if (!isNetworkAvailable()) {
+                Toast.makeText(requireContext(), "No network connection", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Make chat button visible
+//            if (!chatButtonIsVisible) {
+//                binding.chatBtn.visibility = View.VISIBLE
+//                chatButtonIsVisible = true
+//            }
+
+            val dialogView =
+                LayoutInflater.from(requireContext()).inflate(R.layout.share_dialog, null)
+            val drawingIdTv = dialogView.findViewById<EditText>(R.id.drawingId)
+
+//            canvasView.isSender = true
+//            canvasView.isReceiver = false
+            drawingIdTv.setText(canvasView.drawingId)
+
+            AlertDialog.Builder(requireContext())
+                .setTitle("Drawing Id")
+                .setView(dialogView)
+                .setPositiveButton("OK") { _, _ ->
+                    // Make chat button visible
+                    if (!chatButtonIsVisible) {
+                        binding.chatBtn.visibility = View.VISIBLE
+                        chatButtonIsVisible = true
+                    }
+                    //
+                    canvasView.saveToFirebase()
+                    // TEST
+                    canvasView.isReceiver = false
+                    canvasView.loadFromFirebase()
+                    // CHAT TEST
+                    FirebaseChatManager.initializeChatDb(canvasView.drawingIdRef)
+                }
+                .setNegativeButton("Cancel") { dialog, _ ->
+                    // Perform actions when "Cancel" is clicked
+                    // For example, hide the chat button again
+                    if (chatButtonIsVisible) {
+                        binding.chatBtn.visibility = View.GONE
+                        chatButtonIsVisible = false
+                    }
+                    dialog.dismiss() // Close the dialog
+                }
+                .show()
+
         }
     }
 
     private fun setupReceiveCollaboration() {
         binding.receiveCollab.setOnClickListener {
-            canvasView.loadFromFirebase()
+
+            if (!isNetworkAvailable()) {
+                Toast.makeText(requireContext(), "No network connection", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val dialogView =
+                LayoutInflater.from(requireContext()).inflate(R.layout.share_dialog, null)
+            val drawingIdTv = dialogView.findViewById<EditText>(R.id.drawingId)
+
+
+            AlertDialog.Builder(requireContext())
+                .setTitle("Drawing Id")
+                .setView(dialogView)
+                .setPositiveButton("OK") { _, _ ->
+                    if (drawingIdTv.text.isEmpty()) {
+                        Toast.makeText(
+                            requireContext(),
+                            "Field can not be empty",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        // Make chat button visible
+                        if (!chatButtonIsVisible) {
+                            binding.chatBtn.visibility = View.VISIBLE
+                            chatButtonIsVisible = true
+                        }
+                        //
+                        canvasView.isReceiver = true
+                        canvasView.drawingId = drawingIdTv.text.toString()
+                        canvasView.loadFromFirebase()
+                        // CHAT TEST
+                        FirebaseChatManager.initializeChatDb(canvasView.drawingIdRef)
+                    }
+
+                }
+                .setNegativeButton("Cancel") { dialog, _ ->
+                    // Perform actions when "Cancel" is clicked
+                    // For example, hide the chat button again
+                    if (chatButtonIsVisible) {
+                        binding.chatBtn.visibility = View.GONE
+                        chatButtonIsVisible = false
+                    }
+                    dialog.dismiss() // Close the dialog
+                }
+                .show()
+
 
         }
     }
+//    private fun setupReceiveCollaboration() {
+//        binding.receiveCollab.setOnClickListener {
+//            canvasView.loadFromFirebase()
+//
+//        }
+//    }
 
     private fun setUpStopCollaboration() {
         binding.endCollab.setOnClickListener {
+            if (!isNetworkAvailable()) {
+                Toast.makeText(requireContext(), "No network connection", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Make chat button invisible
+            binding.chatBtn.visibility = View.GONE
+            chatButtonIsVisible = false
             canvasView.stopCollaboration()
         }
     }
@@ -710,6 +839,13 @@ class DrawnCanvasFragment : Fragment() {
             val bottomSheet = ChatFragment()
             bottomSheet.show(parentFragmentManager, "ChatFragment")
         }
+    }
+
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager =
+            requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = connectivityManager.activeNetworkInfo
+        return networkInfo != null && networkInfo.isConnected
     }
 
 

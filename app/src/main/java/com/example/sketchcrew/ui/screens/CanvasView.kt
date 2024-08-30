@@ -9,6 +9,7 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
+import android.net.ConnectivityManager
 import android.net.Uri
 import android.text.Layout
 import android.text.StaticLayout
@@ -22,6 +23,7 @@ import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import com.example.sketchcrew.R
 import com.example.sketchcrew.utils.PathIteratorFirebase
+import com.google.firebase.database.ChildEventListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -29,6 +31,7 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
@@ -54,12 +57,21 @@ class CanvasView @JvmOverloads constructor(
 
     // Firebase Variables :-> DO NOT TOUCH
     private lateinit var database: DatabaseReference
+    lateinit var drawingIdRef: DatabaseReference
+
     private var valueEventListener: ValueEventListener? = null
+
+    // TEST
+//    private var childEventListener: ChildEventListener? = null
     private var isShared = false // Variable to check if code is being shared or not
+    var isSender = false // Variable to check if user is the sender
+    var isReceiver = false // Variable to check if user is the sender
+    var drawingId: String? = null
     // < --
 
     init {
         init()
+        initFirebase()
     }
 
     private var currentPath = Path()
@@ -85,6 +97,16 @@ class CanvasView @JvmOverloads constructor(
     private val backgroundColor = ResourcesCompat.getColor(resources, R.color.black, null)
     private var textToDraw: String? = null
     private var bitmap: Bitmap? = null
+
+
+    private fun initFirebase() {
+        // Firebase Database reference
+        database = FirebaseDatabase.getInstance().getReference("drawings")
+        drawingId = database.push().key
+        drawingIdRef = drawingId?.let { database.child(it) }!!
+    }
+
+
 
     private fun init() {
         paintColor.apply {
@@ -138,6 +160,7 @@ class CanvasView @JvmOverloads constructor(
         textPaint.color = 0xFF000000.toInt()
 
         val width = textPaint.measureText(textToDraw)
+
         staticLayout = StaticLayout(
             text, textPaint,
             width.toInt(), Layout.Alignment.ALIGN_NORMAL, 1.0f, 0F, false
@@ -464,7 +487,60 @@ class CanvasView @JvmOverloads constructor(
         var brushColor = Color.BLACK
         var path = Path()
         var paintColor = Paint()
+    }
+
+    fun setPath(path: Path): String {
+        val pathData = StringBuilder()
+        val coords = FloatArray(2)
+        val pathMeasure = PathMeasure(path, false)
+
+        do {
+            var distance = 0f
+            while (distance < pathMeasure.length) {
+                pathMeasure.getPosTan(distance, coords, null)
+                if (distance == 0f) {
+                    pathData.append("M${coords[0]},${coords[1]}")
+                } else {
+                    pathData.append("L${coords[0]},${coords[1]}")
+                }
+                distance += pathMeasure.length / 100 // Adjust for more precision
+            }
+        } while (pathMeasure.nextContour())
+
+        return pathData.toString()
+//        path = Path().apply {
+//            // Convert path data string back to Path object
+//            // Assume pathData is a series of coordinates in the format "x1,y1;x2,y2;..."
+//            val coordinates = pathData.split(";")
+//            coordinates.forEachIndexed { index, coordinate ->
+//                val points = coordinate.split(",")
+//                if (points.size == 2) {
+//                    try {
+//                        val x = points[0].toFloat()
+//                        val y = points[1].toFloat()
+//                        if (index == 0) {
+//                            moveTo(x, y)
+//                        } else {
+//                            lineTo(x, y)
+//                        }
+//                    } catch (e: NumberFormatException) {
+//                        // Log or handle the error gracefully
+//                        Log.e("CanvasView", "Invalid coordinate format: $coordinate")
+//                    }
+//                } else {
+//                    // Log or handle the error gracefully
+//                    Log.e("CanvasView", "Invalid coordinate pair: $coordinate")
+//                }
+//            }
+//        }
+//        invalidate()
+
+//        currentPath.addPath(path)
+//        mpaths.add(path)
+//        return path
+
         lateinit var firebaseAuth: FirebaseAuth
+
     }
 
     fun setBitmap(bitmap: Bitmap) {
@@ -601,88 +677,335 @@ class CanvasView @JvmOverloads constructor(
 
     // Firebase Integration
 
+//    fun saveToFirebase() {
+//        database = FirebaseDatabase.getInstance().getReference("drawings")
+//        val jsonArray = saveToJson()
+//        database.child("canvasData").setValue(jsonArray.toString())
+//        isShared = true
+//        Toast.makeText(
+//            context,
+//            "Data Updated...",
+//            Toast.LENGTH_SHORT
+//        ).show()
+//    }
+
     fun saveToFirebase() {
-        database = FirebaseDatabase.getInstance().getReference("drawings")
+
+        if (!isNetworkAvailable()) {
+            Toast.makeText(context, "No network connection", Toast.LENGTH_SHORT).show()
+            return
+        }
         val jsonArray = saveToJson()
-        database.child("canvasData").setValue(jsonArray.toString())
-        isShared = true
-        Toast.makeText(
-            context,
-            "Data Updated...",
-            Toast.LENGTH_SHORT
-        ).show()
+        drawingIdRef.setValue(jsonArray.toString())
+            .addOnSuccessListener {
+                isShared = true
+                Toast.makeText(context, "Data Updated...", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(context, "Failed to save data: ${e.message}", Toast.LENGTH_SHORT)
+                    .show()
+            }
     }
 
+
     fun loadFromFirebase() {
-        database = FirebaseDatabase.getInstance().getReference("drawings")
+
+        if (!isNetworkAvailable()) {
+            Toast.makeText(context, "No network connection", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (isReceiver) {
+            // Get a reference to the database
+            database = FirebaseDatabase.getInstance().getReference("drawings")
+            // Set drawing reference based on the ID obtained from the dialog
+            drawingIdRef = drawingId?.let { database.child(it) }!!
+        }
+
+        // Initialize the ValueEventListener
         valueEventListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val jsonArray = JSONArray(snapshot.value.toString())
-                if (jsonArray != null) {
-                    loadFromJson(jsonArray)
-                    // Test
-//                    saveToFirebase()
-                    // Optionally, notify the user or refresh the UI
-                    Toast.makeText(
-                        context,
-                        "Canvas data loaded...",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                // Handle changes only at the drawingIdRef node
+                if (snapshot.exists()) {
+                    // Fetch the data at this node
+                    val jsonData = snapshot.value.toString()
+
+                    // Convert the data to JSON (or handle it as needed)
+                    try {
+                        val jsonArray = JSONArray(jsonData)
+
+                        // Load data into your canvas
+                        loadFromJson(jsonArray)
+                        Toast.makeText(context, "Canvas data loaded...", Toast.LENGTH_SHORT).show()
+                    } catch (e: JSONException) {
+                        // Handle JSON parsing errors if necessary
+//                        Toast.makeText(context, "Error parsing data", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                // Handle error
-                Toast.makeText(
-                    context,
-                    "Error loading data",
-                    Toast.LENGTH_SHORT
-                )
-                    .show()
+                handleDatabaseError(error)
             }
         }
-        database.child("canvasData").addValueEventListener(valueEventListener as ValueEventListener)
+
+        // Add the event listener to the drawingIdRef
+        drawingIdRef.addValueEventListener(valueEventListener as ValueEventListener)
         isShared = true
     }
 
+
     fun stopCollaboration() {
-        database = FirebaseDatabase.getInstance().getReference("drawings")
-        // Remove the data from the database
-//        database.child("canvasData").removeValue().addOnCompleteListener { task ->
-//            if (task.isSuccessful) {
-//                // Data deleted successfully, you can perform further actions here
+        // Detach the listener to stop receiving updates
+        valueEventListener?.let {
+            drawingIdRef.removeEventListener(it)
+        }
+        isShared = false
+        Toast.makeText(context, "Collaboration ended...", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager =
+            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = connectivityManager.activeNetworkInfo
+        return networkInfo != null && networkInfo.isConnected
+    }
+
+    private fun handleDatabaseError(error: DatabaseError) {
+        when (error.code) {
+            DatabaseError.NETWORK_ERROR -> Toast.makeText(
+                context,
+                "Network error occurred",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            DatabaseError.DISCONNECTED -> Toast.makeText(
+                context,
+                "Disconnected from the network",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            else -> Toast.makeText(
+                context,
+                "Error loading data: ${error.message}",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+//    fun loadFromFirebase() {
+//        if (isReceiver) {
+//            // Get a reference to the database
+//            database = FirebaseDatabase.getInstance().getReference("drawings")
+//            // Set drawing reference based on the ID gotten from the dialog
+//            drawingIdRef = drawingId?.let { database.child(it) }!!
+//        }
+//
+//        valueEventListener = object : ValueEventListener {
+//            override fun onDataChange(snapshot: DataSnapshot) {
+//                // Iterate over each child of the snapshot (which are the top-level nodes)
+//                for (drawingSnapshot in snapshot.children) {
+//                    val currentId = drawingSnapshot.key
+//                    // Handle only the top-level drawing IDs and ignore child nodes like "messages"
+//                    if (currentId == drawingId) {
+//                        // Load the data from the snapshot for the current drawing ID
+//                        val jsonData = drawingSnapshot.value.toString()
+//
+//                        // Convert the data to JSON (or handle it as needed)
+//                        val jsonArray = JSONArray(jsonData)
+//
+//                        // Load data into your canvas
+//                        if (jsonArray != null) {
+//                            loadFromJson(jsonArray)
+//                            // Optionally, notify the user or refresh the UI
+//                            Toast.makeText(
+//                                context,
+//                                "Canvas data loaded...",
+//                                Toast.LENGTH_SHORT
+//                            ).show()
+//                        }
+//                        break // Exit the loop after processing the relevant drawing ID
+//                    }
+//                }
+//            }
+//
+//            override fun onCancelled(error: DatabaseError) {
+//                // Handle error
 //                Toast.makeText(
 //                    context,
-//                    "...",
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//            } else {
-//                // Handle any errors
-//                Toast.makeText(
-//                    context,
-//                    "Error",
+//                    "Error loading data",
 //                    Toast.LENGTH_SHORT
 //                ).show()
 //            }
 //        }
-        // Detach the listener to stop receiving updates
-        valueEventListener?.let {
-            database.child("canvasData").removeEventListener(it)
-        }
-        isShared = false
-        Toast.makeText(
-            context,
-            "Collaboration ended...",
-            Toast.LENGTH_SHORT
-        ).show()
-    }
+//
+//        // Add the event listener to the reference
+//        database.addValueEventListener(valueEventListener as ValueEventListener)
+////        drawingIdRef.addValueEventListener(valueEventListener as ValueEventListener)
+//        isShared = true
+//    }
 
+//    fun loadFromFirebase() {
+//        database = FirebaseDatabase.getInstance().getReference("drawings")
+//        valueEventListener = object : ValueEventListener {
+//            override fun onDataChange(snapshot: DataSnapshot) {
+//                val jsonArray = JSONArray(snapshot.value.toString())
+//                if (jsonArray != null) {
+//                    loadFromJson(jsonArray)
+//                    // Test
+////                    saveToFirebase()
+//                    // Optionally, notify the user or refresh the UI
+//                    Toast.makeText(
+//                        context,
+//                        "Canvas data loaded...",
+//                        Toast.LENGTH_SHORT
+//                    ).show()
+//                }
+//            }
+//
+//            override fun onCancelled(error: DatabaseError) {
+//                // Handle error
+//                Toast.makeText(
+//                    context,
+//                    "Error loading data",
+//                    Toast.LENGTH_SHORT
+//                )
+//                    .show()
+//            }
+//        }
+//        database.child("canvasData").addValueEventListener(valueEventListener as ValueEventListener)
+//        isShared = true
+//    }
+
+    // TEST
+//    fun stopCollaboration() {
+//        // Detach the listener to stop receiving updates
+//        valueEventListener?.let {
+//            drawingIdRef.removeEventListener(it)
+//        }
+//        isShared = false
+//        Toast.makeText(
+//            context,
+//            "Collaboration ended...",
+//            Toast.LENGTH_SHORT
+//        ).show()
+//    }
+
+//    fun getDrawingIdRef(): DatabaseReference {
+//        return drawingIdRef
+//    }
+
+//    fun stopCollaboration() {
+//        database = FirebaseDatabase.getInstance().getReference("drawings")
+//        // Remove the data from the database
+////        database.child("canvasData").removeValue().addOnCompleteListener { task ->
+////            if (task.isSuccessful) {
+////                // Data deleted successfully, you can perform further actions here
+////                Toast.makeText(
+////                    context,
+////                    "...",
+////                    Toast.LENGTH_SHORT
+////                ).show()
+////            } else {
+////                // Handle any errors
+////                Toast.makeText(
+////                    context,
+////                    "Error",
+////                    Toast.LENGTH_SHORT
+////                ).show()
+////            }
+////        }
+//        // Detach the listener to stop receiving updates
+//        valueEventListener?.let {
+//            database.child("canvasData").removeEventListener(it)
+//        }
+//        isShared = false
+//        Toast.makeText(
+//            context,
+//            "Collaboration ended...",
+//            Toast.LENGTH_SHORT
+//        ).show()
+//    }
+//
 
 //    fun getUniqueId(): String {
 //        database = FirebaseDatabase.getInstance().getReference("drawings")
 //        drawingId = database.push().key!!
 //        return drawingId
 //    }
-
+// **************************
     // FIREBASE -> END
+
+
+    fun loadPathData(path: Path, paint: Paint) {
+//        val filename = path.
+//        val file = File("/storage/emulated/0/Android/data/com.example.sketchcrew/files/$filename")
+//        val fileURI: Uri =
+//            FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+////        currentPath.reset()
+//        mpaths.clear()
+//        mpaths.add(currentPath)
+//        val canvas = Canvas(currentLayer!!)
+//        setPath(pathData.path) // Set the path using the serialized string
+        paths.clear()
+        paths.add(Pair(path, paint))
+        // Set paint properties
+        setColor(paint.color)
+        setBrushWidth(paint.strokeWidth)
+//        loadBitmapFromFile(context, fileURI)
+
+//        canvas.drawPath(setPath(pathData.path), paint)
+        invalidate() // Redraw the canvas with the new path data
+    }
+
+    fun pathToString(path: Path): String {
+        // Convert the Path to a String representation
+        val pathMeasure = PathMeasure(path, false)
+        val pathData = StringBuilder()
+        val coords = FloatArray(2)
+
+        while (pathMeasure.nextContour()) {
+            pathMeasure.getPosTan(0f, coords, null)
+            pathData.append("M${coords[0]},${coords[1]}")
+            // Add additional path commands (L, Q, C) based on the path contents
+        }
+
+        return pathData.toString()
+    }
+
+    fun saveCurrentPathToDatabase(filename: String, desc: String) {
+//        var pathString = getPathData(currentPath)
+        val pathDataList = paths.map { (path, paint) ->
+            {
+                PathData(
+                    name = filename,
+                    desc = desc,
+                    path = setPath(path), // Convert Path to String
+                    color = paint.color,
+                    strokeWidth = paint.strokeWidth
+                )
+            }
+        }
+        val serializedPaths = Gson().toJson(pathDataList)
+        val serializedPaint = Gson().toJson(paint)
+
+        val drawing =
+            Drawing(filename = filename, pathData = serializedPaths, paintData = serializedPaint)
+
+        // Save to database using coroutine or other threading strategy
+
+//        val pathData = PathData(
+//            name = filename,
+//            desc = desc,
+//            path = pathString,
+//            color = paintColor.color,
+//            strokeWidth = paintColor.strokeWidth
+//        )
+//        val db = RoomDB.getDatabase(context)
+//        GlobalScope.launch(Dispatchers.IO) {
+//            db.drawingDao().insertDrawing(drawing)
+//        }
+    }
+
+
 }
