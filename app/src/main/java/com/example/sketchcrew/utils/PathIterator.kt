@@ -5,8 +5,8 @@ class PathIterator(private val path: Path) {
 
     private val pathMeasure = android.graphics.PathMeasure(path, false)
     private var done = false
-    private var position = FloatArray(2)
-    private var tan = FloatArray(2)
+    private var position = FloatArray(6)
+    private var tan = FloatArray(6)
     private var type = SEG_MOVETO
 
     companion object {
@@ -15,6 +15,7 @@ class PathIterator(private val path: Path) {
         const val SEG_QUADTO = 2
         const val SEG_CUBICTO = 3
         const val SEG_CLOSE = 4
+        const val SEG_ARCTO = 5
     }
 
     fun isDone(): Boolean = done
@@ -38,6 +39,10 @@ class PathIterator(private val path: Path) {
 
         coords[0] = position[0]
         coords[1] = position[1]
+        coords[2] = position[2]
+        coords[3] = position[3]
+        coords[4] = position[4]
+        coords[5] = position[5]
 
         return type
     }

@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="@color/white">
 
-
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -18,16 +17,51 @@
         app:layout_constraintVertical_bias="0">
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/home_ui"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="10dp"
             android:layout_marginEnd="16dp"
+            android:layout_marginBottom="40dp"
             app:layout_constraintBottom_toTopOf="@+id/bottomTab"
             app:layout_constraintTop_toTopOf="parent">
 
-            <ImageView
+            <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/profileImage"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:visibility="visible"
+                android:padding="1dp"
+                android:src="@drawable/profile_ic"
+                android:textColor="#7F56D9"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="TO" />
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/oldImage"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:visibility="visible"
+                android:padding="1dp"
+                android:src="@drawable/profile_ic"
+                android:textColor="#7F56D9"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:visibility="visible"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="TO" />
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/oldImage"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_marginStart="16dp"
@@ -37,6 +71,7 @@
                 android:textColor="#7F56D9"
                 android:textSize="16sp"
                 android:textStyle="bold"
+                android:visibility="visible"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="TO" />
@@ -75,7 +110,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/coveredLayout"
                 android:layout_width="match_parent"
-                android:layout_height="250dp"
+                android:layout_height="170dp"
                 android:layout_marginTop="25dp"
                 android:background="@drawable/you_not_covered_card"
                 android:elevation="2dp"
@@ -136,7 +171,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="2. Click left or right to navigate between tabs."
+                        android:text="2. Click on the bottom left or right to navigate between tabs."
                         android:textColor="@color/black"
                         android:textSize="12sp" />
 
@@ -162,18 +197,33 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+            <TextView
+                android:id="@+id/offersText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="15dp"
+                android:text="Our Offers"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@id/coveredLayout"
+                app:layout_constraintTop_toBottomOf="@id/coveredLayout" />
+
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/sharedLayout"
+                android:id="@+id/drawLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
+                android:layout_marginTop="20dp"
                 android:background="@drawable/homepage_card"
                 android:elevation="2dp"
-                android:visibility="gone"
-                app:layout_constraintTop_toBottomOf="@id/coveredLayout">
+                android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/offersText">
 
                 <ImageView
-                    android:id="@+id/sharedIcon"
+                    android:id="@+id/drawIcon"
                     android:layout_width="25dp"
                     android:layout_height="25dp"
                     android:layout_marginStart="17dp"
@@ -183,29 +233,18 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
 
-                <ImageView
-                    android:id="@+id/sharedEnterIcon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="21dp"
-                    android:layout_marginEnd="21dp"
-                    android:src="@drawable/vector_one"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
                 <TextView
-                    android:id="@+id/sharedTextView"
+                    android:id="@+id/drawTextView"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="15dp"
                     android:layout_marginTop="11dp"
                     android:layout_marginEnd="30dp"
-                    android:text="View shared sketches"
+                    android:text="Draw"
                     android:textColor="@color/black"
                     android:textSize="16sp"
-                    app:layout_constraintEnd_toStartOf="@+id/sharedEnterIcon"
                     app:layout_constraintHorizontal_bias="0"
-                    app:layout_constraintStart_toEndOf="@+id/sharedIcon"
+                    app:layout_constraintStart_toEndOf="@+id/drawIcon"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
@@ -213,14 +252,119 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="30dp"
                     android:layout_marginBottom="21dp"
-                    android:text="view a list of all your shared sketches"
+                    android:text="Enjoy a user-friendly drawing experience that adapts to your style as an artist."
                     android:textColor="@color/wellness_text_grey1"
                     android:textSize="13sp"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/sharedEnterIcon"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0"
-                    app:layout_constraintStart_toStartOf="@id/sharedTextView"
-                    app:layout_constraintTop_toBottomOf="@id/sharedTextView" />
+                    app:layout_constraintStart_toStartOf="@id/drawTextView"
+                    app:layout_constraintTop_toBottomOf="@id/drawTextView" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/ChatLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/homepage_card"
+                android:elevation="2dp"
+                android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/drawLayout">
+
+                <ImageView
+                    android:id="@+id/chatIcon"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_marginStart="17dp"
+                    android:layout_marginTop="16dp"
+                    android:src="@drawable/chat_icon"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+
+                <TextView
+                    android:id="@+id/chatTextView"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginTop="11dp"
+                    android:layout_marginEnd="30dp"
+                    android:text="Chat"
+                    android:textColor="@color/black"
+                    android:textSize="16sp"
+                    app:layout_constraintHorizontal_bias="0"
+                    app:layout_constraintStart_toEndOf="@+id/chatIcon"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="30dp"
+                    android:layout_marginBottom="21dp"
+                    android:text="Stay connected with your collaborators. Discuss ideas, provide feedback while working on your sketch."
+                    android:textColor="@color/wellness_text_grey1"
+                    android:textSize="13sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0"
+                    app:layout_constraintStart_toStartOf="@id/chatTextView"
+                    app:layout_constraintTop_toBottomOf="@id/chatTextView" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/collabLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/homepage_card"
+                android:elevation="2dp"
+                android:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="@id/home_ui"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/ChatLayout">
+
+                <ImageView
+                    android:id="@+id/collabIcon"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_marginStart="17dp"
+                    android:layout_marginTop="19dp"
+                    android:src="@drawable/collab_ic"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+
+                <TextView
+                    android:id="@+id/collabTextView"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginTop="11dp"
+                    android:layout_marginEnd="30dp"
+                    android:text="Collaboration"
+                    android:textColor="@color/black"
+                    android:textSize="16sp"
+                    app:layout_constraintHorizontal_bias="0"
+                    app:layout_constraintStart_toEndOf="@+id/collabIcon"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="30dp"
+                    android:layout_marginBottom="21dp"
+                    android:text="Collaborate on a sketch in real time. Share your canvas and work together from anywhere."
+                    android:textColor="@color/wellness_text_grey1"
+                    android:textSize="13sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0"
+                    app:layout_constraintStart_toStartOf="@id/collabTextView"
+                    app:layout_constraintTop_toBottomOf="@id/collabTextView" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!--            <androidx.constraintlayout.widget.ConstraintLayout-->
@@ -350,7 +494,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="24dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="20dp"
         android:backgroundTint="@color/white"
         android:src="@drawable/plus_ic"
         app:backgroundTint="@color/black"
@@ -361,7 +505,7 @@
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
-        android:layout_height="70dp"
+        android:layout_height="wrap_content"
         android:background="@drawable/tab_card"
         android:elevation="8dp"
         app:itemIconTint="@color/black"

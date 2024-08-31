@@ -17,12 +17,16 @@ import androidx.core.content.ContextCompat
 import com.example.sketchcrew.databinding.ActivityProfileBinding
 import com.example.sketchcrew.SignInActivity
 import com.google.firebase.auth.FirebaseAuth
-import java.io.InputStream
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import java.io.File
 
 class ProfileActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityProfileBinding
     private lateinit var firebaseAuth: FirebaseAuth
+    private lateinit var firestore: FirebaseFirestore
+    private lateinit var storage: FirebaseStorage
 
     // Launcher to get image from gallery
     private val imagePickerLauncher: ActivityResultLauncher<String> =
@@ -38,13 +42,22 @@ class ProfileActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         firebaseAuth = FirebaseAuth.getInstance()
+        firestore = FirebaseFirestore.getInstance()
+        storage = FirebaseStorage.getInstance()
 
         binding.ibBack.setOnClickListener {
             onBackPressed()
         }
 
-        // Set up click listener for oldImageView to open the image picker
         binding.oldImageView.setOnClickListener {
+            if (hasStoragePermission()) {
+                openImagePicker()
+            } else {
+                requestStoragePermission()
+            }
+        }
+
+        binding.profileImage.setOnClickListener {
             if (hasStoragePermission()) {
                 openImagePicker()
             } else {
@@ -56,18 +69,8 @@ class ProfileActivity : AppCompatActivity() {
             logout()
         }
 
-        // Load the saved image URI if available
-        val savedImageUri = getSavedImageUri()
-        if (savedImageUri != null) {
-            loadImage(savedImageUri)
-        } else {
-            // Show oldImageView if no image is saved
-            binding.profileImage.visibility = android.view.View.GONE
-            binding.oldImageView.visibility = android.view.View.VISIBLE
-        }
-
-        // Display user's email
         displayUserEmail()
+        loadUserProfileImage()
     }
 
     private fun hasStoragePermission(): Boolean {
@@ -89,38 +92,86 @@ class ProfileActivity : AppCompatActivity() {
         imagePickerLauncher.launch("image/*")
     }
 
-    private fun loadImage(uri: Uri) {
-        try {
-            val inputStream: InputStream? = contentResolver.openInputStream(uri)
-            val bitmap: Bitmap = BitmapFactory.decodeStream(inputStream)
-            binding.profileImage.setImageBitmap(bitmap)
-            binding.profileImage.visibility = android.view.View.VISIBLE
-            binding.oldImageView.visibility = android.view.View.GONE
-        } catch (e: Exception) {
-            e.printStackTrace()
-           // Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()
+//    private fun loadImage(uri: Uri) {
+//        try {
+//            val inputStream: InputStream? = contentResolver.openInputStream(uri)
+//            val bitmap: Bitmap = BitmapFactory.decodeStream(inputStream)
+//            binding.profileImage.setImageBitmap(bitmap)
+//            binding.profileImage.visibility = android.view.View.VISIBLE
+//            binding.oldImageView.visibility = android.view.View.GONE
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show()
+//        }
+//    }
+
+    private fun loadUserProfileImage() {
+        val user = firebaseAuth.currentUser
+        if (user != null) {
+            // Use the correct file path where the image is actually stored
+            val storageRef = storage.reference.child("profile_images/${user.uid}/profile.jpg")
+
+            // Create a temporary file for the image
+            val localFile = File.createTempFile(user.uid, ".jpg")
+
+            // Download the image file to the temporary file
+            storageRef.getFile(localFile).addOnSuccessListener {
+
+                // Decode the downloaded image file into a Bitmap
+                val bitmap = BitmapFactory.decodeFile(localFile.absolutePath)
+                binding.profileImage.setImageBitmap(bitmap)
+                binding.profileImage.visibility = android.view.View.VISIBLE
+                binding.oldImageView.visibility = android.view.View.GONE
+                binding.oldImageView.visibility = android.view.View.GONE
+            }.addOnFailureListener { exception ->
+                // Handle any errors that occurred while getting the download URL
+                Toast.makeText(this, "Failed to load profile image", Toast.LENGTH_SHORT).show()
+                binding.profileImage.visibility = android.view.View.GONE
+                binding.oldImageView.visibility = android.view.View.VISIBLE
+            }
         }
     }
 
     private fun uploadAndSaveImage(uri: Uri) {
-        // Display image and save URI
-        loadImage(uri)
-        saveImageUriToPreferences(uri)
-    }
+        val user = firebaseAuth.currentUser
+        if (user != null) {
+            val storageRef = storage.reference.child("profile_images/${user.uid}/profile.jpg")
+            val uploadTask = storageRef.putFile(uri)
 
-    private fun saveImageUriToPreferences(uri: Uri) {
-        val sharedPref = getSharedPreferences("profile_prefs", MODE_PRIVATE)
-        with(sharedPref.edit()) {
-            putString("saved_image_uri", uri.toString())
-            apply()
+            uploadTask.addOnSuccessListener {
+                storageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                    saveImageUriToDatabase(downloadUri.toString())
+                    loadUserProfileImage()
+                    Toast.makeText(this, "Image uploaded successfully", Toast.LENGTH_SHORT).show()
+                }
+            }.addOnFailureListener {
+                Toast.makeText(this, "Failed to upload image", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun getSavedImageUri(): Uri? {
-        val sharedPref = getSharedPreferences("profile_prefs", MODE_PRIVATE)
-        val uriString = sharedPref.getString("saved_image_uri", null)
-        return uriString?.let { Uri.parse(it) }
+
+    private fun saveImageUriToDatabase(downloadUri: String) {
+        val user = firebaseAuth.currentUser
+        if (user != null) {
+            val userRef = firestore.collection("users").document(user.uid)
+            userRef.update("profileImageUrl", downloadUri)
+                .addOnSuccessListener {
+                    Log.d("ProfileActivity", "Image URL saved to database successfully")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("ProfileActivity", "Failed to save image URL: ${e.message}")
+                }
+        }
     }
+
+//    private fun getSavedImageUri(): Uri? {
+//        val sharedPref = getSharedPreferences("profile_prefs", MODE_PRIVATE)
+//        val uriString = sharedPref.getString("saved_image_uri", null)
+//        return uriString?.let { Uri.parse(it) }
+//    }
 
     private fun displayUserEmail() {
         val user = firebaseAuth.currentUser
@@ -145,7 +196,11 @@ class ProfileActivity : AppCompatActivity() {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 openImagePicker()
             } else {
-                Toast.makeText(this, "Permission denied. Unable to access storage.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Permission denied. Unable to access storage.",
+                    Toast.LENGTH_SHORT
+                ).show()
                 Log.d("ProfileActivity", "Permission denied: ${permissions[0]}")
             }
         }
