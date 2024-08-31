@@ -136,12 +136,5 @@ Contributions are welcome! To contribute:
    ```
 5. **Create a Pull Request**: Submit a pull request on the GitHub page.
 
-## Contact
 
-For any inquiries, feedback, or suggestions, feel free to reach out:
-
-- **Author Name**: [nicholausmichael51@gmail.com]
-- **GitHub**: [https://github.com/DevEdozie]
-- **Twitter**: [https://x.com/dev_edozie]
-```
 
