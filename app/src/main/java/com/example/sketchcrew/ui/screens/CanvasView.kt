@@ -7,6 +7,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.PathMeasure
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.net.ConnectivityManager
@@ -22,6 +23,8 @@ import android.view.View
 import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import com.example.sketchcrew.R
+import com.example.sketchcrew.data.local.models.Drawing
+import com.example.sketchcrew.data.local.models.PathData
 import com.example.sketchcrew.utils.PathIteratorFirebase
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.auth.FirebaseAuth
@@ -30,6 +33,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.gson.Gson
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -51,7 +55,8 @@ class CanvasView @JvmOverloads constructor(
 
     private var scaleFactor = 1.0f
     private lateinit var scaleGestureDetector: ScaleGestureDetector
-//    private var layerManager: LayerManager = LayerManager()
+
+    //    private var layerManager: LayerManager = LayerManager()
     private var currentLayer: Bitmap? = null
 //    private var layerArray = mutableListOf<Bitmap>()
 
@@ -105,7 +110,6 @@ class CanvasView @JvmOverloads constructor(
         drawingId = database.push().key
         drawingIdRef = drawingId?.let { database.child(it) }!!
     }
-
 
 
     private fun init() {
@@ -337,6 +341,9 @@ class CanvasView @JvmOverloads constructor(
     fun undo() {
         if (paths.isNotEmpty()) {
             undonePaths.add(paths.removeAt(paths.size - 1))
+            if (isShared) {
+                saveToFirebase() // Update the current state
+            }
             invalidate()
         }
     }
@@ -344,6 +351,9 @@ class CanvasView @JvmOverloads constructor(
     fun redo() {
         if (undonePaths.isNotEmpty()) {
             paths.add(undonePaths.removeAt(undonePaths.size - 1))
+            if (isShared) {
+                saveToFirebase() // Update the current state
+            }
             invalidate()
         }
     }
@@ -537,7 +547,6 @@ class CanvasView @JvmOverloads constructor(
 //        mpaths.add(path)
 //        return path
 
-        lateinit var firebaseAuth: FirebaseAuth
 
     }
 
@@ -987,8 +996,8 @@ class CanvasView @JvmOverloads constructor(
         val serializedPaths = Gson().toJson(pathDataList)
         val serializedPaint = Gson().toJson(paint)
 
-        val drawing =
-            Drawing(filename = filename, pathData = serializedPaths, paintData = serializedPaint)
+//        val drawing =
+//            Drawing(filename = filename, pathData = serializedPaths, paintData = serializedPaint)
 
         // Save to database using coroutine or other threading strategy
 

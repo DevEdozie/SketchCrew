@@ -2,6 +2,7 @@ package com.example.sketchcrew.ui.screens
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -38,7 +39,7 @@ import com.example.sketchcrew.data.local.models.Drawing
 import com.example.sketchcrew.data.local.models.PairConverter
 import com.example.sketchcrew.databinding.FragmentDrawnCanvasBinding
 import com.example.sketchcrew.repository.CanvasRepository
-import com.example.sketchcrew.ui.screens.CanvasView.Companion.firebaseAuth
+//import com.example.sketchcrew.ui.screens.CanvasView.Companion.firebaseAuth
 import com.example.sketchcrew.ui.screens.CanvasView.Companion.shapeType
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModel
 import com.example.sketchcrew.ui.viewmodels.CanvasViewModelFactory
@@ -57,6 +58,8 @@ private const val TAG = "DrawnCanvasFragment"
 class DrawnCanvasFragment : Fragment() {
 
     private lateinit var _binding: FragmentDrawnCanvasBinding
+
+    lateinit var firebaseAuth: FirebaseAuth
 
     private lateinit var viewModel: CanvasViewModel
     val binding get() = _binding
