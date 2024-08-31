@@ -8,19 +8,16 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.sketchcrew.data.local.dao.CanvasDao
-import com.example.sketchcrew.data.local.dao.DrawingDao
 import com.example.sketchcrew.data.local.dao.PathDao
 import com.example.sketchcrew.data.local.models.CanvasModel
-import com.example.sketchcrew.data.local.models.Drawing
 import com.example.sketchcrew.data.local.models.PairConverter
 import com.example.sketchcrew.data.local.models.PathData
 
-@Database(entities = [CanvasModel::class, PathData::class, Drawing::class], version = 8, exportSchema = false)
+@Database(entities = [CanvasModel::class, PathData::class], version = 4)
 @TypeConverters(PairConverter::class)
 abstract class RoomDB : RoomDatabase() {
     abstract fun canvasDao(): CanvasDao
     abstract fun pathDao(): PathDao
-    abstract fun drawingDao(): DrawingDao
 
     companion object {
         @Volatile

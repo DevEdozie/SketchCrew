@@ -7,9 +7,7 @@ import androidx.lifecycle.LiveData
 import com.example.sketchcrew.data.local.database.RoomDB
 import com.example.sketchcrew.data.local.models.CanvasData
 import com.example.sketchcrew.data.local.models.CanvasModel
-import com.example.sketchcrew.data.local.models.Drawing
 import com.example.sketchcrew.data.local.models.PairConverter
-import com.example.sketchcrew.data.local.models.PathData
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
@@ -17,10 +15,6 @@ import kotlinx.coroutines.flow.map
 
 class CanvasRepository(context: Context) {
     private val canvasDao = RoomDB.getDatabase(context).canvasDao()
-    private val drawingDao = RoomDB.getDatabase(context).drawingDao()
-    private val pathDao = RoomDB.getDatabase(context).pathDao()
-
-    val getAllDrawings: Flow<List<Drawing>> = drawingDao.getAllDrawings()
 
     suspend fun saveCanvas(canvas: CanvasData) {
         val entity = CanvasModel(
@@ -30,28 +24,6 @@ class CanvasRepository(context: Context) {
             serializedPaths = PairConverter().fromPathList(canvas.paths)
         )
         canvasDao.insertCanvas(entity)
-    }
-
-    suspend fun saveDrawing(drawing: Drawing) {
-        drawingDao.insertDrawing(drawing)
-    }
-
-    suspend fun deleteDrawingById(id: Long) {
-        drawingDao.deleteDrawing(id)
-    }
-
-    suspend fun updatePath(pathData: PathData) {
-        pathDao.update(pathData)
-    }
-
-    fun getDrawingById(id: Long): LiveData<Drawing> = drawingDao.getDrawingById(id)
-
-    suspend fun getPath(pathId: Int) : PathData? {
-        return pathDao.getPathById(pathId)
-    }
-
-    suspend fun savePath(pathData: PathData) {
-        pathDao.insert(pathData)
     }
 
     suspend fun loadCanvas(id: Long): CanvasData? {
