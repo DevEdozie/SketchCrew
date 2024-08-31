@@ -42,8 +42,11 @@ SketchCrew is a digital sketchpad Android application designed to provide artist
 ![SignIn screen](https://github.com/DevEdozie/SketchCrew/blob/main/B-SignInScreen.jpg)
 *SignIn screen*
 
-![Home screen](https://github.com/DevEdozie/SketchCrew/blob/main/B-HomeScreen.jpg)
+![2024-08-31 13-01-16 High Res Screenshot](https://github.com/user-attachments/assets/7fe68909-c128-4e96-8d74-1118d9805e8c)![2024-08-31 13-02-19 High Res Screenshot](https://github.com/user-attachments/assets/8610425e-f8a7-41e1-85f3-577f506df688)
 *Home screen*
+
+![2024-08-31 12-55-35 High Res Screenshot](https://github.com/user-attachments/assets/2c47311f-e2ab-4ec5-a472-1a194003c526)
+*Canvas Screen with text drwaing*
 
 ![Canvas Screen with shapes](https://github.com/DevEdozie/SketchCrew/blob/main/shapes.jpeg)
 *Canvas Screen with shapes*
@@ -57,7 +60,10 @@ SketchCrew is a digital sketchpad Android application designed to provide artist
 ![Canvas Screen with eraser](https://github.com/DevEdozie/SketchCrew/blob/main/eraser_screen.jpeg)
 *Canvas Screen with eraser*
 
-![Canvas List](https://github.com/DevEdozie/SketchCrew/blob/main/B-CanvasViewScreenList.jpg)
+![2024-08-31 12-58-43 High Res Screenshot](https://github.com/user-attachments/assets/30e140a4-b94b-4406-b65b-2821d8116926)
+*Saving Canvas*
+
+![2024-08-31 13-03-07 High Res Screenshot](https://github.com/user-attachments/assets/6bf5235e-98be-4cdf-aa11-a1c1e3ff1e33) ![2024-08-31 13-03-07 High Res Screenshot](https://github.com/user-attachments/assets/0fcb4201-c31b-4a75-b014-608c5c90d027)
 *Canvas List*
 
 
@@ -92,8 +98,7 @@ To set up SketchCrew locally, follow these steps:
 
 You can download the latest version of the SketchCrew app directly from the following link:
 
-[Download APK](https://github.com/DevEdozie/SketchCrew/blob/main/SketchCrew-v3.apk)
-
+[[[Download APK](https://drive.google.com/drive/folders/1uvl_wjlcMWSWv7jWgt1ZcbeBbL_Rzkij?usp=sharing)]]
 *Make sure to enable "Install from Unknown Sources" on your Android device if installing the APK directly.*
 
 ## Usage
