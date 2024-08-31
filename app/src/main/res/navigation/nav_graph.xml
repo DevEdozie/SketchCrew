@@ -4,9 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/canvasListFragment">
-    <action
-        android:id="@+id/action_global_drawnCanvasFragment"
-        app:destination="@id/drawnCanvasFragment" />
 
     <fragment
         android:id="@+id/canvasListFragment"
@@ -26,20 +23,8 @@
             android:id="@+id/action_drawnCanvasFragment_to_canvasListFragment"
             app:destination="@id/canvasListFragment" />
         <argument
-            android:name="id"
-            android:defaultValue="0"
-            app:argType="integer" />
-        <action
-            android:id="@+id/action_drawnCanvasFragment_to_chatFragment"
-            app:destination="@id/chatFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/chatFragment"
-        android:name="com.example.sketchcrew.ui.screens.ChatFragment"
-        android:label="fragment_chat"
-        tools:layout="@layout/fragment_chat" >
-        <action
-            android:id="@+id/action_chatFragment_to_drawnCanvasFragment"
-            app:destination="@id/drawnCanvasFragment" />
+            android:name="pathData"
+            app:argType="integer"
+            android:defaultValue="0" />
     </fragment>
 </navigation>
