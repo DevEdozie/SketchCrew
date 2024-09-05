@@ -131,7 +131,7 @@ class ProfileActivity : AppCompatActivity() {
                 binding.oldImageView.visibility = android.view.View.GONE
             }.addOnFailureListener { exception ->
                 // Handle any errors that occurred while getting the download URL
-                Toast.makeText(this, "Failed to load profile image", Toast.LENGTH_SHORT).show()
+//                Toast.makeText(this, "Failed to load profile image", Toast.LENGTH_SHORT).show()
                 binding.profileImage.visibility = android.view.View.GONE
                 binding.oldImageView.visibility = android.view.View.VISIBLE
             }
