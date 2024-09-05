@@ -70,10 +70,10 @@ class HomeActivity : AppCompatActivity() {
             storageRef.getFile(localFile).addOnSuccessListener {
                 // Decode the downloaded image file into a Bitmap
                 val bitmap = BitmapFactory.decodeFile(localFile.absolutePath)
-                binding.profileImage.setImageBitmap(bitmap)
-                binding.profileImage.visibility = android.view.View.VISIBLE
-                binding.oldImage.visibility = android.view.View.GONE
-                binding.oldImage.visibility = android.view.View.GONE
+//                binding.profileImage.setImageBitmap(bitmap)
+//                binding.profileImage.visibility = android.view.View.VISIBLE
+//                binding.oldImage.visibility = android.view.View.GONE
+//                binding.oldImage.visibility = android.view.View.GONE
 
             }.addOnFailureListener { exception ->
                 // Handle any errors that occurred while getting the download URL
@@ -81,9 +81,9 @@ class HomeActivity : AppCompatActivity() {
                     "ProfileActivity",
                     "Failed to retrieve profile image from Storage: ${exception.message}"
                 )
-                Toast.makeText(this, "Failed to load profile image", Toast.LENGTH_SHORT).show()
-                binding.profileImage.visibility = android.view.View.GONE
-                binding.oldImage.visibility = android.view.View.VISIBLE
+//                Toast.makeText(this, "Failed to load profile image", Toast.LENGTH_SHORT).show()
+//                binding.profileImage.visibility = android.view.View.GONE
+//                binding.oldImage.visibility = android.view.View.VISIBLE
             }
         }
     }
